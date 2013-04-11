@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_msl_scan_title">MediaStoreLibrary Scan</string>
+    <string name="settings_msl_scan_summary_ena">Scaned</string>
+    <string name="settings_msl_scan_summary_dis">Not Scan</string>
+    <string name="settings_msl_scan">settings_msl_scan</string>
+    
+    <string name="settings_debug_title">Debug level</string>
+	<string name="settings_debug_summary">Current debug level=0</string>
+	<string name="settings_debug_dialog_title">Select debug level</string>
+	<string name="settings_debug_level">settings_debug_level</string>
+	
+	<string-array name="settings_debug_list_entries">
+        <item>0: No Debug info</item>
+        <item>1: Information only</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>9: All debug info</item>
+    </string-array>
+    <string-array name="settings_debug_list_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>9</item>
+    </string-array>
+    
+    <string name="settings_exit_clean_title">Exit cleanly</string>
+    <string name="settings_exit_clean_summary_dis">Do not kill application process.</string>
+    <string name="settings_exit_clean_summary_ena">Kill application process after application cleanup.</string>
+	<string name="settings_exit_clean">settings_exit_clean</string>
+    
+    <string name="settings_default_user">settings_default_user</string>
+	<string name="settings_default_user_title">Default SMB user name</string>        
+    <string name="settings_default_user_summary">Current setting=</string>
+	<string name="settings_default_pass">settings_default_pass</string>
+	<string name="settings_default_pass_title">Default SMB password</string>        
+    <string name="settings_default_pass_summary"></string>
+	<string name="settings_default_addr">settings_default_addr</string>
+	<string name="settings_default_addr_title">Default SMB IP address</string>        
+    <string name="settings_default_addr_summary">Current setting=</string>
+    
+    <string name="settings_smb_tuning_title">SMB tuning parameters</string>
+    <string name="settings_smb_tuning_summary"></string>
+
+	<string name="settings_smb_perform_class_title">SMB Performance</string>
+	<string name="settings_smb_perform_class_summary">SMB Performance class</string>
+	<string name="settings_smb_perform_class_dialog_title">Select performance class</string>
+	<string name="settings_smb_perform_class">settings_smb_perform_class</string>
+	<string name="settings_smb_perform_class_0">Normal(for Phone)</string>
+	<string name="settings_smb_perform_class_1">Medium(for Tablet)</string>
+	<string name="settings_smb_perform_class_2">Maximum(for large mem and cpu)</string>
+	<string name="settings_smb_perform_class_3">Use SMB tuning parameters</string>
+	<string-array name="settings_smb_perform_class_list_entries">
+	    <item>Normal(for phone)</item>
+	    <item>Medium(for Tablet)</item>
+        <item>Maximum(for large mem and cpu)</item>
+        <item>Use SMB tuning parameters</item>
+    </string-array>
+    <string-array name="settings_smb_perform_class_list_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    
+    <string name="settings_smb_log_level">settings_smb_log_level</string>
+	<string name="settings_smb_log_level_title">JCIFS log level</string>        
+    <string name="settings_smb_log_level_summary">Not specified</string>
+    
+    <string name="settings_smb_rcv_buf_size">settings_smb_rcv_buf_size</string>
+	<string name="settings_smb_rcv_buf_size_title">JCIFS rcv_buf_size</string>        
+    <string name="settings_smb_rcv_buf_size_summary">Not specified</string>
+    
+    <string name="settings_smb_snd_buf_size">settings_smb_snd_buf_size</string>
+	<string name="settings_smb_snd_buf_size_title">JCIFS snd_buf_size</string>        
+    <string name="settings_smb_snd_buf_size_summary">Not specified</string>
+    
+    <string name="settings_smb_listSize">settings_smb_listSize</string>
+	<string name="settings_smb_listSize_title">JCIFS listSize</string>        
+    <string name="settings_smb_listSize_summary">Not specified</string>
+
+    <string name="settings_smb_tcp_nodelay_title">JCIFS TCP_NODELAY</string>
+	<string name="settings_smb_tcp_nodelay_summary_false">false</string>
+	<string name="settings_smb_tcp_nodelay_summary_true">true</string>
+	<string name="settings_smb_tcp_nodelay_dialog_title">JCIFS TCP_NODELAY</string>
+	<string name="settings_smb_tcp_nodelay">settings_smb_tcp_nodelay</string>
+	<string-array name="settings_smb_tcp_nodelay_list_entries">
+        <item>false(JCIFS Default)</item>
+        <item>true</item>
+    </string-array>
+    <string-array name="settings_smb_tcp_nodelay_list_values">
+        <item>false</item>
+        <item>true</item>
+    </string-array>	    
+    
+    
+    <string name="settings_smb_maxBuffers">settings_smb_maxBuffers</string>
+	<string name="settings_smb_maxBuffers_title">JCIFS maxBuffers</string>        
+    <string name="settings_smb_maxBuffers_summary">Not specified</string>
+    
+    <string name="settings_io_buffers">settings_io_buffers</string>
+	<string name="settings_io_buffers_title">MirrorIO buffers(64K x n)</string>        
+    <string name="settings_io_buffers_summary">Not specified</string>
+</resources>

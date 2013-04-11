@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.sentaroh.android.SMBExplorer"
+    android:versionCode="1"
+    android:versionName="0.97" >
+
+   <uses-sdk android:minSdkVersion="7" 
+        android:targetSdkVersion="11"/>
+   <uses-permission 
+   		android:name="android.permission.INTERNET"/>
+   <uses-permission 
+   	    android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    
+    <application
+        android:icon="@drawable/smbexplorer"
+        android:label="@string/app_name" android:theme="@style/MainTheme">
+        <activity
+            android:label="@string/app_name"
+            android:name=".SMBExplorerMain"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="unspecified" 
+            android:launchMode="standard" android:alwaysRetainTaskState="true">
+            <intent-filter >
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <activity 
+	        android:name=".SMBExpolorerSettings"
+            android:label="@string/app_name"
+            android:screenOrientation="unspecified">
+        </activity>
+
+    </application>
+
+</manifest>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<PreferenceCategory android:title="SMBExplorer basic settings">
+	    <CheckBoxPreference
+			android:key="settings_msl_scan"
+			android:title="@string/settings_msl_scan_title"
+			android:summary="@string/settings_msl_scan_summary_dis" />
+	    	    
+	    <ListPreference
+			android:key="settings_debug_level"
+			android:title="@string/settings_debug_title"
+			android:summary="@string/settings_debug_summary"
+			android:dialogTitle="@string/settings_debug_dialog_title"
+			android:entries="@array/settings_debug_list_entries"
+			android:entryValues="@array/settings_debug_list_values" />
+	</PreferenceCategory>
+	<CheckBoxPreference
+		android:key="settings_exit_clean"
+		android:title="@string/settings_exit_clean_title"
+		android:summary="@string/settings_exit_clean_summary_ena" />
+	
+	<PreferenceScreen 
+	    android:title="Default SMB settings"
+	    android:summary="for add remote profile"
+	    >
+		<EditTextPreference
+			android:key="@string/settings_default_user"
+			android:title="@string/settings_default_user_title"
+			android:summary="@string/settings_default_user_summary"
+			android:inputType="text"/>
+		<EditTextPreference
+			android:key="@string/settings_default_pass"
+			android:title="@string/settings_default_pass_title"
+			android:summary="@string/settings_default_pass_summary"
+			android:inputType="textPassword"/>
+		<EditTextPreference
+			android:key="@string/settings_default_addr"
+			android:title="@string/settings_default_addr_title"
+			android:summary="@string/settings_default_addr_summary"
+			android:inputType="text"/>
+	</PreferenceScreen>
+    <ListPreference
+		android:key="settings_smb_perform_class"
+		android:title="@string/settings_smb_perform_class_title"
+		android:summary="@string/settings_smb_perform_class_summary" 
+		android:dialogTitle="@string/settings_smb_perform_class_dialog_title"
+		android:entries="@array/settings_smb_perform_class_list_entries"
+		android:entryValues="@array/settings_smb_perform_class_list_values" />
+	<PreferenceScreen 
+	    android:key="settings_smb_tunning"
+	    android:title="@string/settings_smb_tuning_title"
+	    android:summary="@string/settings_smb_tuning_summary"	    >
+		<PreferenceCategory android:title="@string/settings_smb_tuning_title">
+		    <EditTextPreference
+				android:key="@string/settings_smb_log_level"
+				android:title="@string/settings_smb_log_level_title"
+				android:summary="@string/settings_smb_log_level_summary"
+				android:inputType="number"/>
+		    
+			<EditTextPreference
+				android:key="@string/settings_smb_rcv_buf_size"
+				android:title="@string/settings_smb_rcv_buf_size_title"
+				android:summary="@string/settings_smb_rcv_buf_size_summary"
+				android:inputType="number"/>
+			<EditTextPreference
+				android:key="@string/settings_smb_snd_buf_size"
+				android:title="@string/settings_smb_snd_buf_size_title"
+				android:summary="@string/settings_smb_snd_buf_size_summary"
+				android:inputType="number"/>
+			<EditTextPreference
+				android:key="@string/settings_smb_listSize"
+				android:title="@string/settings_smb_listSize_title"
+				android:summary="@string/settings_smb_listSize_summary"
+				android:inputType="number"/>
+			<EditTextPreference
+				android:key="@string/settings_smb_maxBuffers"
+				android:title="@string/settings_smb_maxBuffers_title"
+				android:summary="@string/settings_smb_maxBuffers_summary"
+				android:inputType="number"/>
+	   	    <ListPreference
+				android:key="settings_smb_tcp_nodelay"
+				android:title="@string/settings_smb_tcp_nodelay_title"
+				android:summary="@string/settings_smb_tcp_nodelay_summary_false" 
+				android:dialogTitle="@string/settings_smb_tcp_nodelay_dialog_title"
+				android:entries="@array/settings_smb_tcp_nodelay_list_entries"
+				android:entryValues="@array/settings_smb_tcp_nodelay_list_values" />
+			
+			<EditTextPreference
+				android:key="@string/settings_io_buffers"
+				android:title="@string/settings_io_buffers_title"
+				android:summary="@string/settings_io_buffers_summary"
+				android:inputType="number"/>
+		</PreferenceCategory>
+	</PreferenceScreen>
+</PreferenceScreen>

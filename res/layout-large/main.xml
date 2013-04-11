@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/tabhost"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingTop="3dp"
+    android:visibility="visible" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
+        <TabWidget
+            android:id="@android:id/tabs"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <FrameLayout
+            android:id="@android:id/tabcontent"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="5dp" >
+            <LinearLayout
+                android:id="@+id/explorer_profile_tab"
+			    android:layout_width="fill_parent"
+			    android:layout_height="fill_parent"
+			    android:orientation="vertical" 
+			    >
+			    <TextView
+			        android:id="@+id/explorer_profile_tab_subtitle"
+			        android:layout_width="fill_parent"
+			        android:layout_height="wrap_content"
+			        android:textAppearance="?android:attr/textAppearanceMedium" 
+			        android:text="@string/explorer_profile_tab_subtitle_string" />
+			
+			    <include layout="@layout/divider_line1" />
+			    <ListView android:id="@+id/explorer_profile_tab_listview"
+			        android:fadeScrollbars="false"
+			        android:layout_width="fill_parent"
+			        android:layout_height="0dp" 
+			        android:layout_weight="1"/>
+			    <include layout="@layout/divider_line1" />
+			    <TextView
+			        android:id="@+id/explorer_filelist_profile_tab_pastelist"
+			        android:layout_width="fill_parent"
+			        android:layout_height="wrap_content"
+			        android:maxLines="1"
+			        android:ellipsize="end"
+			        android:textAppearance="?android:attr/textAppearanceMedium" 
+			        android:text="" />
+			</LinearLayout>
+			<LinearLayout
+                android:id="@+id/explorer_message_tab"
+			    android:layout_width="fill_parent"
+			    android:layout_height="fill_parent"
+			    android:orientation="vertical" 
+			    >
+			    <include layout="@layout/divider_line1" />
+			    <ListView android:id="@+id/explorer_message_tab_listview"
+			        android:fadeScrollbars="false"
+			        android:layout_width="fill_parent"
+			        android:layout_height="0dp" 
+			        android:layout_weight="1"/>
+			    <include layout="@layout/divider_line1" />
+			    <TextView
+			        android:id="@+id/explorer_filelist_message_tab_pastelist"
+			        android:layout_width="fill_parent"
+			        android:layout_height="wrap_content"
+			        android:maxLines="1"
+			        android:ellipsize="end"
+			        android:textAppearance="?android:attr/textAppearanceMedium" 
+			        android:text="" />
+			</LinearLayout>
+			<LinearLayout
+                android:id="@+id/explorer_filelist_local_tab"
+			    android:layout_width="fill_parent"
+			    android:layout_height="fill_parent"
+			    android:orientation="vertical">
+
+			    <Spinner
+					style="@android:style/Widget.Spinner"
+			        android:id="@+id/explorer_filelist_local_tab_dir"
+					android:background="@drawable/spinner_color_background"			        
+			        android:layout_width="fill_parent"
+			        android:layout_height="wrap_content"
+			        android:minHeight="40dp"
+			        android:gravity="left"
+			        android:text="@string/explorer_filelist_local_tab_subtitle_string"
+			        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+			    <include layout="@layout/divider_line1" />
+			    <ListView android:id="@+id/explorer_filelist_local_tab_listview"
+			        android:fadeScrollbars="false"
+			        android:layout_width="fill_parent"
+			        android:layout_height="0dp" 
+			        android:layout_weight="1"/>
+			    <include layout="@layout/divider_line1" />
+			    <TextView
+			        android:id="@+id/explorer_filelist_local_tab_pastelist"
+			        android:layout_width="fill_parent"
+			        android:layout_height="wrap_content"
+			        android:maxLines="1"
+			        android:ellipsize="end"
+			        android:textAppearance="?android:attr/textAppearanceMedium"
+			        android:text="" />
+			    
+			</LinearLayout>
+			<LinearLayout
+                android:id="@+id/explorer_filelist_remote_tab"
+			    android:layout_width="fill_parent"
+			    android:layout_height="fill_parent"
+			    android:orientation="vertical" 
+			    >
+
+			    <Spinner
+					style="@android:style/Widget.Spinner"
+			        android:id="@+id/explorer_filelist_remote_tab_dir"
+					android:background="@drawable/spinner_color_background"			        
+			        android:layout_width="fill_parent"
+			        android:layout_height="wrap_content"
+			        android:minHeight="40dp"
+			        android:gravity="left"
+			        android:text="@string/explorer_filelist_local_tab_subtitle_string"
+			        android:textAppearance="?android:attr/textAppearanceMedium" />
+			
+			    <include layout="@layout/divider_line1" />
+			    <ListView android:id="@+id/explorer_filelist_remote_tab_listview"
+			        android:fadeScrollbars="false"
+			        android:layout_width="fill_parent"
+			        android:layout_height="0dp" 
+			        android:layout_weight="1"/>
+			    <include layout="@layout/divider_line1" />
+			    <TextView
+			        android:id="@+id/explorer_filelist_remote_tab_pastelist"
+			        android:layout_width="fill_parent"
+			        android:layout_height="wrap_content"
+			        android:maxLines="1"
+			        android:ellipsize="end"
+			        android:textAppearance="?android:attr/textAppearanceMedium"
+			        android:text="" />
+			    
+			</LinearLayout>
+		</FrameLayout>
+    </LinearLayout>
+</TabHost>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="msgs_select_target_profile">Select target profile for %S</string>
+    <string name="msgs_select_target_directory">Select target directory for %S</string>
+    
+    <string name="msgs_progress_spin_dlg_title">Synchronizing</string>
+    <string name="msgs_progress_spin_dlg_cancel">Cancel</string>
+    <string name="msgs_progress_spin_dlg_msg"></string>
+    
+    <string name="msgs_progress_spin_dlg_title3">Retrieving the file list.</string>
+   	<string name="msgs_progress_spin_dlg_title4">Cancel</string>
+    
+   	<string name="msgs_delete_file_dirs_confirm">Delete following dirs/files?</string>
+   	<string name="msgs_local_file_list_create_error">Error occurred during local file list creation.</string>
+	<string name="msgs_local_file_list_create_nfound">Specified file %s was not found.</string>   	
+    <string name="msgs_move_copy_override_confirm">Following dirs/files are already exists. Override?</string>
+    <string name="msgs_remote_file_list_create_error">Error occurred during remote file list creation.</string>
+    <string name="msgs_terminate_confirm">Terminate application.</string>
+    <string name="msgs_no_shared_resource">--- No shared resources ---</string>
+    <string name="msgs_add_remote_profile_duplicate">Specified profile was already exists.</string>
+    <string name="msgs_delete_confirm">Do you want to remove the %s ?</string>    
+   	<string name="msgs_select_import_dlg_title">Select import profile</string>
+   	<string name="msgs_select_import_dlg_success">Import from %s was successful</string>
+  	<string name="msgs_select_export_dlg_success">Export to %s was successful</string>
+   	<string name="msgs_select_export_dlg_title">Select export profile</string>
+   	<string name="msgs_select_export_dlg_override">Overwrite the %s ?</string>
+   	<string name="msgs_save_log_msg_file">Log messages saved to %s .</string>
+   	<string name="msgs_save_log_msg_override_confirm">Override %s ?.</string>
+   	<string name="msgs_exception">An exception occurred.</string>
+   	<string name="msgs_current_dir">Current dir:</string>
+   	<string name="msgs_dir_empty">--- Directory is empty ---</string>
+   	
+   	<string name="msgs_dlg_ok_btn">OK</string>
+    <string name="msgs_dlg_cancel_btn">Cancel</string>
+    
+    <string name="icon_string">icon</string>
+    <string name="file_list_name_string">name</string>
+    <string name="file_list_moddate_string">2011/12/31 XX:XX:XX</string>
+    
+    <string name="smbexplorer_main_title">SMBExplorer Version 0.94</string>
+    <string name="explorer_profile_tab_subtitle_string">Target profile</string>
+    <string name="explorer_filelist_local_tab_subtitle_string">Target profile not selected</string>
+    <string name="explorer_message_tab_subtitle_string">Log messages</string>
+    <string name="profile_list_name_string">Profile</string>
+    <string name="profile_list_active_string">A</string>
+    
+  	<string name="msgs_progress_spin_dlg_addr_listing">Scanning IP address</string>
+   	<string name="msgs_progress_spin_dlg_addr_cancel">Cancel scanning</string>
+   	<string name="msgs_ip_address_select_title">Select detected IP address</string>
+   	<string name="msgs_ip_address_no_address">---No IP address detected---</string>
+   	
+   	<string name="msgs_ip_address_range_dlg_title">IP Address Range</string>
+   	<string name="msgs_ip_address_range_dlg_begin">Begin</string>
+   	<string name="msgs_ip_address_range_dlg_end">End</string>
+   	<string name="msgs_ip_address_range_dlg_timeout">Timeout(milli second)</string>
+   	<string name="msgs_ip_address_range_dlg_rescan">Rescan</string>
+   	
+   	<string name="msgs_ip_address_range_dlg_begin_notspecified">Begin address was not specified.</string>
+   	<string name="msgs_ip_address_range_dlg_begin_range_error">Begin address range is must be 1 to 254.</string>
+   	<string name="msgs_ip_address_range_dlg_end_notspecified">End address was not specified.</string>
+   	<string name="msgs_ip_address_range_dlg_end_range_error">End address range is must be 1 to 254.</string>
+   	<string name="msgs_ip_address_range_dlg_begin_addr_gt_end_addr">Begin address is greater than end address.</string>
+   	<string name="msgs_ip_address_range_dlg_not_private">Global address was can not be scan.</string>
+   		
+   	<string name="msgs_progress_dlg_canceling">Canceling</string>
+
+</resources>

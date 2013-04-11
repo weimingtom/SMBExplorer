@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_top_refresh"
+          android:title="Refresh file list" 
+          android:icon="@drawable/ic_32_menu_refresh"
+          android:showAsAction="always"/>
+    <item android:id="@+id/menu_top_export"
+          android:title="Export profile" 
+          android:icon="@+android:drawable/ic_menu_save"
+          android:showAsAction="always"/>
+	<item android:id="@+id/menu_top_import"
+          android:title="Import profile" 
+          android:icon="@+android:drawable/ic_menu_set_as"
+          android:showAsAction="always"/>
+    <item android:id="@+id/menu_top_settings"
+          android:title="Settings"
+          android:icon="@+android:drawable/ic_menu_preferences"
+          android:showAsAction="always"/>
+    <item android:id="@+id/quit"
+          android:title="Quit" 
+          android:icon="@+android:drawable/ic_menu_close_clear_cancel"
+          android:showAsAction="always"/>
+</menu>
