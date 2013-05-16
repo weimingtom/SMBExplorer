@@ -34,6 +34,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -1590,7 +1591,7 @@ public class SMBExplorerMain extends Activity {
 		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		dialog.setContentView(R.layout.progress_spin_dlg);
 		((TextView)dialog.findViewById(R.id.progress_spin_dlg_title)).setText(dt);
-		Button btnCancel =(Button)dialog.findViewById(R.id.progress_spin_dlg_btn_cancel);
+		final Button btnCancel =(Button)dialog.findViewById(R.id.progress_spin_dlg_btn_cancel);
 
 		CommonDialog.setDlgBoxSizeCompact(dialog);
 		
@@ -1600,9 +1601,16 @@ public class SMBExplorerMain extends Activity {
 					// Cancel fileio process
 					tc.setDisable();
 				}
-			});
-		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
-		dialog.setCancelable(false);
+		});
+		// Cancelリスナーの指定
+		dialog.setOnCancelListener(new Dialog.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface arg0) {
+				btnCancel.performClick();
+			}
+		});
+//		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
+//		dialog.setCancelable(false);
 		dialog.show();
 
 		NotifyEvent ne=new NotifyEvent(currentContext);
@@ -1837,9 +1845,16 @@ public class SMBExplorerMain extends Activity {
 				sendDebugLogMsg(1,"W","createItem cancelled.");
 			}
 		});
-		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
+		// Cancelリスナーの指定
+		dialog.setOnCancelListener(new Dialog.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface arg0) {
+				btnCancel.performClick();
+			}
+		});
+//		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
 //		setFixedOrientation(true);
-		dialog.setCancelable(false);
+//		dialog.setCancelable(false);
 		dialog.show();
 	};
 
@@ -1960,9 +1975,16 @@ public class SMBExplorerMain extends Activity {
 				sendDebugLogMsg(1,"W","renameItem cancelled.");
 			}
 		});
-		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
+		// Cancelリスナーの指定
+		dialog.setOnCancelListener(new Dialog.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface arg0) {
+				btnCancel.performClick();
+			}
+		});
+//		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
 //		setFixedOrientation(true);
-		dialog.setCancelable(false);
+//		dialog.setCancelable(false);
 		dialog.show();
 	};
 
@@ -2496,7 +2518,7 @@ public class SMBExplorerMain extends Activity {
 			.setText(R.string.msgs_progress_spin_dlg_title3);
 		((TextView)dialog.findViewById(R.id.progress_spin_dlg_msg))
 			.setVisibility(TextView.GONE);
-		Button btnCancel = (Button) dialog
+		final Button btnCancel = (Button) dialog
 			.findViewById(R.id.progress_spin_dlg_btn_cancel);
 		btnCancel.setText(R.string.msgs_progress_spin_dlg_title4);
 
@@ -2509,9 +2531,16 @@ public class SMBExplorerMain extends Activity {
 				sendDebugLogMsg(1,"W","Filelist is cancelled.");
 			}
 		});
-		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
+		// Cancelリスナーの指定
+		dialog.setOnCancelListener(new Dialog.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface arg0) {
+				btnCancel.performClick();
+			}
+		});
+//		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
 //		setFixedOrientation(true);
-		dialog.setCancelable(false);
+//		dialog.setCancelable(false);
 	};
 	
 	private void checkRemoteFileExists(String url, String user, String pass,
@@ -2693,7 +2722,7 @@ public class SMBExplorerMain extends Activity {
 		        	}
 		        });	 
 		        //CANCELボタンの指定
-		        Button btnCancel=(Button)dialog.findViewById(R.id.item_select_list_dlg_cancel_btn);
+		        final Button btnCancel=(Button)dialog.findViewById(R.id.item_select_list_dlg_cancel_btn);
 		        btnCancel.setOnClickListener(new View.OnClickListener() {
 		            public void onClick(View v) {
 		                dialog.dismiss();
@@ -2701,9 +2730,16 @@ public class SMBExplorerMain extends Activity {
 		                p_ntfy.notifyTolistener(true, new Object[]{""});
 		            }
 		        });
-		        dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
+				// Cancelリスナーの指定
+				dialog.setOnCancelListener(new Dialog.OnCancelListener() {
+					@Override
+					public void onCancel(DialogInterface arg0) {
+						btnCancel.performClick();
+					}
+				});
+//		        dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
 //		        setFixedOrientation(true);
-		        dialog.setCancelable(false);
+//		        dialog.setCancelable(false);
 		        dialog.show();
 			}
 
@@ -2808,7 +2844,7 @@ public class SMBExplorerMain extends Activity {
 		});
 
 		// CANCELボタンの指定
-		Button btnCancel = (Button) dialog.findViewById(R.id.remote_profile_cancel);
+		final Button btnCancel = (Button) dialog.findViewById(R.id.remote_profile_cancel);
 		btnCancel.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				dialog.dismiss();
@@ -2849,9 +2885,16 @@ public class SMBExplorerMain extends Activity {
 				}
 			}
 		});
-		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
+		// Cancelリスナーの指定
+		dialog.setOnCancelListener(new Dialog.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface arg0) {
+				btnCancel.performClick();
+			}
+		});
+//		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
 //		setFixedOrientation(true);
-		dialog.setCancelable(false);
+//		dialog.setCancelable(false);
 		dialog.show();
 	}
 
@@ -2946,7 +2989,7 @@ public class SMBExplorerMain extends Activity {
 		});
 
 		// CANCELボタンの指定
-		Button btnCancel = (Button) dialog.findViewById(R.id.remote_profile_cancel);
+		final Button btnCancel = (Button) dialog.findViewById(R.id.remote_profile_cancel);
 		btnCancel.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				dialog.dismiss();
@@ -2993,9 +3036,16 @@ public class SMBExplorerMain extends Activity {
 				profileAdapter.setNotifyOnChange(true);
 			}
 		});
-		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
+		// Cancelリスナーの指定
+		dialog.setOnCancelListener(new Dialog.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface arg0) {
+				btnCancel.performClick();
+			}
+		});
+//		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
 //		setFixedOrientation(true);
-		dialog.setCancelable(false);
+//		dialog.setCancelable(false);
 		dialog.show();
 
 	};
@@ -3275,7 +3325,7 @@ public class SMBExplorerMain extends Activity {
 			    });
 
 			    //CANCELボタンの指定
-			    Button btnCancel=(Button)dialog.findViewById(R.id.item_select_list_dlg_cancel_btn);
+			    final Button btnCancel=(Button)dialog.findViewById(R.id.item_select_list_dlg_cancel_btn);
 			    btnCancel.setOnClickListener(new View.OnClickListener() {
 			        public void onClick(View v) {
 			            dialog.dismiss();
@@ -3283,9 +3333,16 @@ public class SMBExplorerMain extends Activity {
 			            p_ntfy.notifyTolistener(false, null);
 			        }
 			    });
-			    dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
+				// Cancelリスナーの指定
+				dialog.setOnCancelListener(new Dialog.OnCancelListener() {
+					@Override
+					public void onCancel(DialogInterface arg0) {
+						btnCancel.performClick();
+					}
+				});
+//			    dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
 //			    setFixedOrientation(true);        
-			    dialog.setCancelable(false);
+//			    dialog.setCancelable(false);
 			    dialog.show();
 			}
 			@Override
@@ -3401,9 +3458,16 @@ public class SMBExplorerMain extends Activity {
 				dialog.dismiss();
 			}
 		});
+		// Cancelリスナーの指定
+		dialog.setOnCancelListener(new Dialog.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface arg0) {
+				btnCancel.performClick();
+			}
+		});
 //		setFixedOrientation(true);
-		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
-		dialog.setCancelable(false);
+//		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
+//		dialog.setCancelable(false);
 		dialog.show();
 	};
 	
@@ -3434,8 +3498,15 @@ public class SMBExplorerMain extends Activity {
 				cancelIpAddressListCreation=true;
 			}
 		});
-		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
-		dialog.setCancelable(false);
+		// Cancelリスナーの指定
+		dialog.setOnCancelListener(new Dialog.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface arg0) {
+				btnCancel.performClick();
+			}
+		});
+//		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
+//		dialog.setCancelable(false);
 		dialog.show();
 		
 		sendDebugLogMsg(1,"I","Scan IP address ransge is "+scanIpAddrSubnet+
