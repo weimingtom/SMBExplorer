@@ -16,7 +16,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -47,6 +46,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -74,9 +74,10 @@ import android.widget.TextView;
 import static com.sentaroh.android.SMBExplorer.Constants.*;
 
 import com.sentaroh.android.Utilities.*;
+import com.sentaroh.android.Utilities.CustomContextMenuItem.CustomContextMenuOnClickListener;
 
 @SuppressLint({ "DefaultLocale", "SimpleDateFormat" })
-public class SMBExplorerMain extends Activity {
+public class SMBExplorerMain extends FragmentActivity {
 
 	private final static String DEBUG_TAG = "SMBExplorer";
 	private int debugLevel=0;
@@ -191,9 +192,9 @@ public class SMBExplorerMain extends Activity {
 		currentActivity=this;
 //		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
-		if (ccMenu ==null) ccMenu = new CustomContextMenu(this,getResources());
+		if (ccMenu ==null) ccMenu = new CustomContextMenu(getResources(),getSupportFragmentManager());
 
-		commonDlg=new CommonDialog(this,currentContext, ccMenu);
+		commonDlg=new CommonDialog(currentContext, getSupportFragmentManager());
 
 //		localUrl = SMBEXPLORER_ROOT_DIR;
 		SMBExplorerRootDir=localUrl=LocalMountPoint.getExternalStorageDir();
@@ -321,7 +322,6 @@ public class SMBExplorerMain extends Activity {
 	protected void onDestroy() {
 		super.onDestroy();
 		sendDebugLogMsg(1, "I","onDestroy entered");
-		ccMenu.cleanup();
 		if (enableKill) {
 			deleteTaskData();
 			if (defaultSettingExitClean) {
@@ -640,7 +640,7 @@ public class SMBExplorerMain extends Activity {
 			@Override
 			public void eventNegativeResponse(Context c,Object[] o) {}
 		});
-		commonDlg.showCommonDialog(false,true,"W",getString(R.string.msgs_terminate_confirm),"",ne);
+		commonDlg.showCommonDialog(true,"W",getString(R.string.msgs_terminate_confirm),"",ne);
 		return;
 	
 	}
@@ -701,7 +701,7 @@ public class SMBExplorerMain extends Activity {
 		ArrayList<TreeFilelistItem> tfl = createLocalFileList(false,lurl);
 		if (!result_createFileListView) return;
 
-		localFileListAdapter=new TreeFilelistAdapter(this,this);
+		localFileListAdapter=new TreeFilelistAdapter(this);
 		localFileListAdapter.setDataList(tfl);
 		localFileListView.setAdapter(localFileListAdapter);
 		
@@ -1030,27 +1030,27 @@ public class SMBExplorerMain extends Activity {
 
 		if (item.getActive().equals("I")) {
 			ccMenu.addMenuItem("Set to active",R.drawable.menu_active)
-		  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+		  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 			  @Override
-			  public void onClick(int menuId, CharSequence menuTitle) {
+			  public void onClick(CharSequence menuTitle) {
 					setProfileToActive();
 					setAllProfileItemUnChecked();
 			  }
 		  	});
 		} else {
 			ccMenu.addMenuItem("Set to inactive",R.drawable.menu_inactive)
-		  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+		  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 			  @Override
-			  public void onClick(int menuId, CharSequence menuTitle) {
+			  public void onClick(CharSequence menuTitle) {
 					setProfileToInactive();
 					setAllProfileItemUnChecked();
 			  }
 		  	});
 		}
 		ccMenu.addMenuItem("Add remote profile",R.drawable.menu_add)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 				addRemoteProfile("", "", defaultSettingUsername, 
 						defaultSettingPassword,
 						defaultSettingAddr, "", "");
@@ -1058,9 +1058,9 @@ public class SMBExplorerMain extends Activity {
 	  	});
 
 		ccMenu.addMenuItem("Edit remote profile",R.drawable.menu_edit)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 				ProfilelistItem item = profileAdapter.getItem(itemno);
 				editRemoteProfile(item.getActive(), item.getName(), item.getUser(),
 						item.getPass(), item.getAddr(), item.getShare(), "",itemno);
@@ -1068,25 +1068,25 @@ public class SMBExplorerMain extends Activity {
 		  	}
 	  	});
 		ccMenu.addMenuItem("Delete remote profile",R.drawable.menu_delete)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 				ProfilelistItem item = profileAdapter.getItem(itemno);
 				deleteRemoteProfile(item.getName(), itemno);
 				setAllProfileItemUnChecked();
 		  	}
 	  	});
 		ccMenu.addMenuItem("Select all item",R.drawable.blank)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  setAllProfileItemChecked();
 		  	}
 	  	});
 		ccMenu.addMenuItem("Unselect all item",R.drawable.blank)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 				setAllProfileItemUnChecked();
 		  	}
 	  	});
@@ -1096,25 +1096,25 @@ public class SMBExplorerMain extends Activity {
 	private void createProfileContextMenu_Multiple(View view, int idx) {
 		
 		ccMenu.addMenuItem("Set to active",R.drawable.menu_active)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  setProfileToActive();
 			  setAllProfileItemUnChecked();
 		  	}
 	  	});
 		ccMenu.addMenuItem("Set to inactive",R.drawable.menu_inactive)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  setProfileToInactive();
 			  setAllProfileItemUnChecked();
 		  	}
 	  	});
 		ccMenu.addMenuItem("Delete selected profiles",R.drawable.menu_delete)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 				for (int i=0;i<profileAdapter.getCount();i++) {
 					if (profileAdapter.getItem(i).isChk()) {
 						ProfilelistItem item = profileAdapter.getItem(i);
@@ -1125,16 +1125,16 @@ public class SMBExplorerMain extends Activity {
 		  	}
 	  	});
 		ccMenu.addMenuItem("Select all item",R.drawable.blank)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  setAllProfileItemChecked();
 		  	}
 	  	});
 		ccMenu.addMenuItem("Unselect all item",R.drawable.blank)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 				setAllProfileItemUnChecked();
 		  	}
 	  	});
@@ -1145,30 +1145,30 @@ public class SMBExplorerMain extends Activity {
 	private void createMsglistContextMenu(View view, int idx) {
 
 		ccMenu.addMenuItem("Save log message",R.drawable.menu_create)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  saveLogMessageDlg("/SMBExplorer","log.txt");
 		  	}
 	  	});
 		ccMenu.addMenuItem("Move to top",R.drawable.menu_top)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  messageListView.setSelection(0);
 		  	}
 	  	});
 		ccMenu.addMenuItem("Move to bottom",R.drawable.menu_bottom)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  messageListView.setSelection(messageListView.getCount());
 		  	}
 	  	});
 		ccMenu.addMenuItem("Clear log message",R.drawable.menu_trash)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 				messageListAdapter.clear();
 				messageListAdapter.setNotifyOnChange(true);
 		  	}
@@ -1187,7 +1187,7 @@ public class SMBExplorerMain extends Activity {
 		int j=0;
 		for (int i=0;i<fla.getDataItemCount();i++) {
 			item = fla.getDataItem(i);
-			if (item.isChk()) {
+			if (item.isChecked()) {
 				j++; 
 			}
 		}
@@ -1195,12 +1195,12 @@ public class SMBExplorerMain extends Activity {
 			for (int i=0;i<fla.getDataItemCount();i++) {
 				item = fla.getDataItem(i);
 				if (idx==i) {
-					item.setChk(true);
+					item.setChecked(true);
 					fla.replaceDataItem(i,item);
 					j=i;//set new index no
 				} else {
-					if (item.isChk()) {
-						item.setChk(false);
+					if (item.isChecked()) {
+						item.setChecked(false);
 						fla.replaceDataItem(i,item);
 					}
 				}
@@ -1215,23 +1215,23 @@ public class SMBExplorerMain extends Activity {
 	private void createFilelistContextMenu_Multiple(View view, int idx,final TreeFilelistAdapter fla) {
 
 		ccMenu.addMenuItem("Copy ",R.drawable.menu_copying)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  setCopyFrom(fla);
 		  	}
 	  	});
 		ccMenu.addMenuItem("Cut ",R.drawable.menu_move)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  setCutFrom(fla);
 		  	}
 	  	});
 		ccMenu.addMenuItem("Delete ",R.drawable.menu_trash)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  deleteItem(fla);
 		  	}
 	  	});
@@ -1247,24 +1247,24 @@ public class SMBExplorerMain extends Activity {
 				sep=",";
 			}
 			ccMenu.addMenuItem("Paste to(/"+fl+")",R.drawable.blank)
-		  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+		  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 			  @Override
-			  public void onClick(int menuId, CharSequence menuTitle) {
+			  public void onClick(CharSequence menuTitle) {
 				  pasteItem(fla,t_url);
 			  }
 		  	});
 		};
 		ccMenu.addMenuItem("Select all item",R.drawable.blank)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  setAllFilelistItemChecked(fla);
 		  	}
 	  	});
 		ccMenu.addMenuItem("Unselect all item",R.drawable.blank)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 				setAllFilelistItemUnChecked(fla);
 		  	}
 	  	});
@@ -1279,54 +1279,54 @@ public class SMBExplorerMain extends Activity {
 			else itemno=idx;
 		
 		ccMenu.addMenuItem("Property",R.drawable.menu_properties)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  showProperty(fla,"C", item.getName(), item.isDir(),itemno);
 		  	}
 	  	});
 		if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) {
 			ccMenu.addMenuItem("TextFileBrowser")
-		  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+		  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 			  @Override
-			  public void onClick(int menuId, CharSequence menuTitle) {
+			  public void onClick(CharSequence menuTitle) {
 				  invokeTextFileBrowser(fla,"C", item.getName(), item.isDir(),itemno);
 			  	}
 		  	});
 		}
 		ccMenu.addMenuItem("Create directory",R.drawable.menu_create)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  createItem(fla,"C", item,itemno);
 		  	}
 	  	});
 
 		ccMenu.addMenuItem("Rename '" + item.getName()+"'",R.drawable.menu_rename)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  renameItem(fla,"C", item.getName(), item.isDir(),itemno);
 		  	}
 	  	});
 		ccMenu.addMenuItem("Copy '" + item.getName()+"'",R.drawable.menu_copying)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  setCopyFrom(fla);
 		  	}
 	  	});
 		ccMenu.addMenuItem("Cut '" + item.getName()+"'",R.drawable.menu_move)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  setCutFrom(fla);
 		  	}
 	  	});
 		ccMenu.addMenuItem("Delete '" + item.getName()+"'",R.drawable.menu_trash)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  deleteItem(fla);
 		  	}
 	  	});
@@ -1337,9 +1337,9 @@ public class SMBExplorerMain extends Activity {
 		if (isPasteEnabled && isValidPasteDestination(pd)) {
 			ccMenu.addMenuItem("Paste to /"+item.getName()+
 					" from ("+pasteItemList+")",R.drawable.blank)
-		  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+		  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 			  @Override
-			  public void onClick(int menuId, CharSequence menuTitle) {
+			  public void onClick(CharSequence menuTitle) {
 				  pasteItem(fla,item.getPath()+"/"+item.getName());
 			  	}
 		  	});
@@ -1351,9 +1351,9 @@ public class SMBExplorerMain extends Activity {
     	if (isValidPasteDestination(t_url)) {
 			ccMenu.addMenuItem("Paste to /"+
 					" from ("+pasteItemList+")",R.drawable.blank)
-		  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+		  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 			  @Override
-			  public void onClick(int menuId, CharSequence menuTitle) {
+			  public void onClick(CharSequence menuTitle) {
 		    		if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) 
 		    			pasteItem(localFileListAdapter,localUrl);
 		    		else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) 
@@ -1363,16 +1363,16 @@ public class SMBExplorerMain extends Activity {
     	}		
 		
 		ccMenu.addMenuItem("Select all item",R.drawable.blank)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 			  setAllFilelistItemChecked(fla);
 		  	}
 	  	});
 		ccMenu.addMenuItem("Unselect all item",R.drawable.blank)
-	  	.setOnClickListener(new CustomContextMenu.CustomContextMenuOnClickListener() {
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
-		  public void onClick(int menuId, CharSequence menuTitle) {
+		  public void onClick(CharSequence menuTitle) {
 				setAllFilelistItemUnChecked(fla);
 		  	}
 	  	});
@@ -1382,9 +1382,9 @@ public class SMBExplorerMain extends Activity {
 	private void setAllFilelistItemUnChecked(TreeFilelistAdapter fla) {
 		TreeFilelistItem item;
 		for (int i=0;i<fla.getDataItemCount();i++) {
-			if (fla.getDataItem(i).isChk()) { 
+			if (fla.getDataItem(i).isChecked()) { 
 				item=fla.getDataItem(i);
-				item.setChk(false);
+				item.setChecked(false);
 				fla.replaceDataItem(i,item);
 			}
 		}
@@ -1394,7 +1394,7 @@ public class SMBExplorerMain extends Activity {
 		TreeFilelistItem item;
 		for (int i=0;i<fla.getDataItemCount();i++) {
 			item=fla.getDataItem(i);
-			item.setChk(true);
+			item.setChecked(true);
 			fla.replaceDataItem(i,item);
 		}
 	};
@@ -1432,7 +1432,7 @@ public class SMBExplorerMain extends Activity {
 					Uri.parse("file://"+item.getPath()+"/"+item.getName()), null);
 				startActivity(intent);
 		} catch(ActivityNotFoundException e) {
-			commonDlg.showCommonDialog(false,false,"E", "TextFileBrowser can not be found.",
+			commonDlg.showCommonDialog(false,"E", "TextFileBrowser can not be found.",
 					"File name="+item.getName(),null);
 		}
 	};
@@ -1463,11 +1463,11 @@ public class SMBExplorerMain extends Activity {
 						Uri.parse("file://"+item.getPath()+"/"+item.getName()), mt);
 					startActivity(intent);
 			} catch(ActivityNotFoundException e) {
-				commonDlg.showCommonDialog(false,false,"E", "File viewer can not be found.",
+				commonDlg.showCommonDialog(false,"E", "File viewer can not be found.",
 						"File name="+item.getName()+", MimeType="+mt,null);
 			}
 		} else {
-			commonDlg.showCommonDialog(false,false,"E", "MIME type can not be found.",
+			commonDlg.showCommonDialog(false,"E", "MIME type can not be found.",
 					"File name="+item.getName(),null);
 		}
 	};
@@ -1502,7 +1502,7 @@ public class SMBExplorerMain extends Activity {
 //						startActivityForResult(intent,1);
 						startActivity(intent);
 					} catch(ActivityNotFoundException e) {
-						commonDlg.showCommonDialog(false,false,"E", "File viewer can not be found.",
+						commonDlg.showCommonDialog(false,"E", "File viewer can not be found.",
 								"File name="+item.getName()+", MimeType="+mt,null);
 					}
 				}
@@ -1514,7 +1514,7 @@ public class SMBExplorerMain extends Activity {
 			downloadRemoteFile(fla, item, remoteUrl, ntfy );
 
 		} else {
-			commonDlg.showCommonDialog(false,false,"E", "MIME type can not be found.",
+			commonDlg.showCommonDialog(false,"E", "MIME type can not be found.",
 					"File name="+item.getName(),null);
 		}
 
@@ -1620,19 +1620,19 @@ public class SMBExplorerMain extends Activity {
 				if (!tc.isThreadResultSuccess()) {
 					if (p_ntfy!=null) p_ntfy.notifyTolistener(false, null);
 					if (tc.isThreadResultCancelled()) {
-						commonDlg.showCommonDialog(false,false,"W","File I/O task was cancelled.","",null);
+						commonDlg.showCommonDialog(false,"W","File I/O task was cancelled.","",null);
 						sendLogMsg("W","File I/O task was cancelled.");
 						refreshFilelistView();
 					}
 					else {
-						commonDlg.showCommonDialog(false,false,"E","File I/O task was failed.","",null);
+						commonDlg.showCommonDialog(false,"E","File I/O task was failed.","",null);
 						sendLogMsg("E","File I/O task was failed.");
 						refreshFilelistView();
 					}
 				} else {
 					if (p_ntfy!=null) p_ntfy.notifyTolistener(true, null);
 					else {
-						commonDlg.showCommonDialog(false,false,"I",fdst,fdmsg,null);
+						commonDlg.showCommonDialog(false,"I",fdst,fdmsg,null);
 						sendLogMsg("I",fdst+"\n"+fdmsg);
 //						refreshFilelistView();
 						refreshTreeFilelist(alp,op_cd);
@@ -1807,7 +1807,7 @@ public class SMBExplorerMain extends Activity {
 				dialog.dismiss();
 //				setFixedOrientation(false);
 				if (!checkDuplicateDir(fla,newName.getText().toString())) {
-					commonDlg.showCommonDialog(false,false,"E","Create","Duplicate directory name specified",null);
+					commonDlg.showCommonDialog(false,"E","Create","Duplicate directory name specified",null);
 				} else {
 					int cmd=0;
 					if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) {
@@ -1883,7 +1883,7 @@ public class SMBExplorerMain extends Activity {
 				"Length : "+item.getLength()+"\n"+
 				"Last modified : "+df.format(item.getLastModified())+"\n"+
 				"Last modified(ms):"+item.getLastModified();
-		commonDlg.showCommonDialog(false,false,"I","Property",info,null);
+		commonDlg.showCommonDialog(false,"I","Property",info,null);
 
 	}
 	
@@ -1935,7 +1935,7 @@ public class SMBExplorerMain extends Activity {
 				dialog.dismiss();
 //				setFixedOrientation(false);
 				if (item_name.equals(newName.getText().toString())) {
-					commonDlg.showCommonDialog(false,false,"E","Rename", "Duplicate file name specified",null);
+					commonDlg.showCommonDialog(false,"E","Rename", "Duplicate file name specified",null);
 				} else {
 					int cmd=0;
 					if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) {
@@ -1993,7 +1993,7 @@ public class SMBExplorerMain extends Activity {
 		String di ="";
 		for (int i=0;i<fla.getCount();i++) {
 			TreeFilelistItem item = fla.getDataItem(fla.getItem(i));
-			if (item.isChk()) di=di+item.getName()+"\n";
+			if (item.isChecked()) di=di+item.getName()+"\n";
 		}
 
 		final String item_name=di;
@@ -2004,7 +2004,7 @@ public class SMBExplorerMain extends Activity {
 			public void eventPositiveResponse(Context c,Object[] t) {
 				for (int i=fla.getCount()-1;i>=0;i--) {
 					TreeFilelistItem item = fla.getDataItem(fla.getItem(i));
-					if (item.isChk()) {
+					if (item.isChecked()) {
 						if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) {
 							buildFileioLinkParm(fileioLinkParm,item.getPath(),
 									"",item.getName(),"","","");
@@ -2026,7 +2026,7 @@ public class SMBExplorerMain extends Activity {
 				sendDebugLogMsg(1,"W","deleteItem canceled");
 			}
 		});
-		commonDlg.showCommonDialog(false,true,"W",getString(R.string.msgs_delete_file_dirs_confirm),di,ne);
+		commonDlg.showCommonDialog(true,"W",getString(R.string.msgs_delete_file_dirs_confirm),di,ne);
 	};
 	
 	private ArrayList<TreeFilelistItem> pasteFromList=new ArrayList<TreeFilelistItem>();
@@ -2051,7 +2051,7 @@ public class SMBExplorerMain extends Activity {
 		String sep="";
 		for (int i = 0; i < fla.getCount(); i++) {
 			fl_item = fla.getDataItem(fla.getItem(i));
-			if (fl_item.isChk()) {
+			if (fl_item.isChecked()) {
 				pasteItemList=pasteItemList+sep+fl_item.getName();
 				sep=",";
 				pasteFromList.add(fl_item);
@@ -2082,7 +2082,7 @@ public class SMBExplorerMain extends Activity {
 		String sep="";
 		for (int i = 0; i < fla.getCount(); i++) {
 			fl_item = fla.getDataItem(fla.getItem(i));
-			if (fl_item.isChk()) {
+			if (fl_item.isChecked()) {
 				pasteItemList=pasteItemList+sep+fl_item.getName();
 				sep=",";
 				pasteFromList.add(fl_item);
@@ -2291,7 +2291,7 @@ public class SMBExplorerMain extends Activity {
 					sendLogMsg("W","Ccopy override confirmation cancelled.");
 				}
 			});
-			commonDlg.showCommonDialog(false,true,"W","Copy following dirs/files are overrides?",
+			commonDlg.showCommonDialog(true,"W","Copy following dirs/files are overrides?",
 					conf_msg,ne);
 
 		} else {
@@ -2308,7 +2308,7 @@ public class SMBExplorerMain extends Activity {
 					sendLogMsg("W","Copy cancelled."+"\n"+selected_name);
 				}
 			});
-			commonDlg.showCommonDialog(false,true,"I","Following dirs/files are copy?",selected_name,ne);
+			commonDlg.showCommonDialog(true,"I","Following dirs/files are copy?",selected_name,ne);
 		}
 		return;
 	};
@@ -2331,7 +2331,7 @@ public class SMBExplorerMain extends Activity {
 					sendLogMsg("W","Move override confirmation cancelled.");
 				}
 			});
-			commonDlg.showCommonDialog(false,true,"W","Move following dirs/files are overrides?",
+			commonDlg.showCommonDialog(true,"W","Move following dirs/files are overrides?",
 					conf_msg,ne);
 
 		} else {
@@ -2348,7 +2348,7 @@ public class SMBExplorerMain extends Activity {
 					sendLogMsg("W","Move cancelled."+"\n"+selected_name);
 				}
 			});
-			commonDlg.showCommonDialog(false,true,"I","Following dirs/files are move?",selected_name,ne);
+			commonDlg.showCommonDialog(true,"I","Following dirs/files are move?",selected_name,ne);
 		}
 		return;
 	};
@@ -2377,7 +2377,7 @@ public class SMBExplorerMain extends Activity {
 			try {
 				for (File ff : dirs) {
 					if (ff.canRead()) {
-						String tfs=convertFileSize(ff.length());
+						String tfs=GeneralUtilities.convertFileSize(ff.length());
 						if (ff.isDirectory()) {
 							File tlf=new File(url+"/"+ff.getName());
 							String[] tfl=tlf.list();
@@ -2414,7 +2414,7 @@ public class SMBExplorerMain extends Activity {
 			} catch (Exception e) {
 				e.printStackTrace();
 				sendDebugLogMsg(0,"E",e.toString());
-				commonDlg.showCommonDialog(false,false,"E",getString(R.string.msgs_local_file_list_create_error),
+				commonDlg.showCommonDialog(false,"E",getString(R.string.msgs_local_file_list_create_error),
 							e.getMessage(),null);
 				result_createFileListView=false;
 				return null;
@@ -2467,7 +2467,7 @@ public class SMBExplorerMain extends Activity {
 								fi.setSubDirItemCount(sf_item.get(i).getSubDirItemCount());
 								dir.add(fi);
 							} else {
-							    String tfs = convertFileSize(sf_item.get(i).getLength());
+							    String tfs = GeneralUtilities.convertFileSize(sf_item.get(i).getLength());
 	
 								fls.add(new TreeFilelistItem(itemname, 
 									sdf.format(sf_item.get(i).getLastModified())+","+tfs, false,
@@ -2494,7 +2494,7 @@ public class SMBExplorerMain extends Activity {
 				Collections.sort(dir);
 				Collections.sort(fls);
 				dir.addAll(fls);
-				filelist = new TreeFilelistAdapter(currentActivity,c);
+				filelist = new TreeFilelistAdapter(c);
 				filelist.setDataList(dir);
 				parent_event.notifyTolistener(true, new Object[]{filelist});
 			}
@@ -2502,7 +2502,7 @@ public class SMBExplorerMain extends Activity {
 			@Override
 			public void eventNegativeResponse(Context c,Object[] o) {
 				parent_event.notifyTolistener(false, o);
-				commonDlg.showCommonDialog(false,false,"E",
+				commonDlg.showCommonDialog(false,"E",
 						getString(R.string.msgs_remote_file_list_create_error),(String)o[0],null);
 			}
 		});		
@@ -2649,31 +2649,6 @@ public class SMBExplorerMain extends Activity {
 		})
        	.start();		
 	};
-	
-	private String convertFileSize(long fs) {
-	    String tfs;
-		if (fs>(1024*1024*1024)) {//GB
-		    BigDecimal dfs1 = new BigDecimal(fs);
-		    BigDecimal dfs2 = new BigDecimal(1024*1024*1024);
-		    BigDecimal dfs3 = new BigDecimal("0.00");
-		    dfs3=dfs1.divide(dfs2,1, BigDecimal.ROUND_HALF_UP);
-			tfs=dfs3+" GBytes";
-		} else if (fs>(1024*1024)) {//MB
-		    BigDecimal dfs1 = new BigDecimal(fs*1.00);
-		    BigDecimal dfs2 = new BigDecimal(1024*1024*1.00);
-		    BigDecimal dfs3 = new BigDecimal("0.00");
-		    dfs3=dfs1.divide(dfs2,1, BigDecimal.ROUND_HALF_UP);
-			tfs=dfs3+" MBytes";
-		} else if (fs>(1024)) {//KB
-		    BigDecimal dfs1 = new BigDecimal(fs);
-		    BigDecimal dfs2 = new BigDecimal(1024);
-		    BigDecimal dfs3 = new BigDecimal("0.00");
-		    dfs3=dfs1.divide(dfs2,1, BigDecimal.ROUND_HALF_UP);
-			tfs=dfs3+" KBytes";
-		} else tfs=""+fs+" Bytes";
-		
-		return tfs;
-	}
 	
 	private void setRemoteShare(final String prof_user, final String prof_pass,
 			final String prof_addr, final NotifyEvent p_ntfy) {
@@ -3116,7 +3091,7 @@ public class SMBExplorerMain extends Activity {
 				
 			}
 		});
-		commonDlg.showCommonDialog(false,true,"W",
+		commonDlg.showCommonDialog(true,"W",
 				String.format(getString(R.string.msgs_delete_confirm),item_name),"",ne);
 
 
@@ -3149,7 +3124,7 @@ public class SMBExplorerMain extends Activity {
 				if (sf.exists()) {
 					br = new BufferedReader(new FileReader(fp));
 				} else {
-					commonDlg.showCommonDialog(false,false,"E",
+					commonDlg.showCommonDialog(false,"E",
 							String.format(getString(R.string.msgs_local_file_list_create_nfound),
 									fp),"",null);
 					error_CreateProfileListResult=true;
@@ -3172,13 +3147,13 @@ public class SMBExplorerMain extends Activity {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			sendDebugLogMsg(0,"E",e.toString());
-			commonDlg.showCommonDialog(false,false,"E",
+			commonDlg.showCommonDialog(false,"E",
 				getString(R.string.msgs_exception),e.toString(),null);
 			error_CreateProfileListResult=true;
 		} catch (IOException e) {
 			e.printStackTrace();
 			sendDebugLogMsg(0,"E",e.toString());
-			commonDlg.showCommonDialog(false,false,"E",
+			commonDlg.showCommonDialog(false,"E",
 					getString(R.string.msgs_exception),e.toString(),null);
 			error_CreateProfileListResult=true;
 		}
@@ -3228,7 +3203,7 @@ public class SMBExplorerMain extends Activity {
 		} catch (IOException e) {
 			e.printStackTrace();
 			sendDebugLogMsg(0,"E",e.toString());
-			commonDlg.showCommonDialog(false,false,"E",
+			commonDlg.showCommonDialog(false,"E",
 					getString(R.string.msgs_exception),e.toString(),null);
 		}
 	}
@@ -3710,7 +3685,7 @@ public class SMBExplorerMain extends Activity {
 				if (!error_CreateProfileListResult) {
 					profileAdapter = tfl;
 					saveProfile(false,"","");
-					commonDlg.showCommonDialog(false,false,"I",
+					commonDlg.showCommonDialog(false,"I",
 							String.format(getString(R.string.msgs_select_import_dlg_success),
 									fpath),"",null);
     			}
@@ -3720,7 +3695,7 @@ public class SMBExplorerMain extends Activity {
 			@Override
 			public void eventNegativeResponse(Context c,Object[] o) {}
 		});
-		commonDlg.fileSelect(false,false,curr_dir,
+		commonDlg.fileSelect(false,curr_dir,
 				"/SMBExplorer",file_name,"Select import file.",ne);
 	};
 
@@ -3741,7 +3716,7 @@ public class SMBExplorerMain extends Activity {
 			@Override
 			public void eventNegativeResponse(Context c,Object[] o) {}
 		});
-		commonDlg.fileSelect(false,true,curr_dir,
+		commonDlg.fileSelect(true,curr_dir,
 				"/SMBExplorer",ifn,"Select export file.",ne);
 	};
 
@@ -3758,7 +3733,7 @@ public class SMBExplorerMain extends Activity {
 				@Override
 				public void eventPositiveResponse(Context c,Object[] o) {
 					saveProfile(true,profile_dir,profile_filename);
-					commonDlg.showCommonDialog(false,false,"I",
+					commonDlg.showCommonDialog(false,"I",
 							String.format(getString(R.string.msgs_select_export_dlg_success),
 									profile_dir+"/"+profile_filename),"",null);
 				}
@@ -3766,13 +3741,13 @@ public class SMBExplorerMain extends Activity {
 				@Override
 				public void eventNegativeResponse(Context c,Object[] o) {}
 			});
-			commonDlg.showCommonDialog(false,true,"I",
+			commonDlg.showCommonDialog(true,"I",
 					String.format(getString(R.string.msgs_select_export_dlg_override),
 							profile_dir+"/"+profile_filename),"",ne);
 			return;
 		} else {
 			saveProfile(true,profile_dir,profile_filename);
-			commonDlg.showCommonDialog(false,false,"I",
+			commonDlg.showCommonDialog(false,"I",
 					String.format(getString(R.string.msgs_select_export_dlg_success),
 							profile_dir+"/"+profile_filename),"",null);
 		}
@@ -3815,7 +3790,7 @@ public class SMBExplorerMain extends Activity {
 			@Override
 			public void eventNegativeResponse(Context c,Object[] o) {}
 		});
-		commonDlg.fileSelect(false,
+		commonDlg.fileSelect(
 				false,SMBExplorerRootDir,
 				curr_dir,ifn,"Select a destination for log messages.",ne);
 	};
@@ -3832,7 +3807,7 @@ public class SMBExplorerMain extends Activity {
 				public void eventPositiveResponse(Context c,Object[] o) {
 	
 					writeLogMessageToFile(profile_dir,profile_filename);
-					commonDlg.showCommonDialog(false,false,"I", 
+					commonDlg.showCommonDialog(false,"I", 
 							String.format(getString(R.string.msgs_save_log_msg_file),
 							profile_dir+profile_filename),"",null);
 				}
@@ -3842,13 +3817,13 @@ public class SMBExplorerMain extends Activity {
 					
 				}
 			});
-			commonDlg.showCommonDialog(false,false,"W",
+			commonDlg.showCommonDialog(false,"W",
 					String.format(getString(R.string.msgs_save_log_msg_override_confirm),
 					profile_dir + "/" + profile_filename),"",ne);
 			return;
 		} else {
 			writeLogMessageToFile(profile_dir,profile_filename);
-			commonDlg.showCommonDialog(false,false,"I", 
+			commonDlg.showCommonDialog(false,"I", 
 					String.format(getString(R.string.msgs_save_log_msg_file),
 					profile_dir+profile_filename),"",null);
 
@@ -3873,7 +3848,7 @@ public class SMBExplorerMain extends Activity {
 			pw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-			commonDlg.showCommonDialog(false,false,"W",
+			commonDlg.showCommonDialog(false,"W",
 					getString(R.string.msgs_exception)+
 					profile_dir + "/" + profile_filename,e.toString(),null);
 		}
@@ -3961,11 +3936,11 @@ public class SMBExplorerMain extends Activity {
 			messageListAdapter.resetDataChanged();
 			
 			localFileListAdapter = 
-					new TreeFilelistAdapter(currentActivity,currentContext);
+					new TreeFilelistAdapter(currentContext);
 			localFileListAdapter.setDataList(data.local_tfl);
 
 			remoteFileListAdapter = 
-					new TreeFilelistAdapter(currentActivity,this);
+					new TreeFilelistAdapter(this);
 			remoteFileListAdapter.setDataList(data.remote_tfl);
 //			
 			
