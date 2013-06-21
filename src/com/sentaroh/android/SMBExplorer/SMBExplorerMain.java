@@ -1,5 +1,28 @@
 package com.sentaroh.android.SMBExplorer;
 
+/*
+The MIT License (MIT)
+Copyright (c) 2011-2013 Sentaroh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of 
+this software and associated documentation files (the "Software"), to deal 
+in the Software without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so, subject to 
+the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or 
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+*/
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -110,9 +133,6 @@ public class SMBExplorerMain extends FragmentActivity {
 	private int posLocalFileListView=0;
 	private int posRemoteFileListView=0;
 	
-	private boolean referedProfileView=false,referedMessageView=false,
-			referedLocalFileListView=false,referedRemoteFileListView=false;
-
 	private String defaultSettingUsername,defaultSettingPassword,defaultSettingAddr;
 	private boolean defaultSettingExitClean;
 	private ArrayList<FileIoLinkParm> fileioLinkParm = 
@@ -144,14 +164,10 @@ public class SMBExplorerMain extends FragmentActivity {
 	protected void onSaveInstanceState(Bundle outState) {  
 	  super.onSaveInstanceState(outState);  
 	  sendDebugLogMsg(1, "I", "onSaveInstanceState entered.");
-	  if (referedProfileView)
-		  posProfileView=profileListView.getFirstVisiblePosition();
-	  if (referedMessageView)
-		  posMessageView=messageListView.getFirstVisiblePosition();
-	  if (referedLocalFileListView)
-		  posLocalFileListView=localFileListView.getFirstVisiblePosition();
-	  if (referedRemoteFileListView)
-		  posRemoteFileListView=remoteFileListView.getFirstVisiblePosition();
+	  posProfileView=profileListView.getFirstVisiblePosition();
+	  posMessageView=messageListView.getFirstVisiblePosition();
+	  posLocalFileListView=localFileListView.getFirstVisiblePosition();
+	  posRemoteFileListView=remoteFileListView.getFirstVisiblePosition();
 
 	  outState.putInt("debugLevel", debugLevel);
 	  outState.putString("remoteUrl", remoteUrl);
@@ -234,16 +250,14 @@ public class SMBExplorerMain extends FragmentActivity {
 	protected void onResume() {
 		super.onResume();
 		sendDebugLogMsg(1, "I","onResume entered"+
+				" restartStatus="+restartStatus+
 				", posProfile="+posProfileView+
 				", posMessage="+posMessageView+
 				", posLocal="+posLocalFileListView+
 				", posRemote="+posRemoteFileListView);
 		
-		if (profileAdapter==null) profileAdapter = createProfileList(false,""); 
-		profileListView.setAdapter(profileAdapter);
-		profileListView.setSelection(posProfileView);
-		
 		if (restartStatus==0) {
+			profileAdapter = createProfileList(false,"");
 			localFileListView=(ListView)findViewById(R.id.explorer_filelist_local_tab_listview);
 //			tabHost.getTabWidget().getChildTabViewAt(2).setEnabled(true);
 			loadLocalFilelist(localUrl);
@@ -255,7 +269,12 @@ public class SMBExplorerMain extends FragmentActivity {
 		} else if (restartStatus==1) {
 
 		} else if (restartStatus==2) {
+			profileAdapter = createProfileList(false,"");
+			profileListView.setAdapter(profileAdapter);
+			profileListView.setSelection(posProfileView);
+			
 			restoreTaskData();
+			
 			messageListView.setAdapter(messageListAdapter);
 			localFileListView.setAdapter(localFileListAdapter);
 
@@ -269,16 +288,13 @@ public class SMBExplorerMain extends FragmentActivity {
 //				tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(true);
 			}
 			setPasteItemList();
+			messageListView.setSelection(posMessageView);
+			localFileListView.setSelection(posLocalFileListView);
+			if (currentTabName.equals("@M")) tabHost.setCurrentTab(1);
+			else if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) tabHost.setCurrentTab(2);
+			else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) tabHost.setCurrentTab(3);
 		}
 		restartStatus=1;
-		
-		messageListView.setSelection(posMessageView);
-
-		localFileListView.setSelection(posLocalFileListView);
-		
-		if (currentTabName.equals("@M")) tabHost.setCurrentTab(1);
-		else if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) tabHost.setCurrentTab(2);
-		else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) tabHost.setCurrentTab(3);
 		
 		localFileListView.setFastScrollEnabled(true);
 		remoteFileListView.setFastScrollEnabled(true);
@@ -308,6 +324,10 @@ public class SMBExplorerMain extends FragmentActivity {
 				", posMessage="+posMessageView+
 				", posLocal="+posLocalFileListView+
 				", posRemote="+posRemoteFileListView);
+		posProfileView=profileListView.getFirstVisiblePosition();
+		posMessageView=messageListView.getFirstVisiblePosition();
+		posLocalFileListView=localFileListView.getFirstVisiblePosition();
+		posRemoteFileListView=remoteFileListView.getFirstVisiblePosition();
 		saveTaskData();
 	};
 
@@ -340,6 +360,10 @@ public class SMBExplorerMain extends FragmentActivity {
 	    sendDebugLogMsg(1,"I","onConfigurationChanged Entered, "+
 	    		"orientation="+newConfig.orientation);
 	    
+		posProfileView=profileListView.getFirstVisiblePosition();
+		posMessageView=messageListView.getFirstVisiblePosition();
+		posLocalFileListView=localFileListView.getFirstVisiblePosition();
+		posRemoteFileListView=remoteFileListView.getFirstVisiblePosition();
 		
 		setContentView(R.layout.main);
 
@@ -370,6 +394,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			remoteFileListView.setAdapter(remoteFileListAdapter);
 //				tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(true);
 		}
+		remoteFileListView.setSelection(posRemoteFileListView);
 		setPasteItemList();
 		
 		if (currentTabName.equals("@M")) tabHost.setCurrentTab(1);
@@ -492,22 +517,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		@Override
 		public void onTabChanged(String tabId){
 			sendDebugLogMsg(1, "I","onTabchanged entered. tab="+tabId);
-			if (tabId.equals("@P")) {
-				referedProfileView=true;
-//				currentSelectedProfileType="P";
-			}
-			else if (tabId.equals("@M")) {
-				referedMessageView=true;
-//				currentSelectedProfileType="M";
-			}
-			else if (tabId.equals(SMBEXPLORER_TAB_LOCAL)) {
-				referedLocalFileListView=true;
-//				currentSelectedProfileType="L";
-			}
-			else if (tabId.equals(SMBEXPLORER_TAB_REMOTE)) {
-				referedRemoteFileListView=true;
-//				currentSelectedProfileType="R";
-			}
 			currentTabName=tabId;
 		};
 	};
@@ -3695,7 +3704,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			@Override
 			public void eventNegativeResponse(Context c,Object[] o) {}
 		});
-		commonDlg.fileSelect(false,curr_dir,
+		commonDlg.fileOnlySelectWithCreate(curr_dir,
 				"/SMBExplorer",file_name,"Select import file.",ne);
 	};
 
@@ -3716,7 +3725,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			@Override
 			public void eventNegativeResponse(Context c,Object[] o) {}
 		});
-		commonDlg.fileSelect(true,curr_dir,
+		commonDlg.fileOnlySelectWithCreate(curr_dir,
 				"/SMBExplorer",ifn,"Select export file.",ne);
 	};
 
@@ -3790,8 +3799,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			@Override
 			public void eventNegativeResponse(Context c,Object[] o) {}
 		});
-		commonDlg.fileSelect(
-				false,SMBExplorerRootDir,
+		commonDlg.fileOnlySelectWithCreate(SMBExplorerRootDir,
 				curr_dir,ifn,"Select a destination for log messages.",ne);
 	};
 
