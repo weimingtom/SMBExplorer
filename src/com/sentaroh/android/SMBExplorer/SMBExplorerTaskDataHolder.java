@@ -43,4 +43,5 @@ public class SMBExplorerTaskDataHolder implements Serializable  {
 	String paste_from_url=null, paste_to_url=null, paste_item_list=null;
 	boolean is_paste_copy=false,is_paste_enabled=false, is_paste_from_local=false;
 	
+	int msgPos,msgPosTop=0,profPos,profPosTop=0,lclPos,lclPosTop=0,remPos=0,remPosTop=0;
 };
