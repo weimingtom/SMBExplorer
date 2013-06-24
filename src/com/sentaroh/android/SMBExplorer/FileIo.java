@@ -39,6 +39,7 @@ import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -1261,6 +1262,7 @@ public class FileIo implements Runnable {
         }
         return false;
     }
+	@SuppressLint("InlinedApi")
 	private int deleteMediaStoreItem(String fp) {
 		int dc_image=0, dc_audio=0, dc_video=0, dc_files=0;
 		String mt=isMediaFile(fp);
@@ -1415,7 +1417,10 @@ public class FileIo implements Runnable {
 	};
 	
     private void setJcifsParm() {
-    	ntlmPaswordAuth = new NtlmPasswordAuthentication( null,file_userid,file_password);
+		String tuser=null,tpass=null;
+		if (!file_userid.equals("")) tuser=file_userid;
+		if (!file_password.equals("")) tpass=file_password;
+    	ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
 		System.setProperty("jcifs.util.loglevel", jcifs_option_log_level);
 		System.setProperty("jcifs.smb.lmCompatibility", "0");
 		System.setProperty("jcifs.smb.client.useExtendedSecurity", "false");

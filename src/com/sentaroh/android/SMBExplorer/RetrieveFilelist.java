@@ -23,35 +23,30 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
-import android.app.Dialog;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ListView;
-import android.widget.TextView;
-
 import com.sentaroh.android.Utilities.*;
 
+@SuppressLint("SimpleDateFormat")
 public class RetrieveFilelist implements Runnable  {
 	private final static String DEBUG_TAG = "SMBExplorerGetFilelist";
 	
 	private int debugLevel = 0;
 
-	private Dialog threadDlg;
-	private TextView dlgMsg;
-	
 	private ListView msgListView;
 	private MsglistAdapter msglistAdapter;
 
@@ -65,10 +60,10 @@ public class RetrieveFilelist implements Runnable  {
 	
 	private NotifyEvent notifyEvent ;
 	
-	private Calendar calInstance;
-	private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
-	private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
-	
+	final static private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
+	final static private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
+
+	private Handler uiHandler=null;
 	@SuppressWarnings("unused")
 	private String jcifs_option_rcv_buf_size="",jcifs_option_snd_buf_size="",
 			jcifs_option_listSize="",jcifs_option_maxBuffers="",jcifs_option_iobuff="",
@@ -76,24 +71,23 @@ public class RetrieveFilelist implements Runnable  {
 	
 	private Context currContext;
 
-	public RetrieveFilelist(Context c, MsglistAdapter ma, ListView ml, Dialog pd,
+	public RetrieveFilelist(Context c, MsglistAdapter ma, ListView ml,
 			ThreadCtrl ac, int dl, String ru, List<String> d_list,
 			String user, String pass, NotifyEvent ne) {
 		currContext=c;
 		msglistAdapter=ma;
 		msgListView=ml;
-		threadDlg=pd;
 		debugLevel=dl;
 		
 		getFLCtrl=ac; //new SMBExplorerThreadCtrl();
 		notifyEvent=ne;
 		remoteUrl=ru;
 		
+		uiHandler=new Handler();
+		
 		dir_list=d_list;
 		
 		opCode="EC"; //check item is exists
-		
-		dlgMsg = (TextView) threadDlg.findViewById(R.id.progress_spin_dlg_msg);
 		
 		sendDebugLogMsg(1,"I","getFileList constructed. user="+user+", url="+ru);
 		sendDebugLogMsg(9,"I","getFileList constructed. pass="+pass);
@@ -103,21 +97,20 @@ public class RetrieveFilelist implements Runnable  {
 	}
 
 	
-	public RetrieveFilelist(Context c, MsglistAdapter ma, ListView ml, Dialog pd,
+	public RetrieveFilelist(Context c, MsglistAdapter ma, ListView ml,
 			ThreadCtrl ac, int dl, String ru, 
 			ArrayList<TreeFilelistItem> fl,String user, String pass, NotifyEvent ne) {
 		currContext=c;
 		msglistAdapter=ma;
 		msgListView=ml;
-		threadDlg=pd;
 		debugLevel=dl;
 		remoteFileList=fl;
-		
+
+		uiHandler=new Handler();
+
 		getFLCtrl=ac; //new SMBExplorerThreadCtrl();
 		notifyEvent=ne;
 		remoteUrl=ru;
-		
-		dlgMsg = (TextView) threadDlg.findViewById(R.id.progress_spin_dlg_msg);
 		
 		sendDebugLogMsg(1,"I","getFileList constructed. user="+user+", url="+ru);
 		sendDebugLogMsg(9,"I","getFileList constructed. pass="+pass);
@@ -129,11 +122,13 @@ public class RetrieveFilelist implements Runnable  {
 	
 	@Override
 	public void run() {
-		// TODO 自動生成されたメソッド・スタブ
-		
 		getFLCtrl.setThreadResultSuccess();
 		
 		sendDebugLogMsg(1,"I","getFileList started");
+		
+		defaultUEH = Thread.currentThread().getUncaughtExceptionHandler();
+        Thread.currentThread().setUncaughtExceptionHandler(unCaughtExceptionHandler);
+
 		
 		if (opCode.equals("FL")) {
 			remoteFileList.clear();
@@ -142,10 +137,43 @@ public class RetrieveFilelist implements Runnable  {
 			checkItemExists(remoteUrl);
 		}
 		sendDebugLogMsg(1,"I","getFileList terminated.");
-		sendEmptyLogMsg();
+		uiHandler.post(new Runnable(){
+			@Override
+			public void run() {
+				notifyEvent.notifyTolistener(true, null);
+			}
+		});
 		getFLCtrl.setDisable();
 		
 	};
+	
+// Default uncaught exception handler variable
+    private UncaughtExceptionHandler defaultUEH;
+    
+// handler listener
+    private Thread.UncaughtExceptionHandler unCaughtExceptionHandler =
+        new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable ex) {
+            	Thread.currentThread().setUncaughtExceptionHandler(defaultUEH);
+            	ex.printStackTrace();
+            	StackTraceElement[] st=ex.getStackTrace();
+            	String st_msg="";
+            	for (int i=0;i<st.length;i++) {
+            		st_msg+="\n at "+st[i].getClassName()+"."+
+            				st[i].getMethodName()+"("+st[i].getFileName()+
+            				":"+st[i].getLineNumber()+")";
+            	}
+            	getFLCtrl.setThreadResultError();
+    			String end_msg=ex.toString()+st_msg;
+    			getFLCtrl.setThreadMessage(end_msg);
+    			getFLCtrl.setDisable();
+    			notifyEvent.notifyTolistener(true, null);
+                // re-throw critical exception further to the os (important)
+//                defaultUEH.uncaughtException(thread, ex);
+            }
+    };
+
 	
 	private NtlmPasswordAuthentication ntlmPaswordAuth;
 	private void setJcifsOption() {
@@ -199,7 +227,10 @@ public class RetrieveFilelist implements Runnable  {
 	};
 	
 	private void setJcifsProperties(String user, String pass) {
-		ntlmPaswordAuth = new NtlmPasswordAuthentication( null,user,pass);
+		String tuser=null,tpass=null;
+		if (!user.equals("")) tuser=user;
+		if (!pass.equals("")) tpass=pass;
+		ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
 		System.setProperty("jcifs.util.loglevel", jcifs_option_log_level);
 		System.setProperty("jcifs.smb.lmCompatibility", "0");
 		System.setProperty("jcifs.smb.client.useExtendedSecurity", "false");
@@ -233,7 +264,8 @@ public class RetrieveFilelist implements Runnable  {
 					String fp=fl[i].getParent();
 					if (fp.endsWith("/")) fp=fp.substring(0,fp.lastIndexOf("/"));
 					int dirct=0;
-					if (fl[i].canRead() && fl[i].isDirectory() && !fn.equals("IPC$") && 
+					if (fl[i].canRead() && fl[i].isDirectory() && !fn.equals("IPC$") &&
+							!fn.equals(".android_secure") &&
 							!fn.equals("System Volume Information")) {
 						SmbFile tdf=new SmbFile(fl[i].getPath(),ntlmPaswordAuth);
 						SmbFile[] tfl=tdf.listFiles();
@@ -268,14 +300,12 @@ public class RetrieveFilelist implements Runnable  {
 				}
 			}
 		} catch (SmbException e) {
-			// TODO 自動生成された catch ブロック
 			e.printStackTrace();
 			sendDebugLogMsg(0,"E",e.toString());
 			getFLCtrl.setThreadResultError();
 			getFLCtrl.setDisable();
 			getFLCtrl.setThreadMessage(e.toString());
 		} catch (MalformedURLException e) {
-			// TODO 自動生成された catch ブロック
 			e.printStackTrace();
 			sendDebugLogMsg(0,"E",e.toString());
 			getFLCtrl.setThreadResultError();
@@ -308,50 +338,21 @@ public class RetrieveFilelist implements Runnable  {
 	};
 	
 	
-	private void sendDebugLogMsg(int lvl, String cat, String msg) {
-
-		if (debugLevel>0)  
-			Log.v(DEBUG_TAG,msg);
+	private void sendDebugLogMsg(int lvl, final String cat, final String msg) {
+		if (debugLevel>0) Log.v(DEBUG_TAG,msg);
 		if (debugLevel>=lvl) {
-			Message msgInstance=new Message();
-			msgInstance.arg1=0; // arg1=0 not close, arg1=1 close
-			msgInstance.arg2=2;	// arg2=1 both, arg2=0 dialog only, arg2=2 log only
-			msgInstance.obj=new String[]{cat,"DEBUG-I",msg};
-			handler.sendMessage(msgInstance);
-		}
-	};
-	
-	private void sendEmptyLogMsg() {
-
-		if (debugLevel>0)  
-			Log.v(DEBUG_TAG,"Send empty log msg");
-		Message msgInstance=new Message();
-		msgInstance.arg1=1;
-		msgInstance.obj=null;
-		handler.sendMessage(msgInstance);
-	};
-	
-	private Handler handler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			// sendMessage()で渡されたobjectを取得してUIに表示
-			if (msg.arg1==0) { // arg1=0 not close, arg1=1 close
-				String[] sm = (String[])msg.obj;
-				if (msg.arg2==0) {// arg2=1 both, arg2=0 dialog only, arg2=2 log only
-					dlgMsg.setText(sm[2]);
-				} else { //
-					if (msg.arg2==1) dlgMsg.setText(sm[2]);
-					calInstance = Calendar.getInstance();
+			uiHandler.post(new Runnable(){
+				@Override
+				public void run() {
 					msglistAdapter.add(
-								new MsglistItem(sm[0],
-										sdfDate.format(calInstance.getTime()),
-										sdfTime.format(calInstance.getTime()),
-										sm[1],sm[2]));}
+							new MsglistItem(cat,
+									sdfDate.format(System.currentTimeMillis()),
+									sdfTime.format(System.currentTimeMillis()),
+									"DEBUG-I",msg));
 					msgListView.setSelection(msgListView.getCount());
-			} else { // last message received, cancel progress dialog
-				threadDlg.dismiss();
-				notifyEvent.notifyTolistener(true, null);
-			}
+				}
+			});
 		}
 	};
+	
 }

@@ -667,7 +667,8 @@ public class SMBExplorerMain extends FragmentActivity {
 			localFileListView.setSelectionFromTop(pos,posTop);
 		} else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) {
 			int pos = remoteFileListView.getFirstVisiblePosition();
-			int posTop = remoteFileListView.getChildAt(0).getTop();
+			int posTop =0;
+			if (remoteFileListView.getChildAt(0)!=null) posTop=remoteFileListView.getChildAt(0).getTop();
 			loadRemoteFilelist(remoteUrl);
 			remoteFileListView.setSelectionFromTop(pos,posTop);
 		} else return; //file list not selected
@@ -882,7 +883,12 @@ public class SMBExplorerMain extends FragmentActivity {
 						}
 					}
 				} else {
-					startLocalFileViewerIntent(item);
+					if (isFileListItemSelected(localFileListAdapter)) {
+						item.setChecked(!item.isChecked());
+						localFileListAdapter.notifyDataSetChanged();
+					} else {
+						startLocalFileViewerIntent(item);
+					}
 				}
 			}
 		});
@@ -936,12 +942,29 @@ public class SMBExplorerMain extends FragmentActivity {
 						}
 					}
 				} else {
-					startRemoteFileViewerIntent(remoteFileListAdapter, item);
-					//commonDlg.showCommonDialog(false,false,"E","","Remote file was not viewd.",null);
+					if (isFileListItemSelected(remoteFileListAdapter)) {
+						item.setChecked(!item.isChecked());
+						remoteFileListAdapter.notifyDataSetChanged();
+					} else {
+						startRemoteFileViewerIntent(remoteFileListAdapter, item);
+						//commonDlg.showCommonDialog(false,false,"E","","Remote file was not viewd.",null);
+					}
 				}
 			}
 		});
 	};
+	
+	private boolean isFileListItemSelected(TreeFilelistAdapter tfa) {
+		boolean result=false;
+		for (int i=0;i<tfa.getCount();i++) {
+			int lpos=tfa.getItem(i);
+			if (tfa.getDataItem(lpos).isChecked()) {
+				result=true;
+				break;
+			}
+		}
+		return result;
+	}
 	
 	private void setRemoteFilelistLongClickListener() {
 		if (remoteFileListView==null) return;
@@ -983,19 +1006,14 @@ public class SMBExplorerMain extends FragmentActivity {
 			for (int i=0;i<profileAdapter.getCount();i++) {
 				item = profileAdapter.getItem(i);
 				if (idx==i) {// set checked
-					profileAdapter.remove(item);
 					item.setChk(true);
-					profileAdapter.insert(item,i);
 					scn=i;//set new index no
 				} else {
 					if (item.isChk()) {//reset unchecked
-						profileAdapter.remove(item);
 						item.setChk(false);
-						profileAdapter.insert(item,i);
 					}
 				}
 			}
-			profileListView.setAdapter(profileAdapter);
 			createProfileContextMenu_Single(view, idx, scn);
 		} else createProfileContextMenu_Multiple(view, idx);
 	};
@@ -2549,11 +2567,13 @@ public class SMBExplorerMain extends FragmentActivity {
 				}
 			}
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {	}
+			public void eventNegativeResponse(Context c,Object[] o) {
+				dialog.dismiss();
+			}
 		});
 		
 		Thread th = new Thread(new RetrieveFilelist(this, messageListAdapter, 
-				messageListView, dialog, tc, debugLevel, url, d_list,user,pass,ne));
+				messageListView, tc, debugLevel, url, d_list,user,pass,ne));
 		th.start();
 		
 		showDelayedProgDlg(200,dialog,tc);
@@ -2589,11 +2609,13 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {}
+			public void eventNegativeResponse(Context c,Object[] o) {
+				dialog.dismiss();
+			}
 		});
 		
 		Thread th = new Thread(new RetrieveFilelist(this, messageListAdapter, 
-				messageListView, dialog, tc, debugLevel, url, 
+				messageListView, tc, debugLevel, url, 
 				remoteFileList,user,pass,ne));
 		th.start();
 		
