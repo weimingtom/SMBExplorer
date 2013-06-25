@@ -1279,6 +1279,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
 			  showProperty(fla,"C", item.getName(), item.isDir(),itemno);
+			  setAllFilelistItemUnChecked(fla);
 		  	}
 	  	});
 		if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) {
@@ -1287,6 +1288,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			  @Override
 			  public void onClick(CharSequence menuTitle) {
 				  invokeTextFileBrowser(fla,"C", item.getName(), item.isDir(),itemno);
+				  setAllFilelistItemUnChecked(fla);
 			  	}
 		  	});
 		}
@@ -1295,6 +1297,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
 			  createItem(fla,"C", item,itemno);
+			  setAllFilelistItemUnChecked(fla);
 		  	}
 	  	});
 
@@ -1303,6 +1306,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
 			  renameItem(fla,"C", item.getName(), item.isDir(),itemno);
+			  setAllFilelistItemUnChecked(fla);
 		  	}
 	  	});
 		ccMenu.addMenuItem("Copy '" + item.getName()+"'",R.drawable.menu_copying)
@@ -2011,7 +2015,8 @@ public class SMBExplorerMain extends FragmentActivity {
 										"",item.getName(),"",smbUser,smbPass);
 						}
 					}
-				}				
+				}
+				setAllFilelistItemUnChecked(fla);
 				sendDebugLogMsg(1,"I","deleteItem invokw FILEIO task.");
 				if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL))
 					startFileioTask(fla,FILEIO_PARM_LOCAL_DELETE,fileioLinkParm,item_name,null);
@@ -2019,6 +2024,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 			@Override
 			public void eventNegativeResponse(Context c,Object[] o) {
+				setAllFilelistItemUnChecked(fla);
 				sendDebugLogMsg(1,"W","deleteItem canceled");
 			}
 		});
