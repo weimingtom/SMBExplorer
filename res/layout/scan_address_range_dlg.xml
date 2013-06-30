@@ -34,7 +34,8 @@
             android:layout_height="wrap_content"
             android:text="@string/msgs_ip_address_range_dlg_timeout"
             android:textAppearance="?android:attr/textAppearanceSmall" />
-
+
+
         <EditText
             android:id="@+id/scan_address_range_timeout"
             android:layout_width="140dp"
@@ -67,7 +68,8 @@
 		    android:layout_marginLeft="5dp"
 		    android:text="."
 		    android:textAppearance="?android:attr/textAppearanceMedium" />
-        
+        
+
         <EditText
             android:id="@+id/scan_address_range_begin_address_o2"
             android:layout_width="53dp"
@@ -80,7 +82,8 @@
 		    android:layout_marginLeft="5dp"
 		    android:text="."
 		    android:textAppearance="?android:attr/textAppearanceMedium" />
-        
+        
+
         <EditText
             android:id="@+id/scan_address_range_begin_address_o3"
             android:layout_width="53dp"
@@ -93,7 +96,8 @@
 		    android:layout_marginLeft="5dp"
 		    android:text="."
 		    android:textAppearance="?android:attr/textAppearanceMedium" />
-        
+        
+
         <EditText
             android:id="@+id/scan_address_range_begin_address_o4"
             android:layout_width="53dp"
@@ -116,7 +120,12 @@
             android:layout_marginLeft="5dp"
             android:text="@string/msgs_ip_address_range_dlg_end"
             android:textAppearance="?android:attr/textAppearanceSmall" />
-        
+        
+
+
+
+
+
         <EditText
             android:id="@+id/scan_address_range_end_address_o1"
             android:layout_width="53dp"
@@ -131,7 +140,8 @@
 		    android:layout_marginLeft="5dp"
 		    android:text="."
 		    android:textAppearance="?android:attr/textAppearanceMedium" />
-        
+        
+
         <EditText
             android:id="@+id/scan_address_range_end_address_o2"
             android:layout_width="53dp"
@@ -145,7 +155,8 @@
 		    android:layout_marginLeft="5dp"
 		    android:text="."
 		    android:textAppearance="?android:attr/textAppearanceMedium" />
-        
+        
+
         <EditText
             android:id="@+id/scan_address_range_end_address_o3"
             android:layout_width="53dp"
@@ -159,7 +170,8 @@
 		    android:layout_marginLeft="5dp"
 		    android:text="."
 		    android:textAppearance="?android:attr/textAppearanceMedium" />
-        
+        
+
         <EditText
             android:id="@+id/scan_address_range_end_address_o4"
             android:layout_width="53dp"
@@ -167,26 +179,8 @@
             android:inputType="number" />
 
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" >
-
-        <Button
-            android:id="@+id/scan_address_range_btn_ok"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/msgs_dlg_ok_btn" />
-
-        <Button
-            android:id="@+id/scan_address_range_btn_cancel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/msgs_dlg_cancel_btn" />
 
-    </LinearLayout>
+
+    <include layout="@layout/scan_address_range_dlg_ok_cancel"/>
 
 </LinearLayout>
