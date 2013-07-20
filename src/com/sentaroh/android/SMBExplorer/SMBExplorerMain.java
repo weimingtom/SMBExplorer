@@ -110,18 +110,14 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	private String remoteUrl = "", localUrl = "";
 
-//	private static String currentSelectedProfileType="P";
-
 	private boolean result_createFileListView=false;
 	
 	private MsglistAdapter messageListAdapter =null;
 	private ListView messageListView=null;
-//	private int posMessageView=0;
 
 	private ProfilelistAdapter profileAdapter=null;
 	private ListView profileListView=null;
 	private boolean error_CreateProfileListResult=false;
-//	private int posProfileView=0;
 	
 	private TreeFilelistAdapter localFileListAdapter=null;
 	private TreeFilelistAdapter remoteFileListAdapter=null;
@@ -130,8 +126,6 @@ public class SMBExplorerMain extends FragmentActivity {
 	private String currentTabName="@P";
 	private Spinner localFileListDirBtn=null;
 	private Spinner remoteFileListDirBtn=null;
-//	private int posLocalFileListView=0;
-//	private int posRemoteFileListView=0;
 	
 	private String defaultSettingUsername,defaultSettingPassword,defaultSettingAddr;
 	private boolean defaultSettingExitClean;
@@ -168,7 +162,6 @@ public class SMBExplorerMain extends FragmentActivity {
 	  outState.putInt("debugLevel", debugLevel);
 	  outState.putString("remoteUrl", remoteUrl);
 	  outState.putString("localUrl", localUrl);
-//	  outState.putString("currentSelectedProfileType", currentSelectedProfileType);
 	  outState.putString("currentTabName", currentTabName);
 	  outState.putString("smbUser", smbUser);
 	  outState.putString("smbPass", smbPass);
@@ -181,7 +174,6 @@ public class SMBExplorerMain extends FragmentActivity {
 	  debugLevel=savedInstanceState.getInt("debugLevel");
 	  remoteUrl=savedInstanceState.getString("remoteUrl");
 	  localUrl=savedInstanceState.getString("localUrl");
-//	  currentSelectedProfileType=savedInstanceState.getString("currentSelectedProfileType");
 	  currentTabName=savedInstanceState.getString("currentTabName");
 	  smbUser=savedInstanceState.getString("smbUser");
 	  smbPass=savedInstanceState.getString("smbPass");
@@ -243,13 +235,10 @@ public class SMBExplorerMain extends FragmentActivity {
 		if (restartStatus==0) {
 			profileAdapter = createProfileList(false,"");
 			localFileListView=(ListView)findViewById(R.id.explorer_filelist_local_tab_listview);
-//			tabHost.getTabWidget().getChildTabViewAt(2).setEnabled(true);
 			loadLocalFilelist(localUrl);
 
 			remoteFileListView=(ListView)findViewById(R.id.explorer_filelist_remote_tab_listview);
 			remoteFileListDirBtn=(Spinner)findViewById(R.id.explorer_filelist_remote_tab_dir);
-//			remoteFileListDirBtn.setText("Profile not selected");
-//			tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(false);
 		} else if (restartStatus==1) {
 
 		} else if (restartStatus==2) {
@@ -661,16 +650,16 @@ public class SMBExplorerMain extends FragmentActivity {
 		setLocalDirBtnListener();
 		setRemoteDirBtnListener();
 		if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) {
-			int pos = localFileListView.getFirstVisiblePosition();
-			int posTop = localFileListView.getChildAt(0).getTop();
+//			int pos = localFileListView.getFirstVisiblePosition();
+//			int posTop = localFileListView.getChildAt(0).getTop();
 			loadLocalFilelist(localUrl+"/");
-			localFileListView.setSelectionFromTop(pos,posTop);
+//			localFileListView.setSelectionFromTop(pos,posTop);
 		} else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) {
-			int pos = remoteFileListView.getFirstVisiblePosition();
-			int posTop =0;
-			if (remoteFileListView.getChildAt(0)!=null) posTop=remoteFileListView.getChildAt(0).getTop();
+//			int pos = remoteFileListView.getFirstVisiblePosition();
+//			int posTop =0;
+//			if (remoteFileListView.getChildAt(0)!=null) posTop=remoteFileListView.getChildAt(0).getTop();
 			loadRemoteFilelist(remoteUrl);
-			remoteFileListView.setSelectionFromTop(pos,posTop);
+//			remoteFileListView.setSelectionFromTop(pos,posTop);
 		} else return; //file list not selected
 	};
 	

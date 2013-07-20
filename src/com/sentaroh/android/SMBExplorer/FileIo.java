@@ -1420,6 +1420,7 @@ public class FileIo implements Runnable {
 		String tuser=null,tpass=null;
 		if (!file_userid.equals("")) tuser=file_userid;
 		if (!file_password.equals("")) tpass=file_password;
+		
     	ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
 		System.setProperty("jcifs.util.loglevel", jcifs_option_log_level);
 		System.setProperty("jcifs.smb.lmCompatibility", "0");
