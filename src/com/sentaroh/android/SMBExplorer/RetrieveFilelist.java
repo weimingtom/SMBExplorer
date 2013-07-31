@@ -227,26 +227,14 @@ public class RetrieveFilelist implements Runnable  {
 	};
 	
 	private void setJcifsProperties(String user, String pass) {
-		String tuser=null,tpass=null;
-		if (!user.equals("")) tuser=user;
-		if (!pass.equals("")) tpass=pass;
-		ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
 		System.setProperty("jcifs.util.loglevel", jcifs_option_log_level);
 		System.setProperty("jcifs.smb.lmCompatibility", "0");
 		System.setProperty("jcifs.smb.client.useExtendedSecurity", "false");
 
-		jcifs.Config.setProperty("jcifs.smb.client.tcpNoDelay",jcifs_option_tcp_nodelay);
-        
-		if (!jcifs_option_rcv_buf_size.equals(""))
-			jcifs.Config.setProperty("jcifs.smb.client.rcv_buf_size", jcifs_option_rcv_buf_size);//60416 120832
-		if (!jcifs_option_snd_buf_size.equals(""))
-			jcifs.Config.setProperty("jcifs.smb.client.snd_buf_size", jcifs_option_snd_buf_size);//16644 120832
-        
-		if (!jcifs_option_listSize.equals(""))
-			jcifs.Config.setProperty("jcifs.smb.client.listSize",jcifs_option_listSize); //65536 1300
-		if (!jcifs_option_maxBuffers.equals(""))
-			jcifs.Config.setProperty("jcifs.smb.maxBuffers",jcifs_option_maxBuffers);//16 100
-		jcifs.Config.registerSmbURLHandler();
+		String tuser=null,tpass=null;
+		if (!user.equals("")) tuser=user;
+		if (!pass.equals("")) tpass=pass;
+		ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
 	};
 
 	private void readFileList(String url) {
