@@ -892,6 +892,7 @@ public class FileIo implements Runnable {
     		}
     		if (i==j) result=true;
     	}
+    	Log.v("","isSameMountPoint result="+result+", f_fp="+f_fp+", t_fp="+t_fp);
     	return result;
     };
 
@@ -1069,7 +1070,7 @@ public class FileIo implements Runnable {
 			    fout.close();
 	    		return false;
 	    	} 
-	        fout.write( fileIoArea );
+	        fout.write(fileIoArea, 0, (int) n );
 	        tot += n;
 	        if (n<fileBytes) 
 	        	sendMsgToProgDlg(false,"",String.format(title_header+" %s %s%% completed.",fn,

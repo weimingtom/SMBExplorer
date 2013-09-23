@@ -139,7 +139,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	private int restartStatus=0;
 	
-	private Context currentContext;
+	private Context mContext;
 	
 	private String smbUser, smbPass;
 	
@@ -150,7 +150,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	private String refreshUrl;//,refreshDir;
 	
-	private Activity currentActivity;
+	private Activity mActivity;
 	
 	private CommonDialog commonDlg;
 	
@@ -184,13 +184,13 @@ public class SMBExplorerMain extends FragmentActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		applySettingParms();
-		currentContext=this;
-		currentActivity=this;
+		mContext=this;
+		mActivity=this;
 //		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.main);
 		if (ccMenu ==null) ccMenu = new CustomContextMenu(getResources(),getSupportFragmentManager());
 
-		commonDlg=new CommonDialog(currentContext, getSupportFragmentManager());
+		commonDlg=new CommonDialog(mContext, getSupportFragmentManager());
 
 //		localUrl = SMBEXPLORER_ROOT_DIR;
 		SMBExplorerRootDir=localUrl=LocalMountPoint.getExternalStorageDir();
@@ -211,6 +211,10 @@ public class SMBExplorerMain extends FragmentActivity {
 		getApplVersionName();
 		
 		enableKill = false;
+		
+//		Log.v("","esd="+LocalMountPoint.getExternalStorageDir());
+//		ArrayList<String>mpl=LocalMountPoint.buildLocalMountPointList();
+//		for (int i=0;i<mpl.size();i++) Log.v("","mp="+mpl.get(i)); 
 	};
 
 	@Override
@@ -309,71 +313,75 @@ public class SMBExplorerMain extends FragmentActivity {
 	    super.onConfigurationChanged(newConfig);
 	    sendDebugLogMsg(1,"I","onConfigurationChanged Entered, "+
 	    		"orientation="+newConfig.orientation);
-	    
-		setContentView(R.layout.main);
+		Handler hndl=new Handler();
+		hndl.post(new Runnable(){
+			@Override
+			public void run() {
+				setContentView(R.layout.main);
 
-		int msgPos,msgPosTop=0,profPos,profPosTop=0,lclPos,lclPosTop=0,remPos=0,remPosTop=0;
-		msgPos=messageListView.getFirstVisiblePosition();
-		if (messageListView.getChildAt(0)!=null) msgPosTop=messageListView.getChildAt(0).getTop();
-		profPos=profileListView.getFirstVisiblePosition();
-		if (profileListView.getChildAt(0)!=null) profPosTop=profileListView.getChildAt(0).getTop();
-		lclPos=localFileListView.getFirstVisiblePosition();
-		if (localFileListView.getChildAt(0)!=null) lclPosTop=localFileListView.getChildAt(0).getTop();
-		remPos=remoteFileListView.getFirstVisiblePosition();
-		if (remoteFileListView.getChildAt(0)!=null) remPosTop=remoteFileListView.getChildAt(0).getTop();
-		
-		createTabAndView() ;
+				int msgPos,msgPosTop=0,profPos,profPosTop=0,lclPos,lclPosTop=0,remPos=0,remPosTop=0;
+				msgPos=messageListView.getFirstVisiblePosition();
+				if (messageListView.getChildAt(0)!=null) msgPosTop=messageListView.getChildAt(0).getTop();
+				profPos=profileListView.getFirstVisiblePosition();
+				if (profileListView.getChildAt(0)!=null) profPosTop=profileListView.getChildAt(0).getTop();
+				lclPos=localFileListView.getFirstVisiblePosition();
+				if (localFileListView.getChildAt(0)!=null) lclPosTop=localFileListView.getChildAt(0).getTop();
+				remPos=remoteFileListView.getFirstVisiblePosition();
+				if (remoteFileListView.getChildAt(0)!=null) remPosTop=remoteFileListView.getChildAt(0).getTop();
+				
+				createTabAndView() ;
 
-		profileListView = (ListView) findViewById(R.id.explorer_profile_tab_listview);
-		messageListView = (ListView) findViewById(R.id.explorer_message_tab_listview);
-		messageListView.setAdapter(messageListAdapter);
-		messageListAdapter.setNotifyOnChange(true);
-		messageListView.setAdapter(messageListAdapter);
-		messageListView.setSelectionFromTop(msgPos,msgPosTop);
-		messageListView.setFastScrollEnabled(true);
+				profileListView = (ListView) findViewById(R.id.explorer_profile_tab_listview);
+				messageListView = (ListView) findViewById(R.id.explorer_message_tab_listview);
+				messageListView.setAdapter(messageListAdapter);
+				messageListAdapter.setNotifyOnChange(true);
+				messageListView.setAdapter(messageListAdapter);
+				messageListView.setSelectionFromTop(msgPos,msgPosTop);
+				messageListView.setFastScrollEnabled(true);
 
-		profileListView.setAdapter(profileAdapter);
-		profileListView.setSelectionFromTop(profPos,profPosTop);
-		
-		localFileListView.setAdapter(localFileListAdapter);
-		localFileListView.setSelectionFromTop(lclPos,lclPosTop);
-		localFileListView.setFastScrollEnabled(true);
+				profileListView.setAdapter(profileAdapter);
+				profileListView.setSelectionFromTop(profPos,profPosTop);
+				
+				localFileListView.setAdapter(localFileListAdapter);
+				localFileListView.setSelectionFromTop(lclPos,lclPosTop);
+				localFileListView.setFastScrollEnabled(true);
 
-		remoteFileListView=(ListView)findViewById(R.id.explorer_filelist_remote_tab_listview);
-		remoteFileListDirBtn=(Spinner)findViewById(R.id.explorer_filelist_remote_tab_dir);
-		remoteFileListView.setFastScrollEnabled(true);
-		if (remoteUrl.equals("")) {
-//				remoteFileListDirBtn.setText("Profile not selected");
-//				tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(false);
-		} else {
-			remoteFileListView.setAdapter(remoteFileListAdapter);
-//				tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(true);
-		}
-		remoteFileListView.setSelectionFromTop(remPos,remPosTop);
-		setPasteItemList();
-		
-		if (currentTabName.equals("@M")) tabHost.setCurrentTab(1);
-		else if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) tabHost.setCurrentTab(2);
-		else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) tabHost.setCurrentTab(3);
-		
-		setLocalDirBtnListener();
-		setRemoteDirBtnListener();
-		
-		setProfilelistItemClickListener();
-		setProfilelistLongClickListener();
-		setLocalFilelistItemClickListener();
-		setLocalFilelistLongClickListener();
-		setRemoteFilelistItemClickListener();
-		setRemoteFilelistLongClickListener();
-		setMsglistLongClickListener();
+				remoteFileListView=(ListView)findViewById(R.id.explorer_filelist_remote_tab_listview);
+				remoteFileListDirBtn=(Spinner)findViewById(R.id.explorer_filelist_remote_tab_dir);
+				remoteFileListView.setFastScrollEnabled(true);
+				if (remoteUrl.equals("")) {
+//						remoteFileListDirBtn.setText("Profile not selected");
+//						tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(false);
+				} else {
+					remoteFileListView.setAdapter(remoteFileListAdapter);
+//						tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(true);
+				}
+				remoteFileListView.setSelectionFromTop(remPos,remPosTop);
+				setPasteItemList();
+				
+				if (currentTabName.equals("@M")) tabHost.setCurrentTab(1);
+				else if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) tabHost.setCurrentTab(2);
+				else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) tabHost.setCurrentTab(3);
+				
+				setLocalDirBtnListener();
+				setRemoteDirBtnListener();
+				
+				setProfilelistItemClickListener();
+				setProfilelistLongClickListener();
+				setLocalFilelistItemClickListener();
+				setLocalFilelistLongClickListener();
+				setRemoteFilelistItemClickListener();
+				setRemoteFilelistLongClickListener();
+				setMsglistLongClickListener();
 
-		refreshOptionMenu();
-
+				refreshOptionMenu();
+			}
+		});
 	};
 	
 	private void refreshOptionMenu() {
 		if (Build.VERSION.SDK_INT>=11)
-			currentActivity.invalidateOptionsMenu();
+			mActivity.invalidateOptionsMenu();
 	};
 
 	public void getApplVersionName() {
@@ -682,7 +690,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 	
 	private void loadRemoteFilelist(String url) {
-		NotifyEvent ne=new NotifyEvent(currentContext);
+		NotifyEvent ne=new NotifyEvent(mContext);
 		ne.setListener(new ListenerInterface() {
 			@Override
 			public void eventPositiveResponse(Context c,Object[] o) {
@@ -915,7 +923,7 @@ public class SMBExplorerMain extends FragmentActivity {
 						if (item.isSubDirLoaded()) 
 							remoteFileListAdapter.reshowChildItem(item,pos);
 						else {
-							NotifyEvent ne=new NotifyEvent(currentContext);
+							NotifyEvent ne=new NotifyEvent(mContext);
 							ne.setListener(new ListenerInterface() {
 								@Override
 								public void eventPositiveResponse(Context c,Object[] o) {
@@ -1602,7 +1610,7 @@ public class SMBExplorerMain extends FragmentActivity {
 //		dialog.setCancelable(false);
 		dialog.show();
 
-		NotifyEvent ne=new NotifyEvent(currentContext);
+		NotifyEvent ne=new NotifyEvent(mContext);
 		ne.setListener(new ListenerInterface() {
 			@Override
 			public void eventPositiveResponse(Context c,Object[] o) {
@@ -1677,7 +1685,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 		} else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) {
 			// Remote process
-			NotifyEvent ne=new NotifyEvent(currentContext);
+			NotifyEvent ne=new NotifyEvent(mContext);
 			ne.setListener(new ListenerInterface() {
 				@Override
 				public void eventPositiveResponse(Context c,Object[] o) {
@@ -2649,7 +2657,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			final String prof_addr, final NotifyEvent p_ntfy) {
 		final ArrayList<String> rows = new ArrayList<String>();
 
-		NotifyEvent ntfy=new NotifyEvent(currentContext);
+		NotifyEvent ntfy=new NotifyEvent(mContext);
 		ntfy.setListener(new ListenerInterface() {
 			@Override
 			public void eventPositiveResponse(Context c,Object[] o) {
@@ -2763,7 +2771,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		Button btnAddr = (Button) dialog.findViewById(R.id.remote_profile_addrbtn);
 		btnAddr.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				NotifyEvent ntfy=new NotifyEvent(currentContext);
+				NotifyEvent ntfy=new NotifyEvent(mContext);
 				//Listen setRemoteShare response 
 				ntfy.setListener(new ListenerInterface() {
 					@Override
@@ -2795,7 +2803,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 				setJcifsProperties(prof_user, prof_pass);
 
-				NotifyEvent ntfy=new NotifyEvent(currentContext);
+				NotifyEvent ntfy=new NotifyEvent(mContext);
 				//Listen setRemoteShare response 
 				ntfy.setListener(new ListenerInterface() {
 					@Override
@@ -2843,6 +2851,10 @@ public class SMBExplorerMain extends FragmentActivity {
 //					setFixedOrientation(false);
 					int pos = profileListView.getFirstVisiblePosition();
 					int topPos = profileListView.getChildAt(0).getTop();
+					String prof_user=edituser.getText().toString();
+					String prof_pass=editpass.getText().toString();
+					String prof_addr=editaddr.getText().toString();
+					String prof_share=editshare.getText().toString();
 					profileAdapter.add(new ProfilelistItem(
 							"R",new_name, new_act,prof_user , prof_pass,prof_addr,
 									prof_share,false));
@@ -2908,7 +2920,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		Button btnAddr = (Button) dialog.findViewById(R.id.remote_profile_addrbtn);
 		btnAddr.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				NotifyEvent ntfy=new NotifyEvent(currentContext);
+				NotifyEvent ntfy=new NotifyEvent(mContext);
 				//Listen setRemoteShare response 
 				ntfy.setListener(new ListenerInterface() {
 					@Override
@@ -2940,7 +2952,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 				setJcifsProperties(prof_user, prof_pass);
 
-				NotifyEvent ntfy=new NotifyEvent(currentContext);
+				NotifyEvent ntfy=new NotifyEvent(mContext);
 				//Listen setRemoteShare response 
 				ntfy.setListener(new ListenerInterface() {
 					@Override
@@ -3232,7 +3244,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	private void setRemoteAddr(final NotifyEvent p_ntfy) {
 		final ArrayList<String> rows = new ArrayList<String>();
-		NotifyEvent ntfy=new NotifyEvent(currentContext);
+		NotifyEvent ntfy=new NotifyEvent(mContext);
 		ntfy.setListener(new ListenerInterface() {
 			@Override
 			public void eventPositiveResponse(Context c,Object[] o) {
@@ -3244,7 +3256,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			    ((TextView)dialog.findViewById(R.id.item_select_list_dlg_title))
 			    	.setText(getString(R.string.msgs_ip_address_select_title));
 			    TextView filetext= (TextView)dialog.findViewById(R.id.item_select_list_dlg_itemtext);
-			    filetext.setText(currentContext.getString(R.string.msgs_ip_address_range_dlg_timeout));
+			    filetext.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_timeout));
 			    filetext.setVisibility(TextView.VISIBLE);
 			    Button btnRescan=(Button)dialog.findViewById(R.id.item_select_list_dlg_ok_btn);
 			    btnRescan.setVisibility(TextView.VISIBLE);
@@ -3258,7 +3270,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			    CommonDialog.setDlgBoxSizeLimit(dialog,false);
 			    
 			    final ListView lv = (ListView) dialog.findViewById(android.R.id.list);
-			    lv.setAdapter(new ArrayAdapter<String>(currentContext, R.layout.simple_list_item_1o, rows));
+			    lv.setAdapter(new ArrayAdapter<String>(mContext, R.layout.simple_list_item_1o, rows));
 			    lv.setScrollingCacheEnabled(false);
 			    lv.setScrollbarFadingEnabled(false);
 			    
@@ -3278,11 +3290,11 @@ public class SMBExplorerMain extends FragmentActivity {
 			        	if (!toVal.equals("")) 
 			        		scanIpAddrTimeout = Integer.parseInt(toVal);
 			            rows.clear();
-			            NotifyEvent ntfy=new NotifyEvent(currentContext);
+			            NotifyEvent ntfy=new NotifyEvent(mContext);
 			    		ntfy.setListener(new ListenerInterface() {
 			    			@Override
 			    			public void eventPositiveResponse(Context c,Object[] o) {
-			    			    lv.setAdapter(new ArrayAdapter<String>(currentContext, R.layout.simple_list_item_1o, rows));
+			    			    lv.setAdapter(new ArrayAdapter<String>(mContext, R.layout.simple_list_item_1o, rows));
 			    			    lv.setScrollingCacheEnabled(false);
 			    			    lv.setScrollbarFadingEnabled(false);
 			    			}
@@ -3669,7 +3681,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 		sendDebugLogMsg(1,"I","Import profile dlg.");
 
-		NotifyEvent ne=new NotifyEvent(currentContext);
+		NotifyEvent ne=new NotifyEvent(mContext);
 		// set commonDialog response 
 		ne.setListener(new ListenerInterface() {
 			@Override
@@ -3697,7 +3709,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	public void exportProfileDlg(final String curr_dir, final String ifn) {
 		sendDebugLogMsg(1,"I","Export profile.");
 
-		NotifyEvent ne=new NotifyEvent(currentContext);
+		NotifyEvent ne=new NotifyEvent(mContext);
 		// set commonDialog response 
 		ne.setListener(new ListenerInterface() {
 			@Override
@@ -3772,7 +3784,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	public void saveLogMessageDlg(final String curr_dir, final String ifn) {
 
-		NotifyEvent ne=new NotifyEvent(currentContext);
+		NotifyEvent ne=new NotifyEvent(mContext);
 		// set commonDialog response 
 		ne.setListener(new ListenerInterface() {
 			@Override
@@ -3937,7 +3949,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			messageListAdapter.notifyDataSetChanged();
 			messageListAdapter.resetDataChanged();
 			
-			localFileListAdapter =new TreeFilelistAdapter(currentContext);
+			localFileListAdapter =new TreeFilelistAdapter(mContext);
 			localFileListAdapter.setDataList(data.local_tfl);
 
 			remoteFileListAdapter =new TreeFilelistAdapter(this);
