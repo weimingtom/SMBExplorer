@@ -1424,7 +1424,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			Intent intent;
 			intent = new Intent();
 			intent.setClassName("com.sentaroh.android.TextFileBrowser",
-					"com.sentaroh.android.TextFileBrowser.TextFileBrowserMain");
+					"com.sentaroh.android.TextFileBrowser.MainActivity");
 			intent.setDataAndType(
 					Uri.parse("file://"+item.getPath()+"/"+item.getName()), null);
 				startActivity(intent);
@@ -1449,13 +1449,14 @@ public class SMBExplorerMain extends FragmentActivity {
 			if (mt.startsWith("text")) mt="text/plain";
 			try {
 				Intent intent;
-				if (mt.startsWith("text")) {
-					intent = new Intent();
-					intent.setClassName("com.sentaroh.android.TextFileBrowser",
-							"com.sentaroh.android.TextFileBrowser.TextFileBrowserMain");
-				} else {
-					intent = new Intent(android.content.Intent.ACTION_VIEW);
-				}
+//				if (mt.startsWith("text")) {
+//					intent = new Intent();
+//					intent.setClassName("com.sentaroh.android.TextFileBrowser",
+//							"com.sentaroh.android.TextFileBrowser.MainActivity");
+//				} else {
+//					intent = new Intent(android.content.Intent.ACTION_VIEW);
+//				}
+				intent = new Intent(android.content.Intent.ACTION_VIEW);
 				intent.setDataAndType(
 						Uri.parse("file://"+item.getPath()+"/"+item.getName()), mt);
 					startActivity(intent);
