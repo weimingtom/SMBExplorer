@@ -23,14 +23,16 @@
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:visibility="gone"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    
     <TextView
         android:id="@+id/msg_list_view_item_msg"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="Small Text"
+        android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
 
 </LinearLayout>

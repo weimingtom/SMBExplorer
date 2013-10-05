@@ -35,20 +35,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
-public class ProfilelistAdapter extends ArrayAdapter<ProfilelistItem> {
+public class ProfileListAdapter extends ArrayAdapter<ProfileListItem> {
 
 	private Context c;
 	private int id;
-	private List<ProfilelistItem>items;
+	private List<ProfileListItem>items;
 		
-	public ProfilelistAdapter(Context context, int textViewResourceId,
-			List<ProfilelistItem> objects) {
+	public ProfileListAdapter(Context context, int textViewResourceId,
+			List<ProfileListItem> objects) {
 		super(context, textViewResourceId, objects);
 		c = context;
 		id = textViewResourceId;
 		items = objects;
 	}
-	public ProfilelistItem getItem(int i) {
+	public ProfileListItem getItem(int i) {
 		 return items.get(i);
 	}
 	@Override
@@ -69,7 +69,7 @@ public class ProfilelistAdapter extends ArrayAdapter<ProfilelistItem> {
         } else {
       	   holder= (ViewHolder)v.getTag();
         }
-        final ProfilelistItem o = items.get(position);
+        final ProfileListItem o = items.get(position);
         
         if (o != null) {
               if(holder.iv_image1!=null) 
@@ -94,7 +94,7 @@ public class ProfilelistAdapter extends ArrayAdapter<ProfilelistItem> {
 			public void onCheckedChanged(CompoundButton buttonView,
 				boolean isChecked) {
 				items.set(p, //"L", "Local", "A", "", "", "", "",false)
-						new ProfilelistItem(o.getType(), o.getName(),
+						new ProfileListItem(o.getType(), o.getName(),
 								o.getActive(),o.getUser(), o.getPass(),
 								o.getAddr(),o.getShare(),
 								isChecked));

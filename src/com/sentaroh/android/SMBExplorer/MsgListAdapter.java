@@ -23,6 +23,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
@@ -35,18 +36,18 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-public class MsglistAdapter extends ArrayAdapter<MsglistItem> {
+public class MsgListAdapter extends ArrayAdapter<MsgListItem> {
 
 	private Context c;
 	private int id;
-	private List<MsglistItem>items;
+	private ArrayList<MsgListItem>items;
 	private boolean msgDataChanged=false;
 	@SuppressWarnings("unused")
 	private int wsz_w, wsz_h;
 	private Activity activity;
 	
-	public MsglistAdapter(Activity act,Context context, int textViewResourceId,
-			List<MsglistItem> objects) {
+	public MsgListAdapter(Activity act,Context context, int textViewResourceId,
+			ArrayList<MsgListItem> objects) {
 		super(context, textViewResourceId, objects);
 		c = context;
 		id = textViewResourceId;
@@ -60,7 +61,7 @@ public class MsglistAdapter extends ArrayAdapter<MsglistItem> {
 	}
 	
 	@Override
-	public void add(MsglistItem mli) {
+	public void add(MsgListItem mli) {
 		items.add(mli);
 		msgDataChanged=true;
 		notifyDataSetChanged();
@@ -72,9 +73,9 @@ public class MsglistAdapter extends ArrayAdapter<MsglistItem> {
 		return tmp;
 	};
 	
-	public List<MsglistItem> getAllItem() {return items;}
+	public List<MsgListItem> getAllItem() {return items;}
 	
-	public void setAllItem(List<MsglistItem> p) {
+	public void setAllItem(List<MsgListItem> p) {
 		items.clear();
 		if (p!=null) items.addAll(p);
 		notifyDataSetChanged();
@@ -97,13 +98,14 @@ public class MsglistAdapter extends ArrayAdapter<MsglistItem> {
             holder=new ViewHolder();
 //            holder.tv_row_cat= (TextView) v.findViewById(R.id.msg_list_view_item_cat);
             holder.tv_row_msg= (TextView) v.findViewById(R.id.msg_list_view_item_msg);
+
             holder.tv_row_time= (TextView) v.findViewById(R.id.msg_list_view_item_time);
             holder.config=v.getResources().getConfiguration();
             v.setTag(holder);
         } else {
         	holder= (ViewHolder)v.getTag();
         }
-        MsglistItem o = getItem(position);
+        MsgListItem o = getItem(position);
         if (o != null) {
        		wsz_w=activity.getWindow()
     					.getWindowManager().getDefaultDisplay().getWidth();
@@ -114,21 +116,24 @@ public class MsglistAdapter extends ArrayAdapter<MsglistItem> {
         		holder.tv_row_time.setVisibility(TextView.VISIBLE);
         	else holder.tv_row_time.setVisibility(TextView.GONE);
 
+    		String msg_text=o.getMsg();
         	if (o.getCat().equals("W")) {
         		holder.tv_row_time.setTextColor(Color.YELLOW);
         		holder.tv_row_msg.setTextColor(Color.YELLOW);
             	holder.tv_row_time.setText(o.getMtime());
-            	holder.tv_row_msg.setText(o.getMsg());
+            	holder.tv_row_msg.setText(msg_text);
         	} else if (o.getCat().equals("E")) {
         		holder.tv_row_time.setTextColor(Color.RED);
         		holder.tv_row_msg.setTextColor(Color.RED);
         		holder.tv_row_time.setText(o.getMtime());
-            	holder.tv_row_msg.setText(o.getMsg());
+        		holder.tv_row_msg.setText(msg_text);
         	} else {
         		holder.tv_row_time.setTextColor(Color.WHITE);
         		holder.tv_row_msg.setTextColor(Color.WHITE);
         		holder.tv_row_time.setText(o.getMtime());
-            	holder.tv_row_msg.setText(o.getMsg());
+//            	holder.tv_row_msg.setText(o.getMsg());
+//        		Log.v("","msg="+msg_text);
+        		holder.tv_row_msg.setText(msg_text);
         	}
        	}
         return v;

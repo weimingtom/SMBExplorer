@@ -33,7 +33,7 @@ public class SMBExplorerTaskDataHolder implements Serializable  {
 
 	private static final long serialVersionUID = 1L;
 
-	List<MsglistItem> msglist;
+	List<MsgListItem> msglist;
 	
 	List<TreeFilelistItem> local_tfl;
 

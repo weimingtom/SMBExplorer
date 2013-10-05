@@ -112,10 +112,10 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	private boolean result_createFileListView=false;
 	
-	private MsglistAdapter messageListAdapter =null;
+	private MsgListAdapter messageListAdapter =null;
 	private ListView messageListView=null;
 
-	private ProfilelistAdapter profileAdapter=null;
+	private ProfileListAdapter profileAdapter=null;
 	private ListView profileListView=null;
 	private boolean error_CreateProfileListResult=false;
 	
@@ -199,9 +199,9 @@ public class SMBExplorerMain extends FragmentActivity {
 		profileListView = (ListView) findViewById(R.id.explorer_profile_tab_listview);
 		messageListView = (ListView) findViewById(R.id.explorer_message_tab_listview);
 		if (messageListAdapter==null) {
-			List<MsglistItem> tml = new ArrayList<MsglistItem>(); 
+			ArrayList<MsgListItem> tml = new ArrayList<MsgListItem>(); 
 			messageListAdapter = 
-				new MsglistAdapter(this,this,R.layout.msg_list_view_item,tml);
+				new MsgListAdapter(this,this,R.layout.msg_list_view_item,tml);
 		}
 		messageListView.setAdapter(messageListAdapter);
 		messageListAdapter.setNotifyOnChange(true);
@@ -775,7 +775,7 @@ public class SMBExplorerMain extends FragmentActivity {
                 if (((String)spinner.getSelectedItem()).startsWith("---"))
                 	return;
 //				Log.v("","l="+localUrl+", t="+turl);
-				ProfilelistItem pli=null;
+				ProfileListItem pli=null;
 				for (int i=0;i<profileAdapter.getCount();i++) {
 					if (profileAdapter.getItem(i).getName()
 							.equals((String)spinner.getSelectedItem())) {
@@ -810,7 +810,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view,
 				int position, long id) {
-			ProfilelistItem item = profileAdapter.getItem(position);
+			ProfileListItem item = profileAdapter.getItem(position);
 			sendDebugLogMsg(1,"I","Profilelist item Clicked :" + item.getName());
 			
 			if (item.getActive().equals("A")) { // profile is active
@@ -991,7 +991,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	
 	private void createProfileContextMenu(View view, int idx) {
-		ProfilelistItem item;
+		ProfileListItem item;
 		int scn=0;
 		for (int i=0;i<profileAdapter.getCount();i++) {
 			if (profileAdapter.getItem(i).isChk()) {
@@ -1019,7 +1019,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		final int itemno ;
 		if (idx>0) itemno = cin;
 			else itemno=idx;
-		ProfilelistItem item = profileAdapter.getItem(itemno);
+		ProfileListItem item = profileAdapter.getItem(itemno);
 
 		if (item.getActive().equals("I")) {
 			ccMenu.addMenuItem("Set to active",R.drawable.menu_active)
@@ -1054,7 +1054,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
-				ProfilelistItem item = profileAdapter.getItem(itemno);
+				ProfileListItem item = profileAdapter.getItem(itemno);
 				editRemoteProfile(item.getActive(), item.getName(), item.getUser(),
 						item.getPass(), item.getAddr(), item.getShare(), "",itemno);
 				setAllProfileItemUnChecked();
@@ -1064,7 +1064,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
-				ProfilelistItem item = profileAdapter.getItem(itemno);
+				ProfileListItem item = profileAdapter.getItem(itemno);
 				deleteRemoteProfile(item.getName(), itemno);
 				setAllProfileItemUnChecked();
 		  	}
@@ -1110,7 +1110,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		  public void onClick(CharSequence menuTitle) {
 				for (int i=0;i<profileAdapter.getCount();i++) {
 					if (profileAdapter.getItem(i).isChk()) {
-						ProfilelistItem item = profileAdapter.getItem(i);
+						ProfileListItem item = profileAdapter.getItem(i);
 						deleteRemoteProfile(item.getName(), i);
 					}
 				}
@@ -1397,7 +1397,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 
 	private void setAllProfileItemUnChecked() {
-		ProfilelistItem item;
+		ProfileListItem item;
 		for (int i=0;i<profileAdapter.getCount();i++) {
 			item=profileAdapter.getItem(i);
 			profileAdapter.remove(item);
@@ -1407,7 +1407,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 
 	private void setAllProfileItemChecked() {
-		ProfilelistItem item;
+		ProfileListItem item;
 		for (int i=0;i<profileAdapter.getCount();i++) {
 			item=profileAdapter.getItem(i);
 			profileAdapter.remove(item);
@@ -2394,12 +2394,14 @@ public class SMBExplorerMain extends FragmentActivity {
 									ff.canRead(),ff.canWrite(),
 									ff.isHidden(),ff.getParent(),0));
 						}
-						sendDebugLogMsg(2,"I","File :" + ff.getName()+","+
-							"length: " + ff.length()+","+
-							"Lastmod: " + sdf.format(ff.lastModified())+","+
-							"Lastmod: " + ff.lastModified()+","+
-							"isdir: " + ff.isDirectory()+","+
-							"parent: " + ff.getParent());
+						sendDebugLogMsg(1,"I","File :" + ff.getName()+", "+
+							"length: " + ff.length()+", "+
+							"Lastmod: " + sdf.format(ff.lastModified())+", "+
+							"Lastmod: " + ff.lastModified()+", "+
+							"isdir: " + ff.isDirectory()+", "+
+							"parent: " + ff.getParent()+", "+
+							"path: " + ff.getPath()+", "+
+							"canonicalPath: " + ff.getCanonicalPath());
 					} else {
 						TreeFilelistItem fli=
 								new TreeFilelistItem(ff.getName(), sdf.format(ff
@@ -2576,7 +2578,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 		});
 		
-		Thread th = new Thread(new RetrieveFilelist(this, messageListAdapter, 
+		Thread th = new Thread(new RetrieveFileList(this, messageListAdapter, 
 				messageListView, tc, debugLevel, url, d_list,user,pass,ne));
 		th.start();
 		
@@ -2618,7 +2620,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 		});
 		
-		Thread th = new Thread(new RetrieveFilelist(this, messageListAdapter, 
+		Thread th = new Thread(new RetrieveFileList(this, messageListAdapter, 
 				messageListView, tc, debugLevel, url, 
 				remoteFileList,user,pass,ne));
 		th.start();
@@ -2856,7 +2858,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					String prof_pass=editpass.getText().toString();
 					String prof_addr=editaddr.getText().toString();
 					String prof_share=editshare.getText().toString();
-					profileAdapter.add(new ProfilelistItem(
+					profileAdapter.add(new ProfileListItem(
 							"R",new_name, new_act,prof_user , prof_pass,prof_addr,
 									prof_share,false));
 					saveProfile(false,"","");
@@ -3004,10 +3006,10 @@ public class SMBExplorerMain extends FragmentActivity {
 
 				int pos = profileListView.getFirstVisiblePosition();
 				int topPos = profileListView.getChildAt(0).getTop();
-				ProfilelistItem item=profileAdapter.getItem(item_num);
+				ProfileListItem item=profileAdapter.getItem(item_num);
 
 				profileAdapter.remove(item);
-				profileAdapter.insert(new ProfilelistItem("R",
+				profileAdapter.insert(new ProfileListItem("R",
 						new_name, new_act, new_user, new_pass, new_addr,new_share,false),
 						item_num);
 				
@@ -3034,14 +3036,14 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 
 	private void setProfileToActive() {
-		ProfilelistItem item ;
+		ProfileListItem item ;
 
 		for (int i=0;i<profileAdapter.getCount();i++) {
 			item = profileAdapter.getItem(i);
 
 			if (item.isChk()) {
 				profileAdapter.remove(item);
-				profileAdapter.insert(new ProfilelistItem(
+				profileAdapter.insert(new ProfileListItem(
 					item.getType(), item.getName(), 
 					"A",item.getUser(), item.getPass(),item.getAddr(),
 					item.getShare(),false),i);
@@ -3055,14 +3057,14 @@ public class SMBExplorerMain extends FragmentActivity {
 	}
 	
 	private void setProfileToInactive() {
-		ProfilelistItem item ;
+		ProfileListItem item ;
 
 		for (int i=0;i<profileAdapter.getCount();i++) {
 			item = profileAdapter.getItem(i);
 
 			if (item.isChk()) {
 				profileAdapter.remove(item);
-				profileAdapter.insert(new ProfilelistItem(
+				profileAdapter.insert(new ProfileListItem(
 					item.getType(), item.getName(), 
 					"I",item.getUser(), item.getPass(),item.getAddr(),
 					item.getShare(),false),i);
@@ -3081,7 +3083,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		ne.setListener(new ListenerInterface() {
 			@Override
 			public void eventPositiveResponse(Context c,Object[] o) {
-				ProfilelistItem item = profileAdapter
+				ProfileListItem item = profileAdapter
 						.getItem(item_num);
 
 				int pos = profileListView.getFirstVisiblePosition();
@@ -3105,25 +3107,26 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	}
 
-	private ProfilelistAdapter createProfileList(boolean sdcard, String fp) {
+	@SuppressWarnings("resource")
+	private ProfileListAdapter createProfileList(boolean sdcard, String fp) {
 
-		ProfilelistAdapter pfl = null;
+		ProfileListAdapter pfl = null;
 		BufferedReader br = null;
 		error_CreateProfileListResult = false;
 
 		sendDebugLogMsg(1,"I","Create profilelist");
 		
-		List<ProfilelistItem> lcl = new ArrayList<ProfilelistItem>();
+		List<ProfileListItem> lcl = new ArrayList<ProfileListItem>();
 		ArrayList<String> ml=LocalMountPoint.buildLocalMountPointList();
 		for (int i=0;i<ml.size();i++) {
-			ProfilelistItem pli=new ProfilelistItem(
+			ProfileListItem pli=new ProfileListItem(
 					"L",ml.get(i), "A", 
 					"", "", "", 
 					"", false);
 			lcl.add(pli);
 		}
 		
-		List<ProfilelistItem> rem = new ArrayList<ProfilelistItem>();
+		List<ProfileListItem> rem = new ArrayList<ProfileListItem>();
 
 		try {
 			if (sdcard) {
@@ -3147,7 +3150,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				String[] alp;
 				while ((pl = br.readLine()) != null && !error_CreateProfileListResult) {
 					alp = parseProfileString(pl);
-					rem.add(new ProfilelistItem(alp[0], alp[1], alp[2],
+					rem.add(new ProfileListItem(alp[0], alp[1], alp[2],
 							alp[3], alp[4], alp[5], alp[6],false));
 				}
 			}
@@ -3167,9 +3170,9 @@ public class SMBExplorerMain extends FragmentActivity {
 		}
 		Collections.sort(rem);
 		lcl.addAll(rem);
-		if (lcl.size()==0) lcl.add(new ProfilelistItem("", "No profiles", "I", "", "", "", "",false));
+		if (lcl.size()==0) lcl.add(new ProfileListItem("", "No profiles", "I", "", "", "", "",false));
 		// profileListView = (ListView)findViewById(android.R.id.list);
-		pfl = new ProfilelistAdapter(this, R.layout.profile_list_view_item, lcl);
+		pfl = new ProfileListAdapter(this, R.layout.profile_list_view_item, lcl);
 		profileListView.setAdapter(pfl);
 		pfl.setNotifyOnChange(true);
 
@@ -3195,7 +3198,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 			if (profileAdapter!=null) {
 				for (int i = 0; i <= (profileAdapter.getCount() - 1); i++) {
-					ProfilelistItem item = profileAdapter.getItem(i);
+					ProfileListItem item = profileAdapter.getItem(i);
 					if (item.getType().equals("R")) {
 						String pl = item.getType() + "\t" + item.getName() + "\t"
 								+ item.getActive() + "\t" + item.getUser() + "\t"
@@ -3220,7 +3223,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		boolean dup = false;
 
 		for (int i = 0; i <= profileAdapter.getCount() - 1; i++) {
-			ProfilelistItem item = profileAdapter.getItem(i);
+			ProfileListItem item = profileAdapter.getItem(i);
 			if (item.getName().equals(prof_name)) {
 				dup = true;
 			}
@@ -3689,7 +3692,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			public void eventPositiveResponse(Context c,Object[] o) {
     			String fpath=(String)o[0];
     			
-				ProfilelistAdapter tfl = createProfileList(true, fpath);
+				ProfileListAdapter tfl = createProfileList(true, fpath);
 				if (!error_CreateProfileListResult) {
 					profileAdapter = tfl;
 					saveProfile(false,"","");
@@ -3866,7 +3869,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			synchronized(messageListAdapter) {
 				Calendar cd = Calendar.getInstance();
 				messageListAdapter.add(
-			    		 new MsglistItem(cat,sdfDate.format(cd.getTime()),
+			    		 new MsgListItem(cat,sdfDate.format(cd.getTime()),
 									sdfTime.format(cd.getTime()),"MAIN",logmsg));}
 	};
 	
@@ -3879,7 +3882,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			synchronized(messageListAdapter) {
 				
 				messageListAdapter.add(
-			    		 new MsglistItem(cat,sdfDate.format(cd.getTime()),
+			    		 new MsgListItem(cat,sdfDate.format(cd.getTime()),
 									sdfTime.format(cd.getTime()),"DEBUG-M",logmsg));}
 		}
 	};
@@ -3940,7 +3943,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		    ois.close();
 		    lf.delete();
 		    
-		    ArrayList<MsglistItem> o_ml=new ArrayList<MsglistItem>(); 
+		    ArrayList<MsgListItem> o_ml=new ArrayList<MsgListItem>(); 
 			for (int i=0;i<messageListAdapter.getCount();i++) o_ml.add(messageListAdapter.getItem(i));
 		    messageListAdapter.clear();
 			messageListAdapter.setAllItem(data.msglist);

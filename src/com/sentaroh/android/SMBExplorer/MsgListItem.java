@@ -25,14 +25,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 import java.io.Serializable;
 
-public class MsglistItem implements Serializable{
+public class MsgListItem implements Serializable{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private String msgCat, msgBody, msgDate, msgTime,msgIssuer;
 	
-	public MsglistItem(String cat, String mdate, String mtime, 
+	public MsgListItem(String cat, String mdate, String mtime, 
 			String issuer, String msg)
 	{
 		msgCat=cat;

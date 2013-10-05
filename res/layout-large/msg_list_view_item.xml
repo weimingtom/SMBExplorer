@@ -2,7 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="horizontal" >
+    android:orientation="horizontal" 
+    xmlns:tools="http://schemas.android.com/tools" 
+    tools:ignore="HardcodedText">
 
     <TextView
         android:id="@+id/msg_list_view_item_cat"
@@ -23,14 +25,14 @@
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:visibility="gone"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
     <TextView
         android:id="@+id/msg_list_view_item_msg"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Small Text"
+        android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
+        android:layout_weight="1"
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
 </LinearLayout>

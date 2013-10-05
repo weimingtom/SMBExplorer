@@ -67,7 +67,7 @@ public class FileIo implements Runnable {
 	
 	private int debugLevel = 0;
 	
-	private MsglistAdapter msglistAdapter;
+	private MsgListAdapter msglistAdapter;
 	private ListView msgListView;
 	
 	private int SMB_BUFF_SIZE =65536*4;
@@ -107,7 +107,7 @@ public class FileIo implements Runnable {
 	
 	// @Override
 	public FileIo(ListView lv,
-			MsglistAdapter ma, Dialog pd, int op_cd,
+			MsgListAdapter ma, Dialog pd, int op_cd,
 			ArrayList<FileIoLinkParm> alp, ThreadCtrl tc, int dl,NotifyEvent ne, 
 			Context cc) {
 		
@@ -343,7 +343,7 @@ public class FileIo implements Runnable {
 					dlgMsg.setText(log_msg);
 					calInstance = Calendar.getInstance();
 					msglistAdapter.add(
-								new MsglistItem(log_cat,
+								new MsgListItem(log_cat,
 										sdfDate.format(calInstance.getTime()),
 										sdfTime.format(calInstance.getTime()),
 										"MirrorIO",log_msg));
@@ -362,7 +362,7 @@ public class FileIo implements Runnable {
 			public void run() {
 				calInstance = Calendar.getInstance();
 				msglistAdapter.add(
-						new MsglistItem(log_cat,
+						new MsgListItem(log_cat,
 								sdfDate.format(calInstance.getTime()),
 								sdfTime.format(calInstance.getTime()),
 								"MirrorIO",log_msg));
@@ -380,7 +380,7 @@ public class FileIo implements Runnable {
 				public void run() {
 					calInstance = Calendar.getInstance();
 					msglistAdapter.add(
-							new MsglistItem(log_cat,
+							new MsgListItem(log_cat,
 									sdfDate.format(calInstance.getTime()),
 									sdfTime.format(calInstance.getTime()),
 									"DEBUG-I",log_msg));
@@ -1033,8 +1033,57 @@ public class FileIo implements Runnable {
 		return result;
     };
 
-    byte[] fileIoArea = new byte[SMB_BUFF_SIZE];
-//    ByteBuffer fileIoAreaX = ByteBuffer.allocateDirect(SMB_BUFF_SIZE*2);
+    private byte[] fileIoArea = new byte[SMB_BUFF_SIZE*2];
+//    private ByteBuffer mFileChBuffer = ByteBuffer.allocateDirect(SMB_BUFF_SIZE*2);
+//	private boolean copyFileLocalToLocalByChannel(File iLf, String fromUrl, String toUrl,
+//    		String title_header) 
+//			throws IOException {
+//    	
+//        File oLf;
+//		long t0 = System.currentTimeMillis();
+//	    FileInputStream fin = new FileInputStream( iLf );
+//	    FileChannel inCh = fin.getChannel();
+//	    FileOutputStream fout = new FileOutputStream(toUrl);
+//	    FileChannel outCh = fout.getChannel();
+//	    long n=0;
+//	    long tot = 0;
+//	    long fileBytes=iLf.length();
+//	    String fn=iLf.getName();
+//	
+//	    sendMsgToProgDlg(false,"",title_header+" : "+iLf.getName());
+//
+//	    mFileChBuffer.clear();
+//	    while (( n = inCh.read( mFileChBuffer )) > 0) {
+//            n=mFileChBuffer.position();
+//            mFileChBuffer.flip();
+//            outCh.write(mFileChBuffer);
+//            tot += n;
+//	        if (n<fileBytes) 
+//	        	sendMsgToProgDlg(false,"",String.format(title_header+" %s %s%% completed.",fn,
+//	        					(tot*100)/fileBytes));
+//	        mFileChBuffer.clear();
+//        }
+//	    
+//	    inCh.close();
+//	    outCh.close();
+//	    
+//	    oLf = new File(toUrl);
+//	    if (setLastModified) oLf.setLastModified(iLf.lastModified());
+//	    long t = System.currentTimeMillis() - t0;
+//	    if (settingsMslScan) scanMediaStoreLibraryFile(toUrl);
+//	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+
+//	    		tot + " bytes transfered in " + 
+//	    		t  + " mili seconds at " + calTransferRate(tot,t));
+//	    return true;
+//	}
+
+//    private boolean copyFileLocalToLocal(File iLf, String fromUrl, String toUrl,
+//    		String title_header) 
+//			throws IOException {
+//    	copyFileLocalToLocalByChannel(iLf, fromUrl, toUrl, title_header);
+//    	return copyFileLocalToLocalByStream(iLf, fromUrl, toUrl, title_header);
+//    }
+//    
     private boolean copyFileLocalToLocal(File iLf, String fromUrl, String toUrl,
     		String title_header) 
 			throws IOException {
@@ -1042,9 +1091,7 @@ public class FileIo implements Runnable {
 		File oLf;
 		long t0 = System.currentTimeMillis();
 	    FileInputStream fin = new FileInputStream( iLf );
-//	    FileChannel in = fin.getChannel();
 	    FileOutputStream fout = new FileOutputStream(toUrl);
-//	    FileChannel out = fout.getChannel();
 	    long n=0;
 	    long tot = 0;
 	    long fileBytes=iLf.length();
@@ -1052,18 +1099,6 @@ public class FileIo implements Runnable {
 	
 	    sendMsgToProgDlg(false,"",title_header+" : "+iLf.getName());
 
-//	    fileIoAreaX.clear();
-//	    while (in.read(fileIoArea)>=0) {
-//            n=fileIoAreaX.position();
-//            fileIoAreaX.flip();
-//            out.write(fileIoAreaX);
-//            tot += n;
-//	        if (n<fileBytes) 
-//	        	sendMsgToProgDlg(false,"",String.format(title_header+" %s %s%% completed.",fn,
-//	        					(tot*100)/fileBytes));
-//	        fileIoAreaX.clear();
-//        }
-	    
 	    while(( n = fin.read( fileIoArea )) > 0 ) {
 	    	if (!fileioThreadCtrl.isEnable()) {
 				fin.close();
@@ -1076,8 +1111,6 @@ public class FileIo implements Runnable {
 	        	sendMsgToProgDlg(false,"",String.format(title_header+" %s %s%% completed.",fn,
 	        					(tot*100)/fileBytes));
 	    }
-//		in.close();
-//	    out.close();
 	    fin.close();
 	    fout.close();
 	    

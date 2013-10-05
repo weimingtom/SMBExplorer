@@ -42,13 +42,13 @@ import android.widget.ListView;
 import com.sentaroh.android.Utilities.*;
 
 @SuppressLint("SimpleDateFormat")
-public class RetrieveFilelist implements Runnable  {
+public class RetrieveFileList implements Runnable  {
 	private final static String DEBUG_TAG = "SMBExplorerGetFilelist";
 	
 	private int debugLevel = 0;
 
 	private ListView msgListView;
-	private MsglistAdapter msglistAdapter;
+	private MsgListAdapter msglistAdapter;
 
 	private ThreadCtrl getFLCtrl=null;
 	
@@ -71,7 +71,7 @@ public class RetrieveFilelist implements Runnable  {
 	
 	private Context currContext;
 
-	public RetrieveFilelist(Context c, MsglistAdapter ma, ListView ml,
+	public RetrieveFileList(Context c, MsgListAdapter ma, ListView ml,
 			ThreadCtrl ac, int dl, String ru, List<String> d_list,
 			String user, String pass, NotifyEvent ne) {
 		currContext=c;
@@ -97,7 +97,7 @@ public class RetrieveFilelist implements Runnable  {
 	}
 
 	
-	public RetrieveFilelist(Context c, MsglistAdapter ma, ListView ml,
+	public RetrieveFileList(Context c, MsgListAdapter ma, ListView ml,
 			ThreadCtrl ac, int dl, String ru, 
 			ArrayList<TreeFilelistItem> fl,String user, String pass, NotifyEvent ne) {
 		currContext=c;
@@ -280,7 +280,9 @@ public class RetrieveFilelist implements Runnable  {
 						"CanRead="+fl[i].canRead()+","+
 						"CanWrite="+fl[i].canWrite()+","+
 						"isHidden="+fl[i].isHidden()+","+
-						"Parent="+fp);
+						"Parent="+fp+"," +
+						"Path="+fl[i].getPath()+","+
+						"CanonicalPath="+fl[i].getCanonicalPath());
 				} else {
 					getFLCtrl.setThreadResultCancelled();
 					sendDebugLogMsg(-1,"W","Cancelled by main task.");
@@ -333,7 +335,7 @@ public class RetrieveFilelist implements Runnable  {
 				@Override
 				public void run() {
 					msglistAdapter.add(
-							new MsglistItem(cat,
+							new MsgListItem(cat,
 									sdfDate.format(System.currentTimeMillis()),
 									sdfTime.format(System.currentTimeMillis()),
 									"DEBUG-I",msg));

@@ -23,7 +23,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-public class ProfilelistItem implements Comparable<ProfilelistItem>{
+public class ProfileListItem implements Comparable<ProfileListItem>{
 		private String profileType;
 		private String profileName;
 		private String profileActive;
@@ -33,7 +33,7 @@ public class ProfilelistItem implements Comparable<ProfilelistItem>{
 		private String profileShare;
 		private boolean profileIschk;
 		
-		public ProfilelistItem(String pft,String pfn, String pfa, 
+		public ProfileListItem(String pft,String pfn, String pfa, 
 				String pf_user, String pf_pass, String pf_addr, 
 				String pf_share, boolean ic){
 			profileType = pft;
@@ -58,7 +58,7 @@ public class ProfilelistItem implements Comparable<ProfilelistItem>{
 		public void setChk(boolean p){profileIschk=p;}
 		
 		@Override
-		public int compareTo(ProfilelistItem o) {
+		public int compareTo(ProfileListItem o) {
 			if(this.profileName != null)
 				return this.profileName.toLowerCase().compareTo(o.getName().toLowerCase()) ; 
 //				return this.filename.toLowerCase().compareTo(o.getName().toLowerCase()) * (-1);
