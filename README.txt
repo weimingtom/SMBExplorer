@@ -1,6 +1,6 @@
 SMBExplorer
 
-SMBExplorerはローカルおよびリモート　ファイルを扱う簡易ファイルマネージャーです。
+SMBExplorerはローカルおよびリモートのファイルを扱うAndroid端末の簡易ファイルマネージャーです。
 
 Build
 

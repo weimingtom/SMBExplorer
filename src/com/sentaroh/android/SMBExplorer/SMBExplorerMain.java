@@ -2385,7 +2385,8 @@ public class SMBExplorerMain extends FragmentActivity {
 									sdf.format(ff.lastModified())+", ", true, 0,0,false,
 									ff.canRead(),ff.canWrite(),
 									ff.isHidden(),ff.getParent(),0);
-							tfi.setSubDirItemCount(tfl.length);
+							if (tfl!=null) tfi.setSubDirItemCount(tfl.length);
+							else tfi.setSubDirItemCount(0);
 							dir.add(tfi);
 						} else {
 							fls.add(new TreeFilelistItem(ff.getName(), sdf.format(ff
