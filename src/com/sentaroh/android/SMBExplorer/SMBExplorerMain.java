@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.Externalizable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,7 +35,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -97,7 +100,13 @@ import android.widget.TextView;
 import static com.sentaroh.android.SMBExplorer.Constants.*;
 
 import com.sentaroh.android.Utilities.*;
-import com.sentaroh.android.Utilities.CustomContextMenuItem.CustomContextMenuOnClickListener;
+import com.sentaroh.android.Utilities.NotifyEventCompletion.NotifyEventCompletionListener;
+import com.sentaroh.android.Utilities.ContextMenu.CustomContextMenu;
+import com.sentaroh.android.Utilities.ContextMenu.CustomContextMenuItem.CustomContextMenuOnClickListener;
+import com.sentaroh.android.Utilities.Dialog.CommonDialog;
+import com.sentaroh.android.Utilities.Widget.CustomSpinnerAdapter;
+import com.sentaroh.android.Utilities.TreeFilelist.TreeFilelistAdapter;
+import com.sentaroh.android.Utilities.TreeFilelist.TreeFilelistItem;
 
 @SuppressLint({ "DefaultLocale", "SimpleDateFormat" })
 public class SMBExplorerMain extends FragmentActivity {
@@ -601,16 +610,16 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 
 	private void confirmTerminateApplication() {
-		NotifyEvent ne=new NotifyEvent(this);
+		NotifyEventCompletion ne=new NotifyEventCompletion(this);
 		// set commonDialog response 
-		ne.setListener(new ListenerInterface() {
+		ne.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
 				terminateApplication();
 			}
 	
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {}
+			public void negativeResponse(Context c,Object[] o) {}
 		});
 		commonDlg.showCommonDialog(true,"W",getString(R.string.msgs_terminate_confirm),"",ne);
 		return;
@@ -690,10 +699,10 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 	
 	private void loadRemoteFilelist(String url) {
-		NotifyEvent ne=new NotifyEvent(mContext);
-		ne.setListener(new ListenerInterface() {
+		NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
+		ne.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
 				remoteFileListAdapter = (TreeFilelistAdapter)o[0];
 				remoteFileListView.setAdapter(remoteFileListAdapter);
 				setFilelistCurrDir(remoteFileListDirBtn,remoteUrl);
@@ -702,7 +711,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {
+			public void negativeResponse(Context c,Object[] o) {
 				setFilelistCurrDir(remoteFileListDirBtn,
 						"Fileist creation error occured");
 			}
@@ -923,17 +932,17 @@ public class SMBExplorerMain extends FragmentActivity {
 						if (item.isSubDirLoaded()) 
 							remoteFileListAdapter.reshowChildItem(item,pos);
 						else {
-							NotifyEvent ne=new NotifyEvent(mContext);
-							ne.setListener(new ListenerInterface() {
+							NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
+							ne.setListener(new NotifyEventCompletionListener() {
 								@Override
-								public void eventPositiveResponse(Context c,Object[] o) {
+								public void positiveResponse(Context c,Object[] o) {
 									remoteFileListAdapter.addChildItem(item,
 											(TreeFilelistAdapter)o[0],pos);
 									setFilelistCurrDir(remoteFileListDirBtn,
 											remoteUrl);
 								}
 								@Override
-								public void eventNegativeResponse(Context c,Object[] o) {}
+								public void negativeResponse(Context c,Object[] o) {}
 							});
 							createRemoteFileList(item.getPath()+"/"+item.getName(),ne);
 						}
@@ -1485,11 +1494,11 @@ public class SMBExplorerMain extends FragmentActivity {
 		if (mtx != null) {
 			if (mtx.startsWith("text")) mtx="text/plain";
 			final String mt=mtx;
-			NotifyEvent ntfy=new NotifyEvent(this);
+			NotifyEventCompletion ntfy=new NotifyEventCompletion(this);
 			// set response listener
-			ntfy.setListener(new ListenerInterface() {
+			ntfy.setListener(new NotifyEventCompletionListener() {
 				@Override
-				public void eventPositiveResponse(Context c,Object[] o) {
+				public void positiveResponse(Context c,Object[] o) {
 //					setFixedOrientation(true);
 					try {
 						Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
@@ -1505,7 +1514,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					}
 				}
 				@Override
-				public void eventNegativeResponse(Context c,Object[] o) {
+				public void negativeResponse(Context c,Object[] o) {
 				}
 		
 			});
@@ -1520,7 +1529,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	private void downloadRemoteFile(TreeFilelistAdapter fla, 
 			TreeFilelistItem item, 
-			String url, NotifyEvent p_ntfy) {
+			String url, NotifyEventCompletion p_ntfy) {
 		fileioLinkParm.clear();
 		buildFileioLinkParm(fileioLinkParm, item.getPath(),
 				SMBExplorerRootDir+"/SMBExplorer/download/",item.getName(),"",
@@ -1531,7 +1540,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	private void startFileioTask(TreeFilelistAdapter fla,
 			final int op_cd,final ArrayList<FileIoLinkParm> alp,String item_name,
-			final NotifyEvent p_ntfy) {
+			final NotifyEventCompletion p_ntfy) {
 		setAllFilelistItemUnChecked(fla);
 		
 		String dst="";
@@ -1611,12 +1620,12 @@ public class SMBExplorerMain extends FragmentActivity {
 //		dialog.setCancelable(false);
 		dialog.show();
 
-		NotifyEvent ne=new NotifyEvent(mContext);
-		ne.setListener(new ListenerInterface() {
+		NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
+		ne.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
 				if (!tc.isThreadResultSuccess()) {
-					if (p_ntfy!=null) p_ntfy.notifyTolistener(false, null);
+					if (p_ntfy!=null) p_ntfy.notifyToListener(false, null);
 					if (tc.isThreadResultCancelled()) {
 						commonDlg.showCommonDialog(false,"W","File I/O task was cancelled.","",null);
 						sendLogMsg("W","File I/O task was cancelled.");
@@ -1628,7 +1637,7 @@ public class SMBExplorerMain extends FragmentActivity {
 						refreshFilelistView();
 					}
 				} else {
-					if (p_ntfy!=null) p_ntfy.notifyTolistener(true, null);
+					if (p_ntfy!=null) p_ntfy.notifyToListener(true, null);
 					else {
 						commonDlg.showCommonDialog(false,"I",fdst,fdmsg,null);
 						sendLogMsg("I",fdst+"\n"+fdmsg);
@@ -1641,7 +1650,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {
+			public void negativeResponse(Context c,Object[] o) {
 				
 			}
 		});
@@ -1686,10 +1695,10 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 		} else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) {
 			// Remote process
-			NotifyEvent ne=new NotifyEvent(mContext);
-			ne.setListener(new ListenerInterface() {
+			NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
+			ne.setListener(new NotifyEventCompletionListener() {
 				@Override
-				public void eventPositiveResponse(Context c,Object[] o) {
+				public void positiveResponse(Context c,Object[] o) {
 					TreeFilelistAdapter tadpt = (TreeFilelistAdapter)o[0];
 					for (int i=remoteFileListAdapter.getDataItemCount()-1;i>=0;i--) {
 //						Log.v("","r_dir="+refreshUrl+", p="+remoteFileListAdapter.getDataItem(i).getPath());
@@ -1719,7 +1728,7 @@ public class SMBExplorerMain extends FragmentActivity {
 //					remoteFileListAdapter.createShowList();
 				}
 				@Override
-				public void eventNegativeResponse(Context c,Object[] o) {}
+				public void negativeResponse(Context c,Object[] o) {}
 			});
 			createRemoteFileList(refreshUrl,ne);
 		} else return; //file list not selected
@@ -1995,11 +2004,11 @@ public class SMBExplorerMain extends FragmentActivity {
 		}
 
 		final String item_name=di;
-		NotifyEvent ne=new NotifyEvent(this);
+		NotifyEventCompletion ne=new NotifyEventCompletion(this);
 		// set commonDialog response 
-		ne.setListener(new ListenerInterface() {
+		ne.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] t) {
+			public void positiveResponse(Context c,Object[] t) {
 				for (int i=fla.getCount()-1;i>=0;i--) {
 					TreeFilelistItem item = fla.getDataItem(fla.getItem(i));
 					if (item.isChecked()) {
@@ -2021,7 +2030,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				else startFileioTask(fla,FILEIO_PARM_REMOTE_DELETE,fileioLinkParm,item_name,null);
 			}
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {
+			public void negativeResponse(Context c,Object[] o) {
 				setAllFilelistItemUnChecked(fla);
 				sendDebugLogMsg(1,"W","deleteItem canceled");
 			}
@@ -2194,11 +2203,11 @@ public class SMBExplorerMain extends FragmentActivity {
 			final ArrayList<String> d_list=new ArrayList<String>();
 			for (int i = 0; i < pasteFromList.size(); i++)
 				d_list.add(to_dir+pasteFromList.get(i).getName());
-			NotifyEvent ntfy=new NotifyEvent(this);
+			NotifyEventCompletion ntfy=new NotifyEventCompletion(this);
 			// set commonDialog response 
-			ntfy.setListener(new ListenerInterface() {
+			ntfy.setListener(new NotifyEventCompletionListener() {
 				@Override
-				public void eventPositiveResponse(Context c,Object[] o) {
+				public void positiveResponse(Context c,Object[] o) {
 					String fl_name="",fl_exists="";
 					boolean fl_conf_req=false;
 					for (int i=0;i<d_list.size();i++) 
@@ -2211,7 +2220,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					refreshUrl=to_dir;
 				}
 				@Override
-				public void eventNegativeResponse(Context c,Object[] o) {	}
+				public void negativeResponse(Context c,Object[] o) {	}
 			});
 			checkRemoteFileExists(remoteUrl, smbUser,smbPass, d_list, ntfy);
 		}
@@ -2278,16 +2287,16 @@ public class SMBExplorerMain extends FragmentActivity {
 			final String selected_name, boolean conf_req, String conf_msg) {
 			
 		if (conf_req) {
-			NotifyEvent ne=new NotifyEvent(this);
+			NotifyEventCompletion ne=new NotifyEventCompletion(this);
 			// set commonDialog response 
-			ne.setListener(new ListenerInterface() {
+			ne.setListener(new NotifyEventCompletionListener() {
 				@Override
-				public void eventPositiveResponse(Context c,Object[] o) {
+				public void positiveResponse(Context c,Object[] o) {
 					sendDebugLogMsg(1,"I","copyConfirm File I/O task invoked.");
 					startFileioTask(fla,cmd_cd,fileioLinkParm,selected_name,null);
 				}
 				@Override
-				public void eventNegativeResponse(Context c,Object[] o) {
+				public void negativeResponse(Context c,Object[] o) {
 					sendLogMsg("W","Ccopy override confirmation cancelled.");
 				}
 			});
@@ -2295,16 +2304,16 @@ public class SMBExplorerMain extends FragmentActivity {
 					conf_msg,ne);
 
 		} else {
-			NotifyEvent ne=new NotifyEvent(this);
+			NotifyEventCompletion ne=new NotifyEventCompletion(this);
 			// set commonDialog response 
-			ne.setListener(new ListenerInterface() {
+			ne.setListener(new NotifyEventCompletionListener() {
 				@Override
-				public void eventPositiveResponse(Context c,Object[] o) {
+				public void positiveResponse(Context c,Object[] o) {
 					sendDebugLogMsg(1,"I","copyConfirm FILE I/O task invoked.");
 					startFileioTask(fla,cmd_cd,fileioLinkParm,selected_name,null);
 				}
 				@Override
-				public void eventNegativeResponse(Context c,Object[] o) {
+				public void negativeResponse(Context c,Object[] o) {
 					sendLogMsg("W","Copy cancelled."+"\n"+selected_name);
 				}
 			});
@@ -2318,16 +2327,16 @@ public class SMBExplorerMain extends FragmentActivity {
 			final String selected_name, boolean conf_req, String conf_msg) {
 			
 		if (conf_req) {
-			NotifyEvent ne=new NotifyEvent(this);
+			NotifyEventCompletion ne=new NotifyEventCompletion(this);
 			// set commonDialog response 
-			ne.setListener(new ListenerInterface() {
+			ne.setListener(new NotifyEventCompletionListener() {
 				@Override
-				public void eventPositiveResponse(Context c,Object[] o) {
+				public void positiveResponse(Context c,Object[] o) {
 					sendDebugLogMsg(1,"I","moveConfirm File I/O task invoked.");
 					startFileioTask(fla,cmd_cd,fileioLinkParm,selected_name,null);
 				}
 				@Override
-				public void eventNegativeResponse(Context c,Object[] o) {
+				public void negativeResponse(Context c,Object[] o) {
 					sendLogMsg("W","Move override confirmation cancelled.");
 				}
 			});
@@ -2335,16 +2344,16 @@ public class SMBExplorerMain extends FragmentActivity {
 					conf_msg,ne);
 
 		} else {
-			NotifyEvent ne=new NotifyEvent(this);
+			NotifyEventCompletion ne=new NotifyEventCompletion(this);
 			// set commonDialog response 
-			ne.setListener(new ListenerInterface() {
+			ne.setListener(new NotifyEventCompletionListener() {
 				@Override
-				public void eventPositiveResponse(Context c,Object[] o) {
+				public void positiveResponse(Context c,Object[] o) {
 					sendDebugLogMsg(1,"I","moveConfirm FILE I/O task invoked.");
 					startFileioTask(fla,cmd_cd,fileioLinkParm,selected_name,null);
 				}
 				@Override
-				public void eventNegativeResponse(Context c,Object[] o) {
+				public void negativeResponse(Context c,Object[] o) {
 					sendLogMsg("W","Move cancelled."+"\n"+selected_name);
 				}
 			});
@@ -2377,7 +2386,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			try {
 				for (File ff : dirs) {
 					if (ff.canRead()) {
-						String tfs=GeneralUtilities.convertFileSize(ff.length());
+						String tfs=MiscUtil.convertFileSize(ff.length());
 						if (ff.isDirectory()) {
 							File tlf=new File(url+"/"+ff.getName());
 							String[] tfl=tlf.list();
@@ -2435,16 +2444,16 @@ public class SMBExplorerMain extends FragmentActivity {
 		return dir;
 	};
 
-	private void createRemoteFileList(String url, final NotifyEvent parent_event) {
+	private void createRemoteFileList(String url, final NotifyEventCompletion parent_event) {
 		result_createFileListView = true;
 		sendDebugLogMsg(1,"I","Create remote filelist remote url:"+url);
 	
 		// File List
-		final NotifyEvent n_event=new NotifyEvent(this);
+		final NotifyEventCompletion n_event=new NotifyEventCompletion(this);
 		// set listener 
-		n_event.setListener(new ListenerInterface() {
+		n_event.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
 				String itemname = "";
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				TreeFilelistAdapter filelist;
@@ -2470,7 +2479,7 @@ public class SMBExplorerMain extends FragmentActivity {
 								fi.setSubDirItemCount(sf_item.get(i).getSubDirItemCount());
 								dir.add(fi);
 							} else {
-							    String tfs = GeneralUtilities.convertFileSize(sf_item.get(i).getLength());
+							    String tfs = MiscUtil.convertFileSize(sf_item.get(i).getLength());
 	
 								fls.add(new TreeFilelistItem(itemname, 
 									sdf.format(sf_item.get(i).getLastModified())+","+tfs, false,
@@ -2499,12 +2508,12 @@ public class SMBExplorerMain extends FragmentActivity {
 				dir.addAll(fls);
 				filelist = new TreeFilelistAdapter(c);
 				filelist.setDataList(dir);
-				parent_event.notifyTolistener(true, new Object[]{filelist});
+				parent_event.notifyToListener(true, new Object[]{filelist});
 			}
 	
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {
-				parent_event.notifyTolistener(false, o);
+			public void negativeResponse(Context c,Object[] o) {
+				parent_event.notifyToListener(false, o);
 				commonDlg.showCommonDialog(false,"E",
 						getString(R.string.msgs_remote_file_list_create_error),(String)o[0],null);
 			}
@@ -2547,7 +2556,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 	
 	private void checkRemoteFileExists(String url, String user, String pass,
-			ArrayList<String> d_list, final NotifyEvent n_event) {
+			ArrayList<String> d_list, final NotifyEventCompletion n_event) {
 		final ArrayList<TreeFilelistItem> remoteFileList=new ArrayList<TreeFilelistItem>();
 		
 		final ThreadCtrl tc = new ThreadCtrl();
@@ -2557,24 +2566,24 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		setSpinDialog(dialog,tc);
 		
-		NotifyEvent ne=new NotifyEvent(this);
+		NotifyEventCompletion ne=new NotifyEventCompletion(this);
 		// set commonDialog response 
-		ne.setListener(new ListenerInterface() {
+		ne.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
 				dialog.dismiss();
 //				setFixedOrientation(false);
 				if (tc.isThreadResultSuccess()) {
-					n_event.notifyTolistener(true, o);
+					n_event.notifyToListener(true, o);
 				} else {
 					String err="";
 					if (tc.isThreadResultCancelled()) err="Filelist was cancelled";
 					else err=tc.getThreadMessage();
-					n_event.notifyTolistener(false, new Object[]{err});
+					n_event.notifyToListener(false, new Object[]{err});
 				}
 			}
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {
+			public void negativeResponse(Context c,Object[] o) {
 				dialog.dismiss();
 			}
 		});
@@ -2588,7 +2597,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	}
 
 	private void readRemoteFile(String url,String user, String pass,
-				final NotifyEvent n_event) {
+				final NotifyEventCompletion n_event) {
 		final ArrayList<TreeFilelistItem> remoteFileList=new ArrayList<TreeFilelistItem>();
 		
 		final ThreadCtrl tc = new ThreadCtrl();
@@ -2598,25 +2607,25 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		setSpinDialog(dialog,tc);
 
-		NotifyEvent ne=new NotifyEvent(this);
+		NotifyEventCompletion ne=new NotifyEventCompletion(this);
 		// set commonDialog response 
-		ne.setListener(new ListenerInterface() {
+		ne.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
 				dialog.dismiss();
 //				setFixedOrientation(false);
 				if (tc.isThreadResultSuccess()) {
-					n_event.notifyTolistener(true, new Object[]{remoteFileList});
+					n_event.notifyToListener(true, new Object[]{remoteFileList});
 				} else {
 					String err="";
 					if (tc.isThreadResultCancelled()) err="Filelist was cancelled";
 					else err=tc.getThreadMessage();
-					n_event.notifyTolistener(false, new Object[]{err});
+					n_event.notifyToListener(false, new Object[]{err});
 				}
 			}
 
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {
+			public void negativeResponse(Context c,Object[] o) {
 				dialog.dismiss();
 			}
 		});
@@ -2658,13 +2667,13 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 	
 	private void setRemoteShare(final String prof_user, final String prof_pass,
-			final String prof_addr, final NotifyEvent p_ntfy) {
+			final String prof_addr, final NotifyEventCompletion p_ntfy) {
 		final ArrayList<String> rows = new ArrayList<String>();
 
-		NotifyEvent ntfy=new NotifyEvent(mContext);
-		ntfy.setListener(new ListenerInterface() {
+		NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
+		ntfy.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
 				TreeFilelistAdapter tfl = (TreeFilelistAdapter)o[0]; 
 				
 				for (int i=0;i<tfl.getCount();i++){
@@ -2699,7 +2708,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			        	dialog.dismiss();
 //			        	setFixedOrientation(false);
 						// リストアイテムを選択したときの処理
-			        	p_ntfy.notifyTolistener(true,  
+			        	p_ntfy.notifyToListener(true,  
 			        			new Object[]{rows.get(idx).toString()});
 		        	}
 		        });	 
@@ -2709,7 +2718,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		            public void onClick(View v) {
 		                dialog.dismiss();
 //		                setFixedOrientation(false);
-		                p_ntfy.notifyTolistener(true, new Object[]{""});
+		                p_ntfy.notifyToListener(true, new Object[]{""});
 		            }
 		        });
 				// Cancelリスナーの指定
@@ -2726,8 +2735,8 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {
-				p_ntfy.notifyTolistener(false, 
+			public void negativeResponse(Context c,Object[] o) {
+				p_ntfy.notifyToListener(false, 
 						new Object[]{"Remote file list creation error"});
 			}
 		});
@@ -2775,16 +2784,16 @@ public class SMBExplorerMain extends FragmentActivity {
 		Button btnAddr = (Button) dialog.findViewById(R.id.remote_profile_addrbtn);
 		btnAddr.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				NotifyEvent ntfy=new NotifyEvent(mContext);
+				NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
 				//Listen setRemoteShare response 
-				ntfy.setListener(new ListenerInterface() {
+				ntfy.setListener(new NotifyEventCompletionListener() {
 					@Override
-					public void eventPositiveResponse(Context arg0, Object[] arg1) {
+					public void positiveResponse(Context arg0, Object[] arg1) {
 						editaddr.setText((String)arg1[0]);
 					}
 
 					@Override
-					public void eventNegativeResponse(Context arg0, Object[] arg1) {
+					public void negativeResponse(Context arg0, Object[] arg1) {
 						dlg_msg.setText((String)arg1[0]);
 					}
 					
@@ -2807,16 +2816,16 @@ public class SMBExplorerMain extends FragmentActivity {
 
 				setJcifsProperties(prof_user, prof_pass);
 
-				NotifyEvent ntfy=new NotifyEvent(mContext);
+				NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
 				//Listen setRemoteShare response 
-				ntfy.setListener(new ListenerInterface() {
+				ntfy.setListener(new NotifyEventCompletionListener() {
 					@Override
-					public void eventPositiveResponse(Context arg0, Object[] arg1) {
+					public void positiveResponse(Context arg0, Object[] arg1) {
 						editshare.setText((String)arg1[0]);
 					}
 
 					@Override
-					public void eventNegativeResponse(Context arg0, Object[] arg1) {
+					public void negativeResponse(Context arg0, Object[] arg1) {
 						dlg_msg.setText((String)arg1[0]);
 					}
 					
@@ -2924,16 +2933,16 @@ public class SMBExplorerMain extends FragmentActivity {
 		Button btnAddr = (Button) dialog.findViewById(R.id.remote_profile_addrbtn);
 		btnAddr.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				NotifyEvent ntfy=new NotifyEvent(mContext);
+				NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
 				//Listen setRemoteShare response 
-				ntfy.setListener(new ListenerInterface() {
+				ntfy.setListener(new NotifyEventCompletionListener() {
 					@Override
-					public void eventPositiveResponse(Context arg0, Object[] arg1) {
+					public void positiveResponse(Context arg0, Object[] arg1) {
 						editaddr.setText((String)arg1[0]);
 					}
 
 					@Override
-					public void eventNegativeResponse(Context arg0, Object[] arg1) {
+					public void negativeResponse(Context arg0, Object[] arg1) {
 						dlg_msg.setText((String)arg1[0]);
 					}
 					
@@ -2956,16 +2965,16 @@ public class SMBExplorerMain extends FragmentActivity {
 
 				setJcifsProperties(prof_user, prof_pass);
 
-				NotifyEvent ntfy=new NotifyEvent(mContext);
+				NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
 				//Listen setRemoteShare response 
-				ntfy.setListener(new ListenerInterface() {
+				ntfy.setListener(new NotifyEventCompletionListener() {
 					@Override
-					public void eventPositiveResponse(Context arg0, Object[] arg1) {
+					public void positiveResponse(Context arg0, Object[] arg1) {
 						editshare.setText((String)arg1[0]);
 					}
 
 					@Override
-					public void eventNegativeResponse(Context arg0, Object[] arg1) {
+					public void negativeResponse(Context arg0, Object[] arg1) {
 						dlg_msg.setText((String)arg1[0]);
 					}
 					
@@ -3079,11 +3088,11 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	private void deleteRemoteProfile(String item_name, final int item_num) {
 		
-		NotifyEvent ne=new NotifyEvent(this);
+		NotifyEventCompletion ne=new NotifyEventCompletion(this);
 		// set commonDialog response 
-		ne.setListener(new ListenerInterface() {
+		ne.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
 				ProfileListItem item = profileAdapter
 						.getItem(item_num);
 
@@ -3098,7 +3107,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {
+			public void negativeResponse(Context c,Object[] o) {
 				
 			}
 		});
@@ -3247,12 +3256,12 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	};
 	
-	private void setRemoteAddr(final NotifyEvent p_ntfy) {
+	private void setRemoteAddr(final NotifyEventCompletion p_ntfy) {
 		final ArrayList<String> rows = new ArrayList<String>();
-		NotifyEvent ntfy=new NotifyEvent(mContext);
-		ntfy.setListener(new ListenerInterface() {
+		NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
+		ntfy.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
 				if (rows.size()<1) rows.add(getString(R.string.msgs_ip_address_no_address));
 				//カスタムダイアログの生成
 			    final Dialog dialog=new Dialog(c);
@@ -3285,7 +3294,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			        	// リストアイテムを選択したときの処理
 			            dialog.dismiss();
 //			            setFixedOrientation(false);
-						p_ntfy.notifyTolistener(true,new Object[]{rows.get(idx)});
+						p_ntfy.notifyToListener(true,new Object[]{rows.get(idx)});
 			        }
 			    });
 			    //RESCANボタンの指定
@@ -3295,16 +3304,16 @@ public class SMBExplorerMain extends FragmentActivity {
 			        	if (!toVal.equals("")) 
 			        		scanIpAddrTimeout = Integer.parseInt(toVal);
 			            rows.clear();
-			            NotifyEvent ntfy=new NotifyEvent(mContext);
-			    		ntfy.setListener(new ListenerInterface() {
+			            NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
+			    		ntfy.setListener(new NotifyEventCompletionListener() {
 			    			@Override
-			    			public void eventPositiveResponse(Context c,Object[] o) {
+			    			public void positiveResponse(Context c,Object[] o) {
 			    			    lv.setAdapter(new ArrayAdapter<String>(mContext, R.layout.simple_list_item_1o, rows));
 			    			    lv.setScrollingCacheEnabled(false);
 			    			    lv.setScrollbarFadingEnabled(false);
 			    			}
 			    			@Override
-			    			public void eventNegativeResponse(Context c,Object[] o) {}
+			    			public void negativeResponse(Context c,Object[] o) {}
 
 			    		});
 			    		createRemoteIpAddrList(rows,ntfy);
@@ -3317,7 +3326,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			        public void onClick(View v) {
 			            dialog.dismiss();
 //			            setFixedOrientation(false);
-			            p_ntfy.notifyTolistener(false, null);
+			            p_ntfy.notifyToListener(false, null);
 			        }
 			    });
 				// Cancelリスナーの指定
@@ -3333,7 +3342,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			    dialog.show();
 			}
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {}
+			public void negativeResponse(Context c,Object[] o) {}
 
 		});
 		getScanAddressRange(rows,ntfy);
@@ -3343,7 +3352,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	private String scanIpAddrSubnet;
 	private int scanIpAddrBeginAddr,scanIpAddrEndAddr, scanIpAddrTimeout=0;
 	private void getScanAddressRange(final ArrayList<String> rows, 
-			final NotifyEvent p_ntfy) {
+			final NotifyEventCompletion p_ntfy) {
 		final String from=getLocalIpAddress();
 		String subnet=from.substring(0,from.lastIndexOf("."));
 		String subnet_o1, subnet_o2,subnet_o3;
@@ -3460,7 +3469,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	boolean cancelIpAddressListCreation =false;
 	private void createRemoteIpAddrList(final ArrayList<String> rows,
-			final NotifyEvent p_ntfy) {
+			final NotifyEventCompletion p_ntfy) {
 		final Handler handler=new Handler();
 		final String curr_ip=getLocalIpAddress();
 		cancelIpAddressListCreation =false;
@@ -3522,7 +3531,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					public void run() {
 						dialog.dismiss();
 						if (p_ntfy!=null)
-							p_ntfy.notifyTolistener(true, null);
+							p_ntfy.notifyToListener(true, null);
 					}
 				});
 			}
@@ -3686,11 +3695,11 @@ public class SMBExplorerMain extends FragmentActivity {
 
 		sendDebugLogMsg(1,"I","Import profile dlg.");
 
-		NotifyEvent ne=new NotifyEvent(mContext);
+		NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
 		// set commonDialog response 
-		ne.setListener(new ListenerInterface() {
+		ne.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
     			String fpath=(String)o[0];
     			
 				ProfileListAdapter tfl = createProfileList(true, fpath);
@@ -3705,7 +3714,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {}
+			public void negativeResponse(Context c,Object[] o) {}
 		});
 		commonDlg.fileOnlySelectWithCreate(curr_dir,
 				"/SMBExplorer",file_name,"Select import file.",ne);
@@ -3714,11 +3723,11 @@ public class SMBExplorerMain extends FragmentActivity {
 	public void exportProfileDlg(final String curr_dir, final String ifn) {
 		sendDebugLogMsg(1,"I","Export profile.");
 
-		NotifyEvent ne=new NotifyEvent(mContext);
+		NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
 		// set commonDialog response 
-		ne.setListener(new ListenerInterface() {
+		ne.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
     			String fpath=(String)o[0];
     			String fd=fpath.substring(0,fpath.lastIndexOf("/"));
     			String fn=fpath.replace(fd+"/","");
@@ -3726,7 +3735,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {}
+			public void negativeResponse(Context c,Object[] o) {}
 		});
 		commonDlg.fileOnlySelectWithCreate(curr_dir,
 				"/SMBExplorer",ifn,"Select export file.",ne);
@@ -3739,11 +3748,11 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		File lf = new File(profile_dir + "/" + profile_filename);
 		if (lf.exists()) {
-			NotifyEvent ne=new NotifyEvent(this);
+			NotifyEventCompletion ne=new NotifyEventCompletion(this);
 			// set commonDialog response 
-			ne.setListener(new ListenerInterface() {
+			ne.setListener(new NotifyEventCompletionListener() {
 				@Override
-				public void eventPositiveResponse(Context c,Object[] o) {
+				public void positiveResponse(Context c,Object[] o) {
 					saveProfile(true,profile_dir,profile_filename);
 					commonDlg.showCommonDialog(false,"I",
 							String.format(getString(R.string.msgs_select_export_dlg_success),
@@ -3751,7 +3760,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				}
 				
 				@Override
-				public void eventNegativeResponse(Context c,Object[] o) {}
+				public void negativeResponse(Context c,Object[] o) {}
 			});
 			commonDlg.showCommonDialog(true,"I",
 					String.format(getString(R.string.msgs_select_export_dlg_override),
@@ -3789,18 +3798,18 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	public void saveLogMessageDlg(final String curr_dir, final String ifn) {
 
-		NotifyEvent ne=new NotifyEvent(mContext);
+		NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
 		// set commonDialog response 
-		ne.setListener(new ListenerInterface() {
+		ne.setListener(new NotifyEventCompletionListener() {
 			@Override
-			public void eventPositiveResponse(Context c,Object[] o) {
+			public void positiveResponse(Context c,Object[] o) {
     			String fpath=(String)o[0];
     			String fd=fpath.substring(0,fpath.lastIndexOf("/"));
     			String fn=fpath.replace(fd+"/","");
     			saveLogMessageToFile(fd,fn);
 			}
 			@Override
-			public void eventNegativeResponse(Context c,Object[] o) {}
+			public void negativeResponse(Context c,Object[] o) {}
 		});
 		commonDlg.fileOnlySelectWithCreate(SMBExplorerRootDir,
 				curr_dir,ifn,"Select a destination for log messages.",ne);
@@ -3811,11 +3820,11 @@ public class SMBExplorerMain extends FragmentActivity {
 
 		File lf = new File(profile_dir + "/" + profile_filename);
 		if (lf.exists()) {
-			NotifyEvent ne=new NotifyEvent(this);
+			NotifyEventCompletion ne=new NotifyEventCompletion(this);
 			// set commonDialog response 
-			ne.setListener(new ListenerInterface() {
+			ne.setListener(new NotifyEventCompletionListener() {
 				@Override
-				public void eventPositiveResponse(Context c,Object[] o) {
+				public void positiveResponse(Context c,Object[] o) {
 	
 					writeLogMessageToFile(profile_dir,profile_filename);
 					commonDlg.showCommonDialog(false,"I", 
@@ -3824,7 +3833,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				}
 			
 				@Override
-				public void eventNegativeResponse(Context c,Object[] o) {
+				public void negativeResponse(Context c,Object[] o) {
 					
 				}
 			});
@@ -3893,7 +3902,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		if (isTaskDataExisted() && !messageListAdapter.resetDataChanged()) return; 
 		
-		SMBExplorerTaskDataHolder data = new SMBExplorerTaskDataHolder();
+		ActivityDataHolder data = new ActivityDataHolder();
 
 		data.msglist=messageListAdapter.getAllItem();
 		
@@ -3940,7 +3949,7 @@ public class SMBExplorerMain extends FragmentActivity {
 //		    FileInputStream fis = openFileInput(SMBSYNC_SERIALIZABLE_FILE_NAME);
 		    FileInputStream fis = new FileInputStream(lf); 
 		    ObjectInputStream ois = new ObjectInputStream(fis);
-		    SMBExplorerTaskDataHolder data = (SMBExplorerTaskDataHolder) ois.readObject();
+		    ActivityDataHolder data = (ActivityDataHolder) ois.readObject();
 		    ois.close();
 		    lf.delete();
 		    
@@ -4012,3 +4021,77 @@ public class SMBExplorerMain extends FragmentActivity {
        }  
     }
 }
+class ActivityDataHolder implements Externalizable  {
+
+	private static final long serialVersionUID = 1L;
+
+	ArrayList<MsgListItem> msglist;
+	ArrayList<TreeFilelistItem> local_tfl;
+	ArrayList<TreeFilelistItem> remote_tfl;
+	
+	ArrayList<TreeFilelistItem> paste_list=null;
+	String paste_from_url=null, paste_to_url=null, paste_item_list=null;
+	boolean is_paste_copy=false,is_paste_enabled=false, is_paste_from_local=false;
+	
+	int msgPos,msgPosTop=0,profPos,profPosTop=0,lclPos,lclPosTop=0,remPos=0,remPosTop=0;
+
+	public ActivityDataHolder() {};
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void readExternal(ObjectInput objin) throws IOException,
+			ClassNotFoundException {
+		Log.v("","rd");
+		long sid=objin.readLong();
+		if (serialVersionUID!=sid) {
+			throw new IOException("serialVersionUID was not matched by saved UID");
+		}
+
+		msglist=(ArrayList<MsgListItem>) SerializeUtil.readArrayList(objin);
+		local_tfl=(ArrayList<TreeFilelistItem>) SerializeUtil.readArrayList(objin);
+		remote_tfl=(ArrayList<TreeFilelistItem>) SerializeUtil.readArrayList(objin);
+		paste_list=(ArrayList<TreeFilelistItem>) SerializeUtil.readArrayList(objin);
+		paste_from_url=SerializeUtil.readUtf(objin);
+		paste_to_url=SerializeUtil.readUtf(objin);
+		paste_item_list=SerializeUtil.readUtf(objin);
+		
+		is_paste_copy=objin.readBoolean();
+		is_paste_enabled=objin.readBoolean();
+		is_paste_from_local=objin.readBoolean();
+		
+		msgPos=objin.readInt();
+		msgPosTop=objin.readInt();
+		profPos=objin.readInt();
+		profPosTop=objin.readInt();
+		lclPos=objin.readInt();
+		lclPosTop=objin.readInt();
+		remPos=objin.readInt();
+		remPosTop=objin.readInt();
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput objout) throws IOException {
+		Log.v("","wr");
+		objout.writeLong(serialVersionUID);
+		SerializeUtil.writeArrayList(objout, msglist);
+		SerializeUtil.writeArrayList(objout, local_tfl);
+		SerializeUtil.writeArrayList(objout, remote_tfl);
+		SerializeUtil.writeArrayList(objout, paste_list);
+		SerializeUtil.writeUtf(objout, paste_from_url);
+		SerializeUtil.writeUtf(objout, paste_to_url);
+		SerializeUtil.writeUtf(objout, paste_item_list);
+		
+		objout.writeBoolean(is_paste_copy);
+		objout.writeBoolean(is_paste_enabled);
+		objout.writeBoolean(is_paste_from_local);
+		
+		objout.writeInt(msgPos);
+		objout.writeInt(msgPosTop);
+		objout.writeInt(profPos);
+		objout.writeInt(profPosTop);
+		objout.writeInt(lclPos);
+		objout.writeInt(lclPosTop);
+		objout.writeInt(remPos);
+		objout.writeInt(remPosTop);
+	}
+};

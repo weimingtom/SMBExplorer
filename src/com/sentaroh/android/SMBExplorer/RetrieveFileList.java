@@ -39,7 +39,9 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ListView;
+
 import com.sentaroh.android.Utilities.*;
+import com.sentaroh.android.Utilities.TreeFilelist.TreeFilelistItem;
 
 @SuppressLint("SimpleDateFormat")
 public class RetrieveFileList implements Runnable  {
@@ -58,7 +60,7 @@ public class RetrieveFileList implements Runnable  {
 	
 	private String opCode="FL";
 	
-	private NotifyEvent notifyEvent ;
+	private NotifyEventCompletion notifyEvent ;
 	
 	final static private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
 	final static private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
@@ -73,7 +75,7 @@ public class RetrieveFileList implements Runnable  {
 
 	public RetrieveFileList(Context c, MsgListAdapter ma, ListView ml,
 			ThreadCtrl ac, int dl, String ru, List<String> d_list,
-			String user, String pass, NotifyEvent ne) {
+			String user, String pass, NotifyEventCompletion ne) {
 		currContext=c;
 		msglistAdapter=ma;
 		msgListView=ml;
@@ -99,7 +101,7 @@ public class RetrieveFileList implements Runnable  {
 	
 	public RetrieveFileList(Context c, MsgListAdapter ma, ListView ml,
 			ThreadCtrl ac, int dl, String ru, 
-			ArrayList<TreeFilelistItem> fl,String user, String pass, NotifyEvent ne) {
+			ArrayList<TreeFilelistItem> fl,String user, String pass, NotifyEventCompletion ne) {
 		currContext=c;
 		msglistAdapter=ma;
 		msgListView=ml;
@@ -140,7 +142,7 @@ public class RetrieveFileList implements Runnable  {
 		uiHandler.post(new Runnable(){
 			@Override
 			public void run() {
-				notifyEvent.notifyTolistener(true, null);
+				notifyEvent.notifyToListener(true, null);
 			}
 		});
 		getFLCtrl.setDisable();
@@ -168,7 +170,7 @@ public class RetrieveFileList implements Runnable  {
     			String end_msg=ex.toString()+st_msg;
     			getFLCtrl.setThreadMessage(end_msg);
     			getFLCtrl.setDisable();
-    			notifyEvent.notifyTolistener(true, null);
+    			notifyEvent.notifyToListener(true, null);
                 // re-throw critical exception further to the os (important)
 //                defaultUEH.uncaughtException(thread, ex);
             }

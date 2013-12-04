@@ -23,8 +23,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
@@ -73,9 +73,9 @@ public class MsgListAdapter extends ArrayAdapter<MsgListItem> {
 		return tmp;
 	};
 	
-	public List<MsgListItem> getAllItem() {return items;}
+	public ArrayList<MsgListItem> getAllItem() {return items;}
 	
-	public void setAllItem(List<MsgListItem> p) {
+	public void setAllItem(ArrayList<MsgListItem> p) {
 		items.clear();
 		if (p!=null) items.addAll(p);
 		notifyDataSetChanged();
@@ -147,3 +147,44 @@ public class MsgListAdapter extends ArrayAdapter<MsgListItem> {
 	}
 }
 
+class MsgListItem implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String msgCat, msgBody, msgDate, msgTime,msgIssuer;
+	
+	public MsgListItem(String cat, String mdate, String mtime, 
+			String issuer, String msg)
+	{
+		msgCat=cat;
+		msgBody= msg;
+		msgDate=mdate;
+		msgTime=mtime;
+		msgIssuer=issuer;
+	}
+	public String getCat()
+	{
+		return msgCat;
+	}
+	public String getMdate()
+	{
+		return msgDate;
+	}
+	public String getMtime()
+	{
+		return msgTime;
+	}
+	public String getIssuer()
+	{
+		return msgIssuer;
+	}
+	public String getMsg()
+	{
+		return msgBody;
+	}
+	public String toString() {
+		return msgCat+" "+msgDate+" "+msgTime+" "+
+				(msgIssuer+"          ").substring(0,9)+msgBody;
+	}
+}

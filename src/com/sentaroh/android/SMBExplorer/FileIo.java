@@ -72,7 +72,7 @@ public class FileIo implements Runnable {
 	
 	private int SMB_BUFF_SIZE =65536*4;
 	
-	private NotifyEvent notifyEvent ;
+	private NotifyEventCompletion notifyEvent ;
 
 	private boolean fileioTaskResultOk = true;
 	
@@ -108,7 +108,7 @@ public class FileIo implements Runnable {
 	// @Override
 	public FileIo(ListView lv,
 			MsgListAdapter ma, Dialog pd, int op_cd,
-			ArrayList<FileIoLinkParm> alp, ThreadCtrl tc, int dl,NotifyEvent ne, 
+			ArrayList<FileIoLinkParm> alp, ThreadCtrl tc, int dl,NotifyEventCompletion ne, 
 			Context cc) {
 		
 		msgListView = lv;
@@ -167,10 +167,14 @@ public class FileIo implements Runnable {
     		sendLogMsg("E","MediaScannerConnection timeout occured.");
     };
 	
+    private long taskBeginTime=0;
+    
 	@Override
 	public void run() {
 		
-		sendDebugLogMsg(1,"I","Task has started.");
+		sendLogMsg("I","Task has started.");
+		
+		taskBeginTime=System.currentTimeMillis();
 		
 		waitMediaScanner(true);
 		
@@ -192,8 +196,9 @@ public class FileIo implements Runnable {
 			if (!fileioTaskResultOk) 
 				break;
 		}
-		sendDebugLogMsg(1,"I","Task was ended. fileioTaskResultOk="+fileioTaskResultOk+
+		sendLogMsg("I","Task was ended. fileioTaskResultOk="+fileioTaskResultOk+
 				", fileioThreadCtrl:"+fileioThreadCtrl.toString());
+		sendLogMsg("I","Task elapsed time="+(System.currentTimeMillis()-taskBeginTime));
 		if (fileioTaskResultOk) {
 			fileioThreadCtrl.setThreadResultSuccess();
 			sendDebugLogMsg(1,"I","Task was endeded without error.");			
@@ -398,7 +403,7 @@ public class FileIo implements Runnable {
 			@Override
 			public void run() {
 				threadDlg.dismiss();
-				notifyEvent.notifyTolistener(true, null);
+				notifyEvent.notifyToListener(true, null);
 			}
 		});		
 
@@ -1118,7 +1123,7 @@ public class FileIo implements Runnable {
 	    if (setLastModified) oLf.setLastModified(iLf.lastModified());
 	    long t = System.currentTimeMillis() - t0;
 	    if (settingsMslScan) scanMediaStoreLibraryFile(toUrl);
-	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+
+	    sendDebugLogMsg(1,"I",fromUrl+" was copied to "+toUrl+", "+
 	    		tot + " bytes transfered in " + 
 	    		t  + " mili seconds at " + calTransferRate(tot,t));
 //	    Log.v("","copy success");
