@@ -34,6 +34,7 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
@@ -49,13 +50,17 @@ import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 import android.widget.ListView;
 import android.widget.TextView;
+
 import com.sentaroh.android.Utilities.*;
+
 import static com.sentaroh.android.SMBExplorer.Constants.*;
 
 public class FileIo implements Runnable {
@@ -171,49 +176,58 @@ public class FileIo implements Runnable {
     
 	@Override
 	public void run() {
-		
-		sendLogMsg("I","Task has started.");
-		
-		taskBeginTime=System.currentTimeMillis();
-		
-		waitMediaScanner(true);
-		
-		for (int i=0;i<fileioLinkParm.size();i++) {
-			file_tgt_url1 = fileioLinkParm.get(i).getUrl1();
-			file_tgt_url2 = fileioLinkParm.get(i).getUrl2();
-			file_tgt_name = fileioLinkParm.get(i).getName();
-			file_tgt_newname = fileioLinkParm.get(i).getNew();
-			file_userid = fileioLinkParm.get(i).getUser();
-			file_password = fileioLinkParm.get(i).getPass();
-			allcopy=fileioLinkParm.get(i).isAllCopyEnabled();
-			sendDebugLogMsg(9,"I","FILEIO task invoked."+
-					" url1="+file_tgt_url1+
-					", url2="+file_tgt_url2+
-					", name="+file_tgt_name+", new="+file_tgt_newname+
-					", uid="+file_userid+
-					", password="+file_password);
-			fileOperation();
-			if (!fileioTaskResultOk) 
-				break;
+		final WakeLock wake_lock=((PowerManager)currContext.getSystemService(Context.POWER_SERVICE))
+	    			.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK
+	    				| PowerManager.ACQUIRE_CAUSES_WAKEUP
+//	   	    				| PowerManager.ON_AFTER_RELEASE
+	    				, "SMBExplorer-ScreenOn");
+		try {
+			wake_lock.acquire();
+			sendLogMsg("I","Task has started.");
+			
+			taskBeginTime=System.currentTimeMillis();
+			
+			waitMediaScanner(true);
+			
+			for (int i=0;i<fileioLinkParm.size();i++) {
+				file_tgt_url1 = fileioLinkParm.get(i).getUrl1();
+				file_tgt_url2 = fileioLinkParm.get(i).getUrl2();
+				file_tgt_name = fileioLinkParm.get(i).getName();
+				file_tgt_newname = fileioLinkParm.get(i).getNew();
+				file_userid = fileioLinkParm.get(i).getUser();
+				file_password = fileioLinkParm.get(i).getPass();
+				allcopy=fileioLinkParm.get(i).isAllCopyEnabled();
+				sendDebugLogMsg(9,"I","FILEIO task invoked."+
+						" url1="+file_tgt_url1+
+						", url2="+file_tgt_url2+
+						", name="+file_tgt_name+", new="+file_tgt_newname+
+						", uid="+file_userid+
+						", password="+file_password);
+				fileOperation();
+				if (!fileioTaskResultOk) 
+					break;
+			}
+			sendLogMsg("I","Task was ended. fileioTaskResultOk="+fileioTaskResultOk+
+					", fileioThreadCtrl:"+fileioThreadCtrl.toString());
+			sendLogMsg("I","Task elapsed time="+(System.currentTimeMillis()-taskBeginTime));
+			if (fileioTaskResultOk) {
+				fileioThreadCtrl.setThreadResultSuccess();
+				sendDebugLogMsg(1,"I","Task was endeded without error.");			
+			} else if (fileioThreadCtrl.isEnable()) {
+				fileioThreadCtrl.setThreadResultError();
+				sendLogMsg("W","Task was ended with error.");
+			}
+			else {
+				fileioThreadCtrl.setThreadResultCancelled();
+				sendLogMsg("W","Task was cancelled.");
+			}
+			fileioThreadCtrl.setDisable();
+			mediaScanner.disconnect();
+			waitMediaScanner(false);
+			notifyThreadTerminate(); //dismiss progress dialog
+		} finally {
+			wake_lock.release();
 		}
-		sendLogMsg("I","Task was ended. fileioTaskResultOk="+fileioTaskResultOk+
-				", fileioThreadCtrl:"+fileioThreadCtrl.toString());
-		sendLogMsg("I","Task elapsed time="+(System.currentTimeMillis()-taskBeginTime));
-		if (fileioTaskResultOk) {
-			fileioThreadCtrl.setThreadResultSuccess();
-			sendDebugLogMsg(1,"I","Task was endeded without error.");			
-		} else if (fileioThreadCtrl.isEnable()) {
-			fileioThreadCtrl.setThreadResultError();
-			sendLogMsg("W","Task was ended with error.");
-		}
-		else {
-			fileioThreadCtrl.setThreadResultCancelled();
-			sendLogMsg("W","Task was cancelled.");
-		}
-		fileioThreadCtrl.setDisable();
-		mediaScanner.disconnect();
-		waitMediaScanner(false);
-		notifyThreadTerminate(); //dismiss progress dialog
 	};
 	
 	private void fileOperation() {
@@ -323,7 +337,7 @@ public class FileIo implements Runnable {
 					fileioTaskResultOk=deleteLocalItem(
 							file_tgt_url1+"/"+file_tgt_name);
 				break;
-			case FILEIO_PARM_DOWLOAD_RMOTE_FILE:
+			case FILEIO_PARM_DOWLOAD_REMOTE_FILE:
 				setJcifsParm() ;
 				sendMsgToProgDlg(false,"","Downloading remote file '"+file_tgt_name+"'");
 				fileioTaskResultOk=downloadRemoteFile(
@@ -428,6 +442,7 @@ public class FileIo implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 			sendLogMsg("E","Create error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Create error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -453,6 +468,7 @@ public class FileIo implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 			sendLogMsg("E","Create error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Create error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -477,6 +493,7 @@ public class FileIo implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 			sendLogMsg("E","Rename error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Rename error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -502,6 +519,7 @@ public class FileIo implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 			sendLogMsg("E","Rename error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Rename error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -523,6 +541,7 @@ public class FileIo implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 			sendLogMsg("E","Delete error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Delete error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -568,6 +587,7 @@ public class FileIo implements Runnable {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Delete error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Delete error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -598,14 +618,17 @@ public class FileIo implements Runnable {
 		} catch (SmbException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Delete error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Delete error:"+e.toString());
 			return false;
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Delete error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Delete error:"+e.toString());
 			return false;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Delete error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Delete error:"+e.toString());
 			return false;
 		}
 	    return true;
@@ -638,16 +661,19 @@ public class FileIo implements Runnable {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -691,21 +717,25 @@ public class FileIo implements Runnable {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (SmbException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -746,26 +776,31 @@ public class FileIo implements Runnable {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (SmbException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -803,26 +838,31 @@ public class FileIo implements Runnable {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (SmbException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
 			sendDebugLogMsg(1,"E","Copy error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -867,6 +907,7 @@ public class FileIo implements Runnable {
 				} catch (IOException e) {
 					e.printStackTrace();
 					sendLogMsg("E","Copy error:"+e.toString());
+					fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 					result=false;
 					return false;
 				}
@@ -897,10 +938,10 @@ public class FileIo implements Runnable {
     		}
     		if (i==j) result=true;
     	}
-    	Log.v("","isSameMountPoint result="+result+", f_fp="+f_fp+", t_fp="+t_fp);
+    	sendDebugLogMsg(1,"I","isSameMountPoint result="+result+", f_fp="+f_fp+", t_fp="+t_fp);
     	return result;
     };
-
+    
     private boolean moveRemoteToRemote(String fromUrl, String toUrl)  {
         SmbFile hf,hfd, ohf = null;
         boolean result = false;
@@ -955,16 +996,19 @@ public class FileIo implements Runnable {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Move error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Move error:"+e.toString());
 			result=false;
 			return false;
 		} catch (SmbException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Move error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Move error:"+e.toString());
 			result=false;
 			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Move error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Move error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -1007,31 +1051,37 @@ public class FileIo implements Runnable {
 				} else {
 					result=false;
 					sendLogMsg("E","EA founded, copy canceled");
+					fileioThreadCtrl.setThreadMessage("EA founded, copy canceled");
 				}
 			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-			sendLogMsg("E","Copy error:"+e.toString());
+			sendLogMsg("E","Download error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Download error:"+e.toString());
 			result=false;
 			return false;
 		} catch (SmbException e) {
 			e.printStackTrace();
-			sendLogMsg("E","Copy error:"+e.toString());
+			sendLogMsg("E","Download error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Download error:"+e.toString());
 			result=false;
 			return false;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
-			sendLogMsg("E","Copy error:"+e.toString());
+			sendLogMsg("E","Download error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Download error:"+e.toString());
 			result=false;
 			return false;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			sendLogMsg("E","Copy error:"+e.toString());
+			sendLogMsg("E","Download error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Download error:"+e.toString());
 			result=false;
 			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
-			sendLogMsg("E","Copy error:"+e.toString());
+			sendLogMsg("E","Download error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Download error:"+e.toString());
 			result=false;
 			return false;
 		}

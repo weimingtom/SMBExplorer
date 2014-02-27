@@ -1534,7 +1534,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		buildFileioLinkParm(fileioLinkParm, item.getPath(),
 				SMBExplorerRootDir+"/SMBExplorer/download/",item.getName(),"",
 				smbUser,smbPass,false);
-		startFileioTask(fla,FILEIO_PARM_DOWLOAD_RMOTE_FILE,fileioLinkParm,
+		startFileioTask(fla,FILEIO_PARM_DOWLOAD_REMOTE_FILE,fileioLinkParm,
 				item.getName(),p_ntfy);
 	};
 	
@@ -1578,7 +1578,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				dt="Move";
 				dst="Following dirs/files were moved.";
 				break;
-			case FILEIO_PARM_DOWLOAD_RMOTE_FILE:
+			case FILEIO_PARM_DOWLOAD_REMOTE_FILE:
 				dt="Download";
 				dst="";
 			default:
@@ -1632,7 +1632,9 @@ public class SMBExplorerMain extends FragmentActivity {
 						refreshFilelistView();
 					}
 					else {
-						commonDlg.showCommonDialog(false,"E","File I/O task was failed.","",null);
+						commonDlg.showCommonDialog(false,"E",
+								"File I/O task was failed."+"\n"+
+								tc.getThreadMessage(),"",null);
 						sendLogMsg("E","File I/O task was failed.");
 						refreshFilelistView();
 					}
@@ -2592,8 +2594,8 @@ public class SMBExplorerMain extends FragmentActivity {
 				messageListView, tc, debugLevel, url, d_list,user,pass,ne));
 		th.start();
 		
-		showDelayedProgDlg(200,dialog,tc);
-	
+//		showDelayedProgDlg(200,dialog,tc);
+		showDelayedProgDlg(0,dialog,tc);
 	}
 
 	private void readRemoteFile(String url,String user, String pass,
@@ -2635,7 +2637,8 @@ public class SMBExplorerMain extends FragmentActivity {
 				remoteFileList,user,pass,ne));
 		th.start();
 		
-		showDelayedProgDlg(1000,dialog,tc);
+//		showDelayedProgDlg(1000,dialog,tc);
+		showDelayedProgDlg(0,dialog,tc);
 
 	};
 
@@ -2646,7 +2649,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			@Override
 			public void run() {
 				try {
-					Thread.sleep(wt);
+					if (wt>0) Thread.sleep(wt);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
