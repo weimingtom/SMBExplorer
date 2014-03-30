@@ -77,7 +77,7 @@ public class FileIo implements Runnable {
 	
 	private int SMB_BUFF_SIZE =65536*4;
 	
-	private NotifyEventCompletion notifyEvent ;
+	private NotifyEvent notifyEvent ;
 
 	private boolean fileioTaskResultOk = true;
 	
@@ -113,7 +113,7 @@ public class FileIo implements Runnable {
 	// @Override
 	public FileIo(ListView lv,
 			MsgListAdapter ma, Dialog pd, int op_cd,
-			ArrayList<FileIoLinkParm> alp, ThreadCtrl tc, int dl,NotifyEventCompletion ne, 
+			ArrayList<FileIoLinkParm> alp, ThreadCtrl tc, int dl,NotifyEvent ne, 
 			Context cc) {
 		
 		msgListView = lv;

@@ -100,7 +100,7 @@ import android.widget.TextView;
 import static com.sentaroh.android.SMBExplorer.Constants.*;
 
 import com.sentaroh.android.Utilities.*;
-import com.sentaroh.android.Utilities.NotifyEventCompletion.NotifyEventCompletionListener;
+import com.sentaroh.android.Utilities.NotifyEvent.NotifyEventListener;
 import com.sentaroh.android.Utilities.ContextMenu.CustomContextMenu;
 import com.sentaroh.android.Utilities.ContextMenu.CustomContextMenuItem.CustomContextMenuOnClickListener;
 import com.sentaroh.android.Utilities.Dialog.CommonDialog;
@@ -610,9 +610,9 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 
 	private void confirmTerminateApplication() {
-		NotifyEventCompletion ne=new NotifyEventCompletion(this);
+		NotifyEvent ne=new NotifyEvent(this);
 		// set commonDialog response 
-		ne.setListener(new NotifyEventCompletionListener() {
+		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
 				terminateApplication();
@@ -699,8 +699,8 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 	
 	private void loadRemoteFilelist(String url) {
-		NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
-		ne.setListener(new NotifyEventCompletionListener() {
+		NotifyEvent ne=new NotifyEvent(mContext);
+		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
 				remoteFileListAdapter = (TreeFilelistAdapter)o[0];
@@ -932,8 +932,8 @@ public class SMBExplorerMain extends FragmentActivity {
 						if (item.isSubDirLoaded()) 
 							remoteFileListAdapter.reshowChildItem(item,pos);
 						else {
-							NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
-							ne.setListener(new NotifyEventCompletionListener() {
+							NotifyEvent ne=new NotifyEvent(mContext);
+							ne.setListener(new NotifyEventListener() {
 								@Override
 								public void positiveResponse(Context c,Object[] o) {
 									remoteFileListAdapter.addChildItem(item,
@@ -1494,9 +1494,9 @@ public class SMBExplorerMain extends FragmentActivity {
 		if (mtx != null) {
 			if (mtx.startsWith("text")) mtx="text/plain";
 			final String mt=mtx;
-			NotifyEventCompletion ntfy=new NotifyEventCompletion(this);
+			NotifyEvent ntfy=new NotifyEvent(this);
 			// set response listener
-			ntfy.setListener(new NotifyEventCompletionListener() {
+			ntfy.setListener(new NotifyEventListener() {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
 //					setFixedOrientation(true);
@@ -1529,7 +1529,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	private void downloadRemoteFile(TreeFilelistAdapter fla, 
 			TreeFilelistItem item, 
-			String url, NotifyEventCompletion p_ntfy) {
+			String url, NotifyEvent p_ntfy) {
 		fileioLinkParm.clear();
 		buildFileioLinkParm(fileioLinkParm, item.getPath(),
 				SMBExplorerRootDir+"/SMBExplorer/download/",item.getName(),"",
@@ -1540,7 +1540,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	private void startFileioTask(TreeFilelistAdapter fla,
 			final int op_cd,final ArrayList<FileIoLinkParm> alp,String item_name,
-			final NotifyEventCompletion p_ntfy) {
+			final NotifyEvent p_ntfy) {
 		setAllFilelistItemUnChecked(fla);
 		
 		String dst="";
@@ -1620,8 +1620,8 @@ public class SMBExplorerMain extends FragmentActivity {
 //		dialog.setCancelable(false);
 		dialog.show();
 
-		NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
-		ne.setListener(new NotifyEventCompletionListener() {
+		NotifyEvent ne=new NotifyEvent(mContext);
+		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
 				if (!tc.isThreadResultSuccess()) {
@@ -1697,8 +1697,8 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 		} else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) {
 			// Remote process
-			NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
-			ne.setListener(new NotifyEventCompletionListener() {
+			NotifyEvent ne=new NotifyEvent(mContext);
+			ne.setListener(new NotifyEventListener() {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
 					TreeFilelistAdapter tadpt = (TreeFilelistAdapter)o[0];
@@ -2006,9 +2006,9 @@ public class SMBExplorerMain extends FragmentActivity {
 		}
 
 		final String item_name=di;
-		NotifyEventCompletion ne=new NotifyEventCompletion(this);
+		NotifyEvent ne=new NotifyEvent(this);
 		// set commonDialog response 
-		ne.setListener(new NotifyEventCompletionListener() {
+		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] t) {
 				for (int i=fla.getCount()-1;i>=0;i--) {
@@ -2205,9 +2205,9 @@ public class SMBExplorerMain extends FragmentActivity {
 			final ArrayList<String> d_list=new ArrayList<String>();
 			for (int i = 0; i < pasteFromList.size(); i++)
 				d_list.add(to_dir+pasteFromList.get(i).getName());
-			NotifyEventCompletion ntfy=new NotifyEventCompletion(this);
+			NotifyEvent ntfy=new NotifyEvent(this);
 			// set commonDialog response 
-			ntfy.setListener(new NotifyEventCompletionListener() {
+			ntfy.setListener(new NotifyEventListener() {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
 					String fl_name="",fl_exists="";
@@ -2289,9 +2289,9 @@ public class SMBExplorerMain extends FragmentActivity {
 			final String selected_name, boolean conf_req, String conf_msg) {
 			
 		if (conf_req) {
-			NotifyEventCompletion ne=new NotifyEventCompletion(this);
+			NotifyEvent ne=new NotifyEvent(this);
 			// set commonDialog response 
-			ne.setListener(new NotifyEventCompletionListener() {
+			ne.setListener(new NotifyEventListener() {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
 					sendDebugLogMsg(1,"I","copyConfirm File I/O task invoked.");
@@ -2306,9 +2306,9 @@ public class SMBExplorerMain extends FragmentActivity {
 					conf_msg,ne);
 
 		} else {
-			NotifyEventCompletion ne=new NotifyEventCompletion(this);
+			NotifyEvent ne=new NotifyEvent(this);
 			// set commonDialog response 
-			ne.setListener(new NotifyEventCompletionListener() {
+			ne.setListener(new NotifyEventListener() {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
 					sendDebugLogMsg(1,"I","copyConfirm FILE I/O task invoked.");
@@ -2329,9 +2329,9 @@ public class SMBExplorerMain extends FragmentActivity {
 			final String selected_name, boolean conf_req, String conf_msg) {
 			
 		if (conf_req) {
-			NotifyEventCompletion ne=new NotifyEventCompletion(this);
+			NotifyEvent ne=new NotifyEvent(this);
 			// set commonDialog response 
-			ne.setListener(new NotifyEventCompletionListener() {
+			ne.setListener(new NotifyEventListener() {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
 					sendDebugLogMsg(1,"I","moveConfirm File I/O task invoked.");
@@ -2346,9 +2346,9 @@ public class SMBExplorerMain extends FragmentActivity {
 					conf_msg,ne);
 
 		} else {
-			NotifyEventCompletion ne=new NotifyEventCompletion(this);
+			NotifyEvent ne=new NotifyEvent(this);
 			// set commonDialog response 
-			ne.setListener(new NotifyEventCompletionListener() {
+			ne.setListener(new NotifyEventListener() {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
 					sendDebugLogMsg(1,"I","moveConfirm FILE I/O task invoked.");
@@ -2446,14 +2446,14 @@ public class SMBExplorerMain extends FragmentActivity {
 		return dir;
 	};
 
-	private void createRemoteFileList(String url, final NotifyEventCompletion parent_event) {
+	private void createRemoteFileList(String url, final NotifyEvent parent_event) {
 		result_createFileListView = true;
 		sendDebugLogMsg(1,"I","Create remote filelist remote url:"+url);
 	
 		// File List
-		final NotifyEventCompletion n_event=new NotifyEventCompletion(this);
+		final NotifyEvent n_event=new NotifyEvent(this);
 		// set listener 
-		n_event.setListener(new NotifyEventCompletionListener() {
+		n_event.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
 				String itemname = "";
@@ -2558,7 +2558,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 	
 	private void checkRemoteFileExists(String url, String user, String pass,
-			ArrayList<String> d_list, final NotifyEventCompletion n_event) {
+			ArrayList<String> d_list, final NotifyEvent n_event) {
 		final ArrayList<TreeFilelistItem> remoteFileList=new ArrayList<TreeFilelistItem>();
 		
 		final ThreadCtrl tc = new ThreadCtrl();
@@ -2568,9 +2568,9 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		setSpinDialog(dialog,tc);
 		
-		NotifyEventCompletion ne=new NotifyEventCompletion(this);
+		NotifyEvent ne=new NotifyEvent(this);
 		// set commonDialog response 
-		ne.setListener(new NotifyEventCompletionListener() {
+		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
 				dialog.dismiss();
@@ -2599,7 +2599,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	}
 
 	private void readRemoteFile(String url,String user, String pass,
-				final NotifyEventCompletion n_event) {
+				final NotifyEvent n_event) {
 		final ArrayList<TreeFilelistItem> remoteFileList=new ArrayList<TreeFilelistItem>();
 		
 		final ThreadCtrl tc = new ThreadCtrl();
@@ -2609,9 +2609,9 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		setSpinDialog(dialog,tc);
 
-		NotifyEventCompletion ne=new NotifyEventCompletion(this);
+		NotifyEvent ne=new NotifyEvent(this);
 		// set commonDialog response 
-		ne.setListener(new NotifyEventCompletionListener() {
+		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
 				dialog.dismiss();
@@ -2670,11 +2670,11 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 	
 	private void setRemoteShare(final String prof_user, final String prof_pass,
-			final String prof_addr, final NotifyEventCompletion p_ntfy) {
+			final String prof_addr, final NotifyEvent p_ntfy) {
 		final ArrayList<String> rows = new ArrayList<String>();
 
-		NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
-		ntfy.setListener(new NotifyEventCompletionListener() {
+		NotifyEvent ntfy=new NotifyEvent(mContext);
+		ntfy.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
 				TreeFilelistAdapter tfl = (TreeFilelistAdapter)o[0]; 
@@ -2787,9 +2787,9 @@ public class SMBExplorerMain extends FragmentActivity {
 		Button btnAddr = (Button) dialog.findViewById(R.id.remote_profile_addrbtn);
 		btnAddr.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
+				NotifyEvent ntfy=new NotifyEvent(mContext);
 				//Listen setRemoteShare response 
-				ntfy.setListener(new NotifyEventCompletionListener() {
+				ntfy.setListener(new NotifyEventListener() {
 					@Override
 					public void positiveResponse(Context arg0, Object[] arg1) {
 						editaddr.setText((String)arg1[0]);
@@ -2819,9 +2819,9 @@ public class SMBExplorerMain extends FragmentActivity {
 
 				setJcifsProperties(prof_user, prof_pass);
 
-				NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
+				NotifyEvent ntfy=new NotifyEvent(mContext);
 				//Listen setRemoteShare response 
-				ntfy.setListener(new NotifyEventCompletionListener() {
+				ntfy.setListener(new NotifyEventListener() {
 					@Override
 					public void positiveResponse(Context arg0, Object[] arg1) {
 						editshare.setText((String)arg1[0]);
@@ -2936,9 +2936,9 @@ public class SMBExplorerMain extends FragmentActivity {
 		Button btnAddr = (Button) dialog.findViewById(R.id.remote_profile_addrbtn);
 		btnAddr.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
+				NotifyEvent ntfy=new NotifyEvent(mContext);
 				//Listen setRemoteShare response 
-				ntfy.setListener(new NotifyEventCompletionListener() {
+				ntfy.setListener(new NotifyEventListener() {
 					@Override
 					public void positiveResponse(Context arg0, Object[] arg1) {
 						editaddr.setText((String)arg1[0]);
@@ -2968,9 +2968,9 @@ public class SMBExplorerMain extends FragmentActivity {
 
 				setJcifsProperties(prof_user, prof_pass);
 
-				NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
+				NotifyEvent ntfy=new NotifyEvent(mContext);
 				//Listen setRemoteShare response 
-				ntfy.setListener(new NotifyEventCompletionListener() {
+				ntfy.setListener(new NotifyEventListener() {
 					@Override
 					public void positiveResponse(Context arg0, Object[] arg1) {
 						editshare.setText((String)arg1[0]);
@@ -3091,9 +3091,9 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	private void deleteRemoteProfile(String item_name, final int item_num) {
 		
-		NotifyEventCompletion ne=new NotifyEventCompletion(this);
+		NotifyEvent ne=new NotifyEvent(this);
 		// set commonDialog response 
-		ne.setListener(new NotifyEventCompletionListener() {
+		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
 				ProfileListItem item = profileAdapter
@@ -3259,10 +3259,10 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	};
 	
-	private void setRemoteAddr(final NotifyEventCompletion p_ntfy) {
+	private void setRemoteAddr(final NotifyEvent p_ntfy) {
 		final ArrayList<String> rows = new ArrayList<String>();
-		NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
-		ntfy.setListener(new NotifyEventCompletionListener() {
+		NotifyEvent ntfy=new NotifyEvent(mContext);
+		ntfy.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
 				if (rows.size()<1) rows.add(getString(R.string.msgs_ip_address_no_address));
@@ -3307,8 +3307,8 @@ public class SMBExplorerMain extends FragmentActivity {
 			        	if (!toVal.equals("")) 
 			        		scanIpAddrTimeout = Integer.parseInt(toVal);
 			            rows.clear();
-			            NotifyEventCompletion ntfy=new NotifyEventCompletion(mContext);
-			    		ntfy.setListener(new NotifyEventCompletionListener() {
+			            NotifyEvent ntfy=new NotifyEvent(mContext);
+			    		ntfy.setListener(new NotifyEventListener() {
 			    			@Override
 			    			public void positiveResponse(Context c,Object[] o) {
 			    			    lv.setAdapter(new ArrayAdapter<String>(mContext, R.layout.simple_list_item_1o, rows));
@@ -3355,7 +3355,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	private String scanIpAddrSubnet;
 	private int scanIpAddrBeginAddr,scanIpAddrEndAddr, scanIpAddrTimeout=0;
 	private void getScanAddressRange(final ArrayList<String> rows, 
-			final NotifyEventCompletion p_ntfy) {
+			final NotifyEvent p_ntfy) {
 		final String from=getLocalIpAddress();
 		String subnet=from.substring(0,from.lastIndexOf("."));
 		String subnet_o1, subnet_o2,subnet_o3;
@@ -3472,7 +3472,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	boolean cancelIpAddressListCreation =false;
 	private void createRemoteIpAddrList(final ArrayList<String> rows,
-			final NotifyEventCompletion p_ntfy) {
+			final NotifyEvent p_ntfy) {
 		final Handler handler=new Handler();
 		final String curr_ip=getLocalIpAddress();
 		cancelIpAddressListCreation =false;
@@ -3698,9 +3698,9 @@ public class SMBExplorerMain extends FragmentActivity {
 
 		sendDebugLogMsg(1,"I","Import profile dlg.");
 
-		NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
+		NotifyEvent ne=new NotifyEvent(mContext);
 		// set commonDialog response 
-		ne.setListener(new NotifyEventCompletionListener() {
+		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
     			String fpath=(String)o[0];
@@ -3726,9 +3726,9 @@ public class SMBExplorerMain extends FragmentActivity {
 	public void exportProfileDlg(final String curr_dir, final String ifn) {
 		sendDebugLogMsg(1,"I","Export profile.");
 
-		NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
+		NotifyEvent ne=new NotifyEvent(mContext);
 		// set commonDialog response 
-		ne.setListener(new NotifyEventCompletionListener() {
+		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
     			String fpath=(String)o[0];
@@ -3751,9 +3751,9 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		File lf = new File(profile_dir + "/" + profile_filename);
 		if (lf.exists()) {
-			NotifyEventCompletion ne=new NotifyEventCompletion(this);
+			NotifyEvent ne=new NotifyEvent(this);
 			// set commonDialog response 
-			ne.setListener(new NotifyEventCompletionListener() {
+			ne.setListener(new NotifyEventListener() {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
 					saveProfile(true,profile_dir,profile_filename);
@@ -3801,9 +3801,9 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	public void saveLogMessageDlg(final String curr_dir, final String ifn) {
 
-		NotifyEventCompletion ne=new NotifyEventCompletion(mContext);
+		NotifyEvent ne=new NotifyEvent(mContext);
 		// set commonDialog response 
-		ne.setListener(new NotifyEventCompletionListener() {
+		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
     			String fpath=(String)o[0];
@@ -3823,9 +3823,9 @@ public class SMBExplorerMain extends FragmentActivity {
 
 		File lf = new File(profile_dir + "/" + profile_filename);
 		if (lf.exists()) {
-			NotifyEventCompletion ne=new NotifyEventCompletion(this);
+			NotifyEvent ne=new NotifyEvent(this);
 			// set commonDialog response 
-			ne.setListener(new NotifyEventCompletionListener() {
+			ne.setListener(new NotifyEventListener() {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
 	

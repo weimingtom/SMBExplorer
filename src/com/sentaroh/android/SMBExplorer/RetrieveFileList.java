@@ -60,7 +60,7 @@ public class RetrieveFileList implements Runnable  {
 	
 	private String opCode="FL";
 	
-	private NotifyEventCompletion notifyEvent ;
+	private NotifyEvent notifyEvent ;
 	
 	final static private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
 	final static private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
@@ -75,7 +75,7 @@ public class RetrieveFileList implements Runnable  {
 
 	public RetrieveFileList(Context c, MsgListAdapter ma, ListView ml,
 			ThreadCtrl ac, int dl, String ru, List<String> d_list,
-			String user, String pass, NotifyEventCompletion ne) {
+			String user, String pass, NotifyEvent ne) {
 		currContext=c;
 		msglistAdapter=ma;
 		msgListView=ml;
@@ -101,7 +101,7 @@ public class RetrieveFileList implements Runnable  {
 	
 	public RetrieveFileList(Context c, MsgListAdapter ma, ListView ml,
 			ThreadCtrl ac, int dl, String ru, 
-			ArrayList<TreeFilelistItem> fl,String user, String pass, NotifyEventCompletion ne) {
+			ArrayList<TreeFilelistItem> fl,String user, String pass, NotifyEvent ne) {
 		currContext=c;
 		msglistAdapter=ma;
 		msgListView=ml;
