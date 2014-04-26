@@ -251,40 +251,57 @@ public class RetrieveFileList implements Runnable  {
 //					long fl,long lm, boolean ic, boolean cr,boolean cw,boolean hd);
 					String fn=fl[i].getName();
 					if (fn.endsWith("/")) fn=fn.substring(0,fn.length()-1);
-					String fp=fl[i].getParent();
-					if (fp.endsWith("/")) fp=fp.substring(0,fp.lastIndexOf("/"));
-					int dirct=0;
-					if (fl[i].canRead() && fl[i].isDirectory() && !fn.equals("IPC$") &&
-							!fn.equals(".android_secure") &&
+					if (fl[i].canRead() && 
+//							fl[i].isDirectory() && 
+							!fn.equals("IPC$") &&
 							!fn.equals("System Volume Information")) {
-						SmbFile tdf=new SmbFile(fl[i].getPath(),ntlmPaswordAuth);
-						SmbFile[] tfl=tdf.listFiles();
-						dirct=tfl.length;
+						String fp=fl[i].getParent();
+						if (fp.endsWith("/")) fp=fp.substring(0,fp.lastIndexOf("/"));
+						int dirct=0;
+						try {
+							if (fl[i].isDirectory()) {
+								SmbFile tdf=new SmbFile(fl[i].getPath(),ntlmPaswordAuth);
+								SmbFile[] tfl=tdf.listFiles();
+								dirct=tfl.length;
+							}
+						} catch (SmbException e) {
+							sendDebugLogMsg(0,"I","File ignored by exception: "+e.toString()+", "+
+									"Name="+fn+", "+
+									"isDirectory="+fl[i].isDirectory()+", "+
+									"Length="+fl[i].length()+", "+
+									"LastModified="+fl[i].lastModified()+", "+
+									"CanRead="+fl[i].canRead()+", "+
+									"CanWrite="+fl[i].canWrite()+", "+
+									"isHidden="+fl[i].isHidden()+", "+
+									"Parent="+fp+", " +
+									"Path="+fl[i].getPath()+", "+
+									"CanonicalPath="+fl[i].getCanonicalPath());
+						}					
+						TreeFilelistItem fi=new TreeFilelistItem(
+								fn,
+								"",
+								fl[i].isDirectory(),
+								fl[i].length(),
+								fl[i].lastModified(),
+								false,
+								fl[i].canRead(),
+								fl[i].canWrite(),
+								fl[i].isHidden(),
+								fp,0);
+						fi.setSubDirItemCount(dirct);
+						remoteFileList.add(fi);
+						sendDebugLogMsg(2,"I","Filelist added: "+
+							"Name="+fn+", "+
+							"isDirectory="+fl[i].isDirectory()+", "+
+							"Length="+fl[i].length()+", "+
+							"LastModified="+fl[i].lastModified()+", "+
+							"CanRead="+fl[i].canRead()+", "+
+							"CanWrite="+fl[i].canWrite()+", "+
+							"isHidden="+fl[i].isHidden()+", "+
+							"Parent="+fp+", " +
+							"Path="+fl[i].getPath()+", "+
+							"CanonicalPath="+fl[i].getCanonicalPath());
 					}
-					TreeFilelistItem fi=new TreeFilelistItem(
-							fn,
-							"",
-							fl[i].isDirectory(),
-							fl[i].length(),
-							fl[i].lastModified(),
-							false,
-							fl[i].canRead(),
-							fl[i].canWrite(),
-							fl[i].isHidden(),
-							fp,0);
-					fi.setSubDirItemCount(dirct);
-					remoteFileList.add(fi);
-					sendDebugLogMsg(2,"I","Filelist detail: "+
-						"Name="+fn+","+
-						"isDirectory="+fl[i].isDirectory()+","+
-						"Length="+fl[i].length()+","+
-						"LastModified="+fl[i].lastModified()+","+
-						"CanRead="+fl[i].canRead()+","+
-						"CanWrite="+fl[i].canWrite()+","+
-						"isHidden="+fl[i].isHidden()+","+
-						"Parent="+fp+"," +
-						"Path="+fl[i].getPath()+","+
-						"CanonicalPath="+fl[i].getCanonicalPath());
 				} else {
 					getFLCtrl.setThreadResultCancelled();
 					sendDebugLogMsg(-1,"W","Cancelled by main task.");

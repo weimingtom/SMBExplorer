@@ -1340,7 +1340,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		if (item.isDir()) pd=item.getPath()+"/"+item.getName()+"/";
 		else pd=item.getPath()+"/";
 //		Log.v("","pd="+pd);
-		if (isPasteEnabled && isValidPasteDestination(pd)) {
+		if (isPasteEnabled && isValidPasteDestination(pd) && item.isDir()) {
 			ccMenu.addMenuItem("Paste to /"+item.getName()+
 					" from ("+pasteItemList+")",R.drawable.blank)
 		  	.setOnClickListener(new CustomContextMenuOnClickListener() {
@@ -1889,6 +1889,8 @@ public class SMBExplorerMain extends FragmentActivity {
 				"Name="+item.getName()+"\n"+
 				"Directory : "+item.isDir()+"\n"+
 				"Hidden : "+item.isHidden()+"\n"+
+				"canRead :"+item.canRead()+"\n"+
+				"canWrite :"+item.canWrite()+"\n"+
 				"Length : "+item.getLength()+"\n"+
 				"Last modified : "+df.format(item.getLastModified())+"\n"+
 				"Last modified(ms):"+item.getLastModified();
@@ -2824,7 +2826,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				ntfy.setListener(new NotifyEventListener() {
 					@Override
 					public void positiveResponse(Context arg0, Object[] arg1) {
-						editshare.setText((String)arg1[0]);
+						if (!((String)arg1[0]).equals("")) editshare.setText((String)arg1[0]);
 					}
 
 					@Override
@@ -2880,6 +2882,8 @@ public class SMBExplorerMain extends FragmentActivity {
 
 					profileListView.setSelectionFromTop(pos,topPos);
 					profileAdapter.setNotifyOnChange(true);
+					
+					setRemoteDirBtnListener();
 				}
 			}
 		});
@@ -2973,7 +2977,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				ntfy.setListener(new NotifyEventListener() {
 					@Override
 					public void positiveResponse(Context arg0, Object[] arg1) {
-						editshare.setText((String)arg1[0]);
+						if (!((String)arg1[0]).equals("")) editshare.setText((String)arg1[0]);
 					}
 
 					@Override
@@ -3107,6 +3111,8 @@ public class SMBExplorerMain extends FragmentActivity {
 				saveProfile(false,"","");
 
 				profileListView.setSelectionFromTop(pos,topPos);
+				
+				setRemoteDirBtnListener();
 			}
 
 			@Override
@@ -3120,7 +3126,6 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	}
 
-	@SuppressWarnings("resource")
 	private ProfileListAdapter createProfileList(boolean sdcard, String fp) {
 
 		ProfileListAdapter pfl = null;
