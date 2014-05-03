@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -109,7 +111,10 @@ public class FileIo implements Runnable {
 	private MediaScannerConnection mediaScanner ;
 	
 	private Handler uiHandler = new Handler() ;
-	
+
+    private static byte[] fileIoArea = null;
+    private static ByteBuffer mFileChBuffer = null;
+
 	// @Override
 	public FileIo(ListView lv,
 			MsgListAdapter ma, Dialog pd, int op_cd,
@@ -182,6 +187,12 @@ public class FileIo implements Runnable {
 //	   	    				| PowerManager.ON_AFTER_RELEASE
 	    				, "SMBExplorer-ScreenOn");
 		try {
+			if (fileIoArea==null) {
+//				Log.v("","allocated");
+			    fileIoArea = new byte[SMB_BUFF_SIZE*8];
+			    mFileChBuffer = ByteBuffer.allocateDirect(SMB_BUFF_SIZE*8);
+			}
+
 			wake_lock.acquire();
 			sendLogMsg("I","Task has started.");
 			
@@ -227,6 +238,8 @@ public class FileIo implements Runnable {
 			notifyThreadTerminate(); //dismiss progress dialog
 		} finally {
 			wake_lock.release();
+//		    fileIoArea = null;
+//		    mFileChBuffer = null;
 		}
 	};
 	
@@ -1088,58 +1101,57 @@ public class FileIo implements Runnable {
 		return result;
     };
 
-    private byte[] fileIoArea = new byte[SMB_BUFF_SIZE*2];
-//    private ByteBuffer mFileChBuffer = ByteBuffer.allocateDirect(SMB_BUFF_SIZE*2);
-//	private boolean copyFileLocalToLocalByChannel(File iLf, String fromUrl, String toUrl,
-//    		String title_header) 
-//			throws IOException {
-//    	
-//        File oLf;
-//		long t0 = System.currentTimeMillis();
-//	    FileInputStream fin = new FileInputStream( iLf );
-//	    FileChannel inCh = fin.getChannel();
-//	    FileOutputStream fout = new FileOutputStream(toUrl);
-//	    FileChannel outCh = fout.getChannel();
-//	    long n=0;
-//	    long tot = 0;
-//	    long fileBytes=iLf.length();
-//	    String fn=iLf.getName();
-//	
-//	    sendMsgToProgDlg(false,"",title_header+" : "+iLf.getName());
-//
-//	    mFileChBuffer.clear();
-//	    while (( n = inCh.read( mFileChBuffer )) > 0) {
-//            n=mFileChBuffer.position();
-//            mFileChBuffer.flip();
-//            outCh.write(mFileChBuffer);
-//            tot += n;
-//	        if (n<fileBytes) 
-//	        	sendMsgToProgDlg(false,"",String.format(title_header+" %s %s%% completed.",fn,
-//	        					(tot*100)/fileBytes));
-//	        mFileChBuffer.clear();
-//        }
-//	    
-//	    inCh.close();
-//	    outCh.close();
-//	    
-//	    oLf = new File(toUrl);
-//	    if (setLastModified) oLf.setLastModified(iLf.lastModified());
-//	    long t = System.currentTimeMillis() - t0;
-//	    if (settingsMslScan) scanMediaStoreLibraryFile(toUrl);
-//	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+
-//	    		tot + " bytes transfered in " + 
-//	    		t  + " mili seconds at " + calTransferRate(tot,t));
-//	    return true;
-//	}
+	private boolean copyFileLocalToLocalByChannel(File iLf, String fromUrl, String toUrl,
+    		String title_header) 
+			throws IOException {
+    	
+        File oLf;
+		long t0 = System.currentTimeMillis();
+	    FileInputStream fin = new FileInputStream( iLf );
+	    FileChannel inCh = fin.getChannel();
+	    FileOutputStream fout = new FileOutputStream(toUrl);
+	    FileChannel outCh = fout.getChannel();
+	    long n=0;
+	    long tot = 0;
+	    long fileBytes=iLf.length();
+	    String fn=iLf.getName();
+	
+	    sendMsgToProgDlg(false,"",title_header+" : "+iLf.getName());
 
-//    private boolean copyFileLocalToLocal(File iLf, String fromUrl, String toUrl,
-//    		String title_header) 
-//			throws IOException {
-//    	copyFileLocalToLocalByChannel(iLf, fromUrl, toUrl, title_header);
-//    	return copyFileLocalToLocalByStream(iLf, fromUrl, toUrl, title_header);
-//    }
-//    
+	    mFileChBuffer.clear();
+	    while (( n = inCh.read( mFileChBuffer )) > 0) {
+            n=mFileChBuffer.position();
+            mFileChBuffer.flip();
+            outCh.write(mFileChBuffer);
+            tot += n;
+	        if (n<fileBytes) 
+	        	sendMsgToProgDlg(false,"",String.format(title_header+" %s %s%% completed.",fn,
+	        					(tot*100)/fileBytes));
+	        mFileChBuffer.clear();
+        }
+	    
+	    inCh.close();
+	    outCh.close();
+	    
+	    oLf = new File(toUrl);
+	    if (setLastModified) oLf.setLastModified(iLf.lastModified());
+	    long t = System.currentTimeMillis() - t0;
+	    if (settingsMslScan) scanMediaStoreLibraryFile(toUrl);
+	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+
+	    		tot + " bytes transfered in " + 
+	    		t  + " mili seconds at " + calTransferRate(tot,t));
+	    return true;
+	}
+
     private boolean copyFileLocalToLocal(File iLf, String fromUrl, String toUrl,
+    		String title_header) 
+			throws IOException {
+    	return copyFileLocalToLocalByChannel(iLf, fromUrl, toUrl, title_header);
+//    	return copyFileLocalToLocalByStream(iLf, fromUrl, toUrl, title_header);
+    }
+    
+    @SuppressWarnings("unused")
+	private boolean copyFileLocalToLocalByStream(File iLf, String fromUrl, String toUrl,
     		String title_header) 
 			throws IOException {
     	

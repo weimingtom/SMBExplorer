@@ -4049,7 +4049,7 @@ class ActivityDataHolder implements Externalizable  {
 	@Override
 	public void readExternal(ObjectInput objin) throws IOException,
 			ClassNotFoundException {
-		Log.v("","rd");
+//		Log.v("","rd");
 		long sid=objin.readLong();
 		if (serialVersionUID!=sid) {
 			throw new IOException("serialVersionUID was not matched by saved UID");
@@ -4079,7 +4079,7 @@ class ActivityDataHolder implements Externalizable  {
 
 	@Override
 	public void writeExternal(ObjectOutput objout) throws IOException {
-		Log.v("","wr");
+//		Log.v("","wr");
 		objout.writeLong(serialVersionUID);
 		SerializeUtil.writeArrayList(objout, msglist);
 		SerializeUtil.writeArrayList(objout, local_tfl);
