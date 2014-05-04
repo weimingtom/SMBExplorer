@@ -2799,7 +2799,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 					@Override
 					public void negativeResponse(Context arg0, Object[] arg1) {
-						dlg_msg.setText((String)arg1[0]);
+						dlg_msg.setText("");
 					}
 					
 				});
