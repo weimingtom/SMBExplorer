@@ -45,7 +45,7 @@ import com.sentaroh.android.Utilities.TreeFilelist.TreeFilelistItem;
 
 @SuppressLint("SimpleDateFormat")
 public class RetrieveFileList implements Runnable  {
-	private final static String DEBUG_TAG = "SMBExplorerGetFilelist";
+	private final static String DEBUG_TAG = "SMBExplorer";
 	
 	private int debugLevel = 0;
 
@@ -91,9 +91,6 @@ public class RetrieveFileList implements Runnable  {
 		
 		opCode="EC"; //check item is exists
 		
-		sendDebugLogMsg(1,"I","getFileList constructed. user="+user+", url="+ru);
-		sendDebugLogMsg(9,"I","getFileList constructed. pass="+pass);
-		
 		setJcifsOption();
 		setJcifsProperties(user,pass);
 	}
@@ -113,9 +110,6 @@ public class RetrieveFileList implements Runnable  {
 		getFLCtrl=ac; //new SMBExplorerThreadCtrl();
 		notifyEvent=ne;
 		remoteUrl=ru;
-		
-		sendDebugLogMsg(1,"I","getFileList constructed. user="+user+", url="+ru);
-		sendDebugLogMsg(9,"I","getFileList constructed. pass="+pass);
 		
 		setJcifsOption();
 		setJcifsProperties(user,pass);
@@ -348,7 +342,7 @@ public class RetrieveFileList implements Runnable  {
 	
 	
 	private void sendDebugLogMsg(int lvl, final String cat, final String msg) {
-		if (debugLevel>0) Log.v(DEBUG_TAG,msg);
+		if (debugLevel>0) Log.v(DEBUG_TAG,"FILELIST"+" "+msg);
 		if (debugLevel>=lvl) {
 			uiHandler.post(new Runnable(){
 				@Override
@@ -357,7 +351,7 @@ public class RetrieveFileList implements Runnable  {
 							new MsgListItem(cat,
 									sdfDate.format(System.currentTimeMillis()),
 									sdfTime.format(System.currentTimeMillis()),
-									"DEBUG-I",msg));
+									"FILELIST",msg));
 					msgListView.setSelection(msgListView.getCount());
 				}
 			});

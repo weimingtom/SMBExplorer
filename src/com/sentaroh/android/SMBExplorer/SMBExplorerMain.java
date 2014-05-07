@@ -595,12 +595,12 @@ public class SMBExplorerMain extends FragmentActivity {
 				if (fa.getDataItem(fa.getItem(i)).getListLevel()==maxlevel) {
 					TreeFilelistItem tfai=fa.getDataItem(fa.getItem(i));
 					tfai.setHideListItem(true);
-					fa.replaceDataItem(fa.getItem(i),tfai);
+//					fa.replaceDataItem(fa.getItem(i),tfai);
 				} else {
 					if (fa.getDataItem(fa.getItem(i)).getListLevel()==maxlevel-1) {
 						TreeFilelistItem tfi =fa.getDataItem(fa.getItem(i));
 						tfi.setChildListExpanded(false);
-						fa.replaceDataItem(fa.getItem(i),tfi);
+//						fa.replaceDataItem(fa.getItem(i),tfi);
 					}
 				}
 			}
@@ -1198,12 +1198,12 @@ public class SMBExplorerMain extends FragmentActivity {
 				item = fla.getDataItem(i);
 				if (idx==i) {
 					item.setChecked(true);
-					fla.replaceDataItem(i,item);
+//					fla.replaceDataItem(i,item);
 					j=i;//set new index no
 				} else {
 					if (item.isChecked()) {
 						item.setChecked(false);
-						fla.replaceDataItem(i,item);
+//						fla.replaceDataItem(i,item);
 					}
 				}
 			}
@@ -1391,7 +1391,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			if (fla.getDataItem(i).isChecked()) { 
 				item=fla.getDataItem(i);
 				item.setChecked(false);
-				fla.replaceDataItem(i,item);
+//				fla.replaceDataItem(i,item);
 			}
 		}
 	};
@@ -1401,7 +1401,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		for (int i=0;i<fla.getDataItemCount();i++) {
 			item=fla.getDataItem(i);
 			item.setChecked(true);
-			fla.replaceDataItem(i,item);
+//			fla.replaceDataItem(i,item);
 		}
 	};
 
@@ -3888,20 +3888,20 @@ public class SMBExplorerMain extends FragmentActivity {
 				Calendar cd = Calendar.getInstance();
 				messageListAdapter.add(
 			    		 new MsgListItem(cat,sdfDate.format(cd.getTime()),
-									sdfTime.format(cd.getTime()),"MAIN",logmsg));}
+									sdfTime.format(cd.getTime()),"MAIN    ",logmsg));}
 	};
 	
 	private void sendDebugLogMsg(int lvl, String cat, String logmsg) {
 
 		if (debugLevel>=lvl) {
 			Calendar cd = Calendar.getInstance();
-			Log.v(DEBUG_TAG,cat+" "+"DEBUG-M"+" "+logmsg);
+			Log.v(DEBUG_TAG,cat+" "+"MAIN    "+" "+logmsg);
 			if (messageListAdapter==null) return;
 			synchronized(messageListAdapter) {
 				
 				messageListAdapter.add(
 			    		 new MsgListItem(cat,sdfDate.format(cd.getTime()),
-									sdfTime.format(cd.getTime()),"DEBUG-M",logmsg));}
+									sdfTime.format(cd.getTime()),"MAIN    ",logmsg));}
 		}
 	};
 

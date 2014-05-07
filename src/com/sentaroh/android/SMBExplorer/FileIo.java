@@ -68,7 +68,7 @@ import static com.sentaroh.android.SMBExplorer.Constants.*;
 public class FileIo implements Runnable {
 //	private final static boolean DEBUG = true;
 //	private final static boolean DEBUG = false;
-	private final static String DEBUG_TAG = "FileIO";
+	private final static String DEBUG_TAG = "SMBExplorer";
 	
 	private static final boolean setLastModified=true;
 	
@@ -397,7 +397,7 @@ public class FileIo implements Runnable {
 						new MsgListItem(log_cat,
 								sdfDate.format(calInstance.getTime()),
 								sdfTime.format(calInstance.getTime()),
-								"MirrorIO",log_msg));
+								"FILEIO  ",log_msg));
 				msgListView.setSelection(msgListView.getCount());
 			}
 		});		
@@ -415,7 +415,7 @@ public class FileIo implements Runnable {
 							new MsgListItem(log_cat,
 									sdfDate.format(calInstance.getTime()),
 									sdfTime.format(calInstance.getTime()),
-									"DEBUG-I",log_msg));
+									"FILEIO  ",log_msg));
 					msgListView.setSelection(msgListView.getCount());
 				}
 			});		
@@ -1101,6 +1101,7 @@ public class FileIo implements Runnable {
 		return result;
     };
 
+	@SuppressWarnings("unused")
 	private boolean copyFileLocalToLocalByChannel(File iLf, String fromUrl, String toUrl,
     		String title_header) 
 			throws IOException {
@@ -1146,12 +1147,11 @@ public class FileIo implements Runnable {
     private boolean copyFileLocalToLocal(File iLf, String fromUrl, String toUrl,
     		String title_header) 
 			throws IOException {
-    	return copyFileLocalToLocalByChannel(iLf, fromUrl, toUrl, title_header);
-//    	return copyFileLocalToLocalByStream(iLf, fromUrl, toUrl, title_header);
+//    	return copyFileLocalToLocalByChannel(iLf, fromUrl, toUrl, title_header);
+    	return copyFileLocalToLocalByStream(iLf, fromUrl, toUrl, title_header);
     }
     
-    @SuppressWarnings("unused")
-	private boolean copyFileLocalToLocalByStream(File iLf, String fromUrl, String toUrl,
+    private boolean copyFileLocalToLocalByStream(File iLf, String fromUrl, String toUrl,
     		String title_header) 
 			throws IOException {
     	
