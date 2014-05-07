@@ -172,7 +172,65 @@ public class SMBExpolorerSettings extends PreferenceActivity {
         	if (prefs.getString(key, "").equals("3")) 
        		findPreference("settings_smb_tunning").setEnabled(true);
         	else findPreference("settings_smb_tunning").setEnabled(false);
+    	} else if (key.equals(getString(R.string.settings_smb_log_level))) {
+    		isChecked=true;
+    		if (prefs.getString(key, "").equals("")) {
+        		findPreference(key).setSummary("0");
+        		prefs.edit().putString(key, "0").commit();
+        	} else {
+        		findPreference(key).setSummary(prefs.getString(key, ""));
+        	}
+    	} else if (key.equals(getString(R.string.settings_smb_rcv_buf_size))) {
+    		isChecked=true;
+    		if (prefs.getString(key, "").equals("")) {
+        		findPreference(key).setSummary("66576");
+        		prefs.edit().putString(key, "66576").commit();
+        	} else {
+        		findPreference(key).setSummary(prefs.getString(key, ""));
+        	}
+    	} else if (key.equals(getString(R.string.settings_smb_snd_buf_size))) {
+    		isChecked=true;
+    		if (prefs.getString(key, "").equals("")) {
+        		findPreference(key).setSummary("66576");
+        		prefs.edit().putString(key, "66576").commit();
+        	} else {
+        		findPreference(key).setSummary(prefs.getString(key, ""));
+        	}
+    	} else if (key.equals(getString(R.string.settings_smb_listSize))) {
+    		isChecked=true;
+    		if (prefs.getString(key, "").equals("")) {
+        		findPreference(key).setSummary("None");
+        		prefs.edit().putString(key, "").commit();
+        	} else {
+        		findPreference(key).setSummary(prefs.getString(key, ""));
+        	}
+    	} else if (key.equals(getString(R.string.settings_smb_maxBuffers))) {
+    		isChecked=true;
+    		if (prefs.getString(key, "").equals("")) {
+        		findPreference(key).setSummary("100");
+        		prefs.edit().putString(key, "100").commit();
+        	} else {
+        		findPreference(key).setSummary(prefs.getString(key, ""));
+        	}
+    	} else if (key.equals(getString(R.string.settings_smb_tcp_nodelay))) {
+    		isChecked=true;
+    		if (prefs.getString(key, "false").equals("false")) {
+        		findPreference(key).setSummary("false");
+        		prefs.edit().putString(key, "false").commit();
+        	} else {
+        		findPreference(key).setSummary("true");
+        		prefs.edit().putString(key, "true").commit();
+        	}
+    	} else if (key.equals(getString(R.string.settings_io_buffers))) {
+    		isChecked=true;
+    		if (prefs.getString(key, "").equals("")) {
+        		findPreference(key).setSummary("8");
+        		prefs.edit().putString(key, "8").commit();
+        	} else {
+        		findPreference(key).setSummary(prefs.getString(key, ""));
+        	}
     	}
+
     	return isChecked;
 	};
 	private boolean checkOtherSettings(SharedPreferences prefs, String key) {
