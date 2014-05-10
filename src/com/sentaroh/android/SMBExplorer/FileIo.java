@@ -1504,13 +1504,13 @@ public class FileIo implements Runnable {
 			jcifs_option_rcv_buf_size=
 					prefs.getString(currContext.getString(R.string.settings_smb_rcv_buf_size),"66576");
 			jcifs_option_snd_buf_size=
-					prefs.getString(currContext.getString(R.string.settings_smb_snd_buf_size),"");
+					prefs.getString(currContext.getString(R.string.settings_smb_snd_buf_size),"66576");
 			jcifs_option_listSize=
 					prefs.getString(currContext.getString(R.string.settings_smb_listSize), "");
 			jcifs_option_maxBuffers=
-					prefs.getString(currContext.getString(R.string.settings_smb_maxBuffers), "");
+					prefs.getString(currContext.getString(R.string.settings_smb_maxBuffers), "100");
 			jcifs_option_iobuff=
-					prefs.getString(currContext.getString(R.string.settings_io_buffers), "");
+					prefs.getString(currContext.getString(R.string.settings_io_buffers), "8");
 			jcifs_option_tcp_nodelay=
 					prefs.getString(currContext.getString(R.string.settings_smb_tcp_nodelay),"false");
 		}
