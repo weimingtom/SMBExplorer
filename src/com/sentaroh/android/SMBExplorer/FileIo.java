@@ -692,6 +692,23 @@ public class FileIo implements Runnable {
 		}
 		return result;
     };
+    
+	private String makeTempFilePath(String  targetUrl) {
+		String tmp_wu="";
+		String last_sep="";
+		if (targetUrl.endsWith("/")) {
+			tmp_wu=targetUrl.substring(0,(targetUrl.length()-1));
+			last_sep="/";
+		} else tmp_wu=targetUrl;
+		String target_dir=tmp_wu.substring(0,tmp_wu.lastIndexOf("/"));
+		target_dir=target_dir.substring(0,target_dir.lastIndexOf("/"))+"/";
+		String target_fn=tmp_wu.replace(target_dir, "");
+		target_fn=target_fn.substring(0,(target_fn.length()-1));
+		String tmp_target=target_dir+"SMBExplorer.work.tmp"+last_sep;
+//		Log.v("","tmp="+tmp_target+", to="+targetUrl);
+		return tmp_target;
+	}
+
 
     private boolean copyRemoteToRemote(String fromUrl, String toUrl)  {
         SmbFile ihf, ohf = null;
@@ -701,6 +718,8 @@ public class FileIo implements Runnable {
         
         sendDebugLogMsg(1,"I","copy Remote to Remote from item="+fromUrl+", to item="+toUrl);
                 
+		String tmp_toUrl="";
+		
 		try {
 			ihf = new SmbFile(fromUrl,ntlmPaswordAuth );
 			if (ihf.isDirectory()) { // Directory copy
@@ -717,11 +736,22 @@ public class FileIo implements Runnable {
 	            }
 			} else { // file copy
 				makeRemoteDirs(toUrl);
-				ohf = new SmbFile(toUrl,ntlmPaswordAuth);
+				tmp_toUrl=makeTempFilePath(toUrl);
+				
+				ohf = new SmbFile(tmp_toUrl,ntlmPaswordAuth);
+				if (ohf.exists()) ohf.delete();
 				result=true;
 				if (!fileioThreadCtrl.isEnable()) return false;
 				if (ihf.getAttributes()<16384) { //no EA, copy was done
 					result=copyFileRemoteToRemote(ihf,ohf,fromUrl,toUrl,"Copying");
+					if (result) {
+						SmbFile hfd=new SmbFile(toUrl,ntlmPaswordAuth);
+						if (hfd.exists()) hfd.delete();
+						ohf.renameTo(hfd);
+					} else {
+						if (ohf.exists()) ohf.delete();
+					}
+
 				} else {
 					result=false;
 					sendLogMsg("E","EA founded, copy canceled");
@@ -738,6 +768,12 @@ public class FileIo implements Runnable {
 			sendLogMsg("E","Copy error:"+e.toString());
 			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
+			if (!tmp_toUrl.equals("")) {
+				try {
+					if (ohf.exists()) ohf.delete();
+				} catch (SmbException e1) {
+				}
+			}
 			return false;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -794,6 +830,7 @@ public class FileIo implements Runnable {
 			return false;
 		} catch (SmbException e) {
 			e.printStackTrace();
+			Log.v("","nt="+e.getNtStatus());
 			sendLogMsg("E","Copy error:"+e.toString());
 			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
@@ -821,14 +858,16 @@ public class FileIo implements Runnable {
     };
     
     private boolean copyLocalToRemote(String fromUrl, String toUrl)  {
-        SmbFile hf ;
+        SmbFile hf=null ;
         File lf,lfd ;
         boolean result = false;
         
         if (!fileioThreadCtrl.isEnable()) return false;
         
         sendDebugLogMsg(1,"I","Copy Local to Remote from item="+fromUrl+", to item="+toUrl);
-                
+
+		String tmp_toUrl="";
+
 		try {
 			lf = new File(fromUrl );
 			if (lf.isDirectory()) { // Directory copy
@@ -845,8 +884,17 @@ public class FileIo implements Runnable {
 					
 			} else { // file copy
 				makeRemoteDirs(toUrl);
-				hf = new SmbFile(toUrl,ntlmPaswordAuth);
+				tmp_toUrl=makeTempFilePath(toUrl);
+				hf = new SmbFile(tmp_toUrl,ntlmPaswordAuth);
+				if (hf.exists()) hf.delete();
 				result=copyFileLocalToRemote(hf,lf,fromUrl,toUrl,"Copying");
+				if (result) {
+					SmbFile hfd=new SmbFile(toUrl,ntlmPaswordAuth);
+					if (hfd.exists()) hfd.delete();
+					hf.renameTo(hfd);
+				} else {
+					if (hf.exists()) hf.delete();
+				}
 			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -859,6 +907,12 @@ public class FileIo implements Runnable {
 			sendLogMsg("E","Copy error:"+e.toString());
 			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
+			if (!tmp_toUrl.equals("")) {
+				try {
+					if (hf.exists()) hf.delete();
+				} catch (SmbException e1) {
+				}
+			}
 			return false;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -1221,18 +1275,21 @@ public class FileIo implements Runnable {
 	    out.close();
 	
 	    long t = System.currentTimeMillis() - t0;
-	    
-	    if (setLastModified) ohf.setLastModified(ihf.lastModified());
-	    
 	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+
 	    		", "+tot + " bytes transfered in " + 
 	    		t+" mili seconds at "+ calTransferRate(tot,t));
 	
+	    try {
+		    if (setLastModified) ohf.setLastModified(ihf.lastModified());
+	    } catch(SmbException e) {
+	    	sendLogMsg("I","SmbFile#setLastModified() was failed, reason="+e.getMessage());
+	    }
+
 		return true;
 	}
 
 	private boolean copyFileLocalToRemote(SmbFile hf, File lf,
-			String fromUrl, String toUrl,String title_header) throws IOException {
+			String fromUrl, String toUrl, String title_header) throws IOException {
 		
 		long t0 = System.currentTimeMillis();
 	    SmbFileOutputStream out = new SmbFileOutputStream( hf );
@@ -1259,15 +1316,17 @@ public class FileIo implements Runnable {
 	    }
 		in.close();
 	    out.close();
-	    
-	    hf = new SmbFile(toUrl,ntlmPaswordAuth);
-	    if (setLastModified) hf.setLastModified(lf.lastModified());
-	    
+
 	    long t = System.currentTimeMillis() - t0;
 	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+
 	    		tot + " bytes transfered in " + 
 	    		t  + " mili seconds at " + calTransferRate(tot,t));
-	
+
+	    try {
+		    if (setLastModified) hf.setLastModified(lf.lastModified());
+	    } catch(SmbException e) {
+	    	sendLogMsg("I","SmbFile#setLastModified() was failed, reason="+e.getMessage());
+	    }
 		
 		return true;
 	}

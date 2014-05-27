@@ -74,7 +74,6 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -220,7 +219,8 @@ public class SMBExplorerMain extends FragmentActivity {
 		getApplVersionName();
 		
 		enableKill = false;
-		
+
+//		System.setProperty( "jcifs.netbios.retryTimeout", "200");
 //		Log.v("","esd="+LocalMountPoint.getExternalStorageDir());
 //		ArrayList<String>mpl=LocalMountPoint.buildLocalMountPointList();
 //		for (int i=0;i<mpl.size();i++) Log.v("","mp="+mpl.get(i)); 
@@ -242,9 +242,8 @@ public class SMBExplorerMain extends FragmentActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		sendDebugLogMsg(1, "I","onResume entered"+
-				" restartStatus="+restartStatus);
-		
+		sendDebugLogMsg(1, "I","onResume entered"+ " restartStatus="+restartStatus);
+//		System.setProperty( "jcifs.netbios.retryTimeout", "3000");
 		if (restartStatus==0) {
 			profileAdapter = createProfileList(false,"");
 			localFileListView=(ListView)findViewById(R.id.explorer_filelist_local_tab_listview);
@@ -2950,7 +2949,8 @@ public class SMBExplorerMain extends FragmentActivity {
 
 					@Override
 					public void negativeResponse(Context arg0, Object[] arg1) {
-						dlg_msg.setText((String)arg1[0]);
+						if (arg1!=null) dlg_msg.setText((String)arg1[0]);
+						else dlg_msg.setText("");
 					}
 					
 				});
@@ -3275,19 +3275,21 @@ public class SMBExplorerMain extends FragmentActivity {
 			    final Dialog dialog=new Dialog(c);
 			    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 				dialog.setContentView(R.layout.item_select_list_dlg);
-			    ((TextView)dialog.findViewById(R.id.item_select_list_dlg_title))
-			    	.setText(getString(R.string.msgs_ip_address_select_title));
-			    TextView filetext= (TextView)dialog.findViewById(R.id.item_select_list_dlg_itemtext);
-			    filetext.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_timeout));
-			    filetext.setVisibility(TextView.VISIBLE);
+			    TextView dlg_title=(TextView)dialog.findViewById(R.id.item_select_list_dlg_title);
+			    dlg_title.setText(getString(R.string.msgs_ip_address_select_title));
+			    TextView dlg_msg=(TextView)dialog.findViewById(R.id.item_select_list_dlg_msg);
+			    dlg_msg.setVisibility(TextView.GONE);
+			    TextView dlg_subtitle=(TextView)dialog.findViewById(R.id.item_select_list_dlg_subtitle);
+			    dlg_subtitle.setVisibility(TextView.GONE);
+//			    TextView filetext= (TextView)dialog.findViewById(R.id.item_select_list_dlg_itemtext);
+//			    filetext.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_timeout));
+//			    filetext.setVisibility(TextView.VISIBLE);
 			    Button btnRescan=(Button)dialog.findViewById(R.id.item_select_list_dlg_ok_btn);
 			    btnRescan.setVisibility(TextView.VISIBLE);
 			    btnRescan.setText(getString(R.string.msgs_ip_address_range_dlg_rescan));
 			    
-			    final EditText toEt = (EditText)dialog.findViewById(R.id.item_select_list_dlg_itemname);
-			    toEt.setVisibility(EditText.VISIBLE);
-			    toEt.setInputType(InputType.TYPE_CLASS_NUMBER);
-			    toEt.setText(""+scanIpAddrTimeout);
+//			    final EditText toEt = (EditText)dialog.findViewById(R.id.item_select_list_dlg_itemname);
+//			    toEt.setVisibility(EditText.VISIBLE);
 			    
 			    CommonDialog.setDlgBoxSizeLimit(dialog,false);
 			    
@@ -3308,14 +3310,12 @@ public class SMBExplorerMain extends FragmentActivity {
 			    //RESCANボタンの指定
 			    btnRescan.setOnClickListener(new View.OnClickListener() {
 			        public void onClick(View v) {
-			        	String toVal=toEt.getText().toString();
-			        	if (!toVal.equals("")) 
-			        		scanIpAddrTimeout = Integer.parseInt(toVal);
 			            rows.clear();
 			            NotifyEvent ntfy=new NotifyEvent(mContext);
 			    		ntfy.setListener(new NotifyEventListener() {
 			    			@Override
 			    			public void positiveResponse(Context c,Object[] o) {
+			    				if (rows.size()<1) rows.add(getString(R.string.msgs_ip_address_no_address));
 			    			    lv.setAdapter(new ArrayAdapter<String>(mContext, R.layout.simple_list_item_1o, rows));
 			    			    lv.setScrollingCacheEnabled(false);
 			    			    lv.setScrollbarFadingEnabled(false);
@@ -3358,7 +3358,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 
 	private String scanIpAddrSubnet;
-	private int scanIpAddrBeginAddr,scanIpAddrEndAddr, scanIpAddrTimeout=0;
+	private int scanIpAddrBeginAddr,scanIpAddrEndAddr;
 	private void getScanAddressRange(final ArrayList<String> rows, 
 			final NotifyEvent p_ntfy) {
 		final String from=getLocalIpAddress();
@@ -3373,7 +3373,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		dialog.setContentView(R.layout.scan_address_range_dlg);
 		TextView tvtitle=(TextView) dialog.findViewById(R.id.scan_address_range_title);
 		tvtitle.setText(R.string.msgs_ip_address_range_dlg_title);
-		final EditText toEt = (EditText) dialog.findViewById(R.id.scan_address_range_timeout);
 		final EditText baEt1 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o1);
 		final EditText baEt2 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o2);
 		final EditText baEt3 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o3);
@@ -3382,7 +3381,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		final EditText eaEt2 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o2);
 		final EditText eaEt3 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o3);
 		final EditText eaEt4 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o4);
-		toEt.setText("150");
 		baEt1.setText(subnet_o1);
 		baEt2.setText(subnet_o2);
 		baEt3.setText(subnet_o3);
@@ -3431,8 +3429,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		btnOk.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				if (auditScanAddressRangeValue(dialog)) {
-					toEt.selectAll();
-					String to=toEt.getText().toString();
 					baEt1.selectAll();
 					String ba1=baEt1.getText().toString();
 					baEt2.selectAll();
@@ -3447,7 +3443,6 @@ public class SMBExplorerMain extends FragmentActivity {
 					scanIpAddrSubnet=ba1+"."+ba2+"."+ba3;
 					scanIpAddrBeginAddr = Integer.parseInt(ba4);
 					scanIpAddrEndAddr = Integer.parseInt(ea4);
-					scanIpAddrTimeout = Integer.parseInt(to);
 					dialog.dismiss();
 					createRemoteIpAddrList(rows,p_ntfy);
 				} else {
@@ -3518,6 +3513,8 @@ public class SMBExplorerMain extends FragmentActivity {
        	new Thread(new Runnable() {
 			@Override
 			public void run() {//non UI thread
+//				System.setProperty( "jcifs.netbios.retryTimeout", "100");
+//				System.setProperty( "jcifs.netbios.retryCount", "2");
 				for (int i=scanIpAddrBeginAddr; i<=scanIpAddrEndAddr;i++) {
 					if (cancelIpAddressListCreation) break;
 					final int ix=i;
@@ -3527,12 +3524,13 @@ public class SMBExplorerMain extends FragmentActivity {
 							tvmsg.setText(scanIpAddrSubnet+"."+ix);
 						}
 					});
-					if (checkIpAddrReachable(scanIpAddrSubnet+"."+i,scanIpAddrTimeout) && 
-							!curr_ip.equals(scanIpAddrSubnet+"."+i)) 
-//						if (checkIpAddrSmbActive(scanIpAddrSubnet+"."+i))
-						if (isSmbHost(scanIpAddrSubnet+"."+i))
-							rows.add(scanIpAddrSubnet+"."+i);
+					if (NetworkUtil.isIpAddrReachable(scanIpAddrSubnet+"."+i) &&
+							NetworkUtil.isNbtAddressActive(scanIpAddrSubnet+"."+i) && 
+							!curr_ip.equals(scanIpAddrSubnet+"."+i)) {
+						rows.add(scanIpAddrSubnet+"."+i);
+					}
 				}
+//				System.setProperty( "jcifs.netbios.retryTimeout", "3000");
 				// dismiss progress bar dialog
 				handler.post(new Runnable() {// UI thread
 					@Override
@@ -3547,22 +3545,23 @@ public class SMBExplorerMain extends FragmentActivity {
        	.start();
 	};
 
-	private boolean isSmbHost(String address) {
-		boolean found=false;
+	@SuppressWarnings("unused")
+	private String getSmbHostName(String address) {
+		String srv_name="";
     	try {
 			UniAddress ua = UniAddress.getByName(address);
 			String cn;
 	        cn = ua.firstCalledName();
 	        do {
-	            if (!cn.startsWith("*")) found=true; 
-            	sendDebugLogMsg(1,"I","isSmbHost Address="+address+
-	            		", cn="+cn+", found="+found);
+	            if (!cn.startsWith("*")) srv_name=cn; 
+            	sendDebugLogMsg(1,"I","getSmbHostName Address="+address+
+	            		", cn="+cn+", name="+srv_name);
 	        } while(( cn = ua.nextCalledName() ) != null );
 			
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-    	return found;
+    	return srv_name;
  	};
  	
  	private boolean auditScanAddressRangeValue(Dialog dialog) {
@@ -3682,6 +3681,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		return result;
 	};
 	
+	@SuppressWarnings("unused")
 	private boolean checkIpAddrReachable(String address,int timeout) {
 		try {
 	        InetAddress ip = InetAddress.getByName(address);
