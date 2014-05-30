@@ -102,9 +102,7 @@ public class FileIo implements Runnable {
 	
 	private Context currContext=null;
 	
-	private String jcifs_option_rcv_buf_size="",jcifs_option_snd_buf_size="",
-			jcifs_option_listSize="",jcifs_option_maxBuffers="",jcifs_option_iobuff="",
-					jcifs_option_tcp_nodelay="", jcifs_option_log_level="";
+	private String jcifs_option_iobuff="";
 
 	private boolean settingsMslScan = false;
 	
@@ -114,6 +112,8 @@ public class FileIo implements Runnable {
 
     private static byte[] fileIoArea = null;
     private static ByteBuffer mFileChBuffer = null;
+
+	private NtlmPasswordAuthentication ntlmPaswordAuth;
 
 	// @Override
 	public FileIo(ListView lv,
@@ -153,7 +153,18 @@ public class FileIo implements Runnable {
 		});
 		mediaScanner.connect();
 
-		setJcifsOption();
+		String cp=prefs.getString(currContext.getString(R.string.settings_smb_perform_class), "");
+		if (cp.equals("0") || cp.equals("")) {
+			jcifs_option_iobuff="4";
+		} else if (cp.equals("1")) {
+			jcifs_option_iobuff="4";
+		} else if (cp.equals("2")) {
+			jcifs_option_iobuff="8";
+		} else {
+			jcifs_option_iobuff=
+					prefs.getString(currContext.getString(R.string.settings_io_buffers), "8");
+		}
+		SMB_BUFF_SIZE=Integer.parseInt(jcifs_option_iobuff)*65536;			
 	};
 	
     private void waitMediaScanner(boolean ds) {
@@ -208,6 +219,12 @@ public class FileIo implements Runnable {
 				file_userid = fileioLinkParm.get(i).getUser();
 				file_password = fileioLinkParm.get(i).getPass();
 				allcopy=fileioLinkParm.get(i).isAllCopyEnabled();
+
+				String tuser=null,tpass=null;
+				if (!file_userid.equals("")) tuser=file_userid;
+				if (!file_password.equals("")) tpass=file_password;
+		    	ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
+
 				sendDebugLogMsg(9,"I","FILEIO task invoked."+
 						" url1="+file_tgt_url1+
 						", url2="+file_tgt_url2+
@@ -253,7 +270,6 @@ public class FileIo implements Runnable {
 				break;
 			case FILEIO_PARM_REMOTE_CREATE:
 				sendMsgToProgDlg(false,"","Creating remote directory "+file_tgt_name);
-				setJcifsParm() ;
 				fileioTaskResultOk=createRemoteDir(
 						file_tgt_url1+"/"+file_tgt_name+"/");
 				break;
@@ -265,7 +281,6 @@ public class FileIo implements Runnable {
 				break;
 			case FILEIO_PARM_REMOTE_RENAME:
 				sendMsgToProgDlg(false,"","Renaming remote "+file_tgt_name);
-				setJcifsParm() ;
 				fileioTaskResultOk=renameRemoteItem(
 						file_tgt_url1+"/"+file_tgt_name+"/", 
 						file_tgt_url2+"/"+file_tgt_newname+"/");
@@ -277,19 +292,16 @@ public class FileIo implements Runnable {
 				break;
 			case FILEIO_PARM_REMOTE_DELETE:
 				sendMsgToProgDlg(false,"","Deleteing remote "+file_tgt_name);
-				setJcifsParm() ;
 				fileioTaskResultOk=deleteRemoteItem(
 						file_tgt_url1+"/"+file_tgt_name+"/");
 				break;
 			case FILEIO_PARM_COPY_REMOTE_TO_LOCAL:
-				setJcifsParm() ;
 				sendMsgToProgDlg(false,"","Copying remote to local '"+file_tgt_name+"'");
 				fileioTaskResultOk=copyRemoteToLocal(
 						file_tgt_url1+"/"+file_tgt_name, 
 						file_tgt_url2+"/"+file_tgt_name);
 				break;
 			case FILEIO_PARM_COPY_REMOTE_TO_REMOTE:
-				setJcifsParm() ;
 				sendMsgToProgDlg(false,"","Copying remote to remote '"+file_tgt_name+"'");
 				fileioTaskResultOk=copyRemoteToRemote(
 						file_tgt_url1+"/"+file_tgt_name+"/", 
@@ -302,14 +314,12 @@ public class FileIo implements Runnable {
 						file_tgt_url2+"/"+file_tgt_name);
 				break;
 			case FILEIO_PARM_COPY_LOCAL_TO_REMOTE:
-				setJcifsParm() ;
 				sendMsgToProgDlg(false,"","Copying local to remote '"+file_tgt_name+"'");
 				fileioTaskResultOk=copyLocalToRemote(
 						file_tgt_url1+"/"+file_tgt_name, 
 						file_tgt_url2+"/"+file_tgt_name+"/");
 				break;
 			case FILEIO_PARM_MOVE_REMOTE_TO_LOCAL:
-				setJcifsParm() ;
 				sendMsgToProgDlg(false,"","Moving remote to local '"+file_tgt_name+"'");
 				fileioTaskResultOk=copyRemoteToLocal(
 						file_tgt_url1+"/"+file_tgt_name+"/", 
@@ -319,7 +329,6 @@ public class FileIo implements Runnable {
 							file_tgt_url1+"/"+file_tgt_name+"/");
 				break;
 			case FILEIO_PARM_MOVE_REMOTE_TO_REMOTE:
-				setJcifsParm() ;
 				sendMsgToProgDlg(false,"","Moving remote to remote '"+file_tgt_name+"'");
 				if (file_tgt_url1.equals(file_tgt_url2)) {
 					fileioTaskResultOk=moveRemoteToRemote(
@@ -341,7 +350,6 @@ public class FileIo implements Runnable {
 						file_tgt_url2+"/"+file_tgt_name);
 				break;
 			case FILEIO_PARM_MOVE_LOCAL_TO_REMOTE:
-				setJcifsParm() ;
 				sendMsgToProgDlg(false,"","Moving local to remote '"+file_tgt_name+"'");
 				fileioTaskResultOk=copyLocalToRemote(
 						file_tgt_url1+"/"+file_tgt_name, 
@@ -351,7 +359,6 @@ public class FileIo implements Runnable {
 							file_tgt_url1+"/"+file_tgt_name);
 				break;
 			case FILEIO_PARM_DOWLOAD_REMOTE_FILE:
-				setJcifsParm() ;
 				sendMsgToProgDlg(false,"","Downloading remote file '"+file_tgt_name+"'");
 				fileioTaskResultOk=downloadRemoteFile(
 						file_tgt_url1+"/"+file_tgt_name, 
@@ -1524,81 +1531,4 @@ public class FileIo implements Runnable {
 		
 		return tfs;
 	};
-
-	private NtlmPasswordAuthentication ntlmPaswordAuth;
-	private void setJcifsOption() {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(currContext);
-		String cp=
-				prefs.getString(currContext.getString(R.string.settings_smb_perform_class), "");
-		
-		if (cp.equals("0") || cp.equals("")) {
-			jcifs_option_log_level="0";
-			jcifs_option_rcv_buf_size="16644";
-			jcifs_option_snd_buf_size="16644";
-			jcifs_option_listSize="";
-			jcifs_option_maxBuffers="";
-			jcifs_option_iobuff="4";
-			jcifs_option_tcp_nodelay="false";
-		} else if (cp.equals("1")) {
-			jcifs_option_log_level="0";
-			jcifs_option_rcv_buf_size="33288";
-			jcifs_option_snd_buf_size="33288";
-			jcifs_option_listSize="";
-			jcifs_option_maxBuffers="100";
-			jcifs_option_iobuff="4";
-			jcifs_option_tcp_nodelay="false";
-		} else if (cp.equals("2")) {
-			jcifs_option_log_level="0";
-			jcifs_option_rcv_buf_size="66576";
-			jcifs_option_snd_buf_size="66576";
-			jcifs_option_listSize="";
-			jcifs_option_maxBuffers="100";
-			jcifs_option_iobuff="8";
-			jcifs_option_tcp_nodelay="true";
-		} else {
-			jcifs_option_log_level=
-					prefs.getString(currContext.getString(R.string.settings_smb_log_level), "0");
-			if (jcifs_option_log_level.length()==0) jcifs_option_log_level="0";
-			
-			jcifs_option_rcv_buf_size=
-					prefs.getString(currContext.getString(R.string.settings_smb_rcv_buf_size),"66576");
-			jcifs_option_snd_buf_size=
-					prefs.getString(currContext.getString(R.string.settings_smb_snd_buf_size),"66576");
-			jcifs_option_listSize=
-					prefs.getString(currContext.getString(R.string.settings_smb_listSize), "");
-			jcifs_option_maxBuffers=
-					prefs.getString(currContext.getString(R.string.settings_smb_maxBuffers), "100");
-			jcifs_option_iobuff=
-					prefs.getString(currContext.getString(R.string.settings_io_buffers), "8");
-			jcifs_option_tcp_nodelay=
-					prefs.getString(currContext.getString(R.string.settings_smb_tcp_nodelay),"false");
-		}
-		SMB_BUFF_SIZE=Integer.parseInt(jcifs_option_iobuff)*65536;			
-	};
-	
-    private void setJcifsParm() {
-		System.setProperty("jcifs.util.loglevel", jcifs_option_log_level);
-		System.setProperty("jcifs.smb.lmCompatibility", "0");
-		System.setProperty("jcifs.smb.client.useExtendedSecurity", "false");
-
-		System.setProperty("jcifs.smb.client.tcpNoDelay",jcifs_option_tcp_nodelay);
-        
-		if (!jcifs_option_rcv_buf_size.equals(""))
-			System.setProperty("jcifs.smb.client.rcv_buf_size", jcifs_option_rcv_buf_size);//60416 120832
-		if (!jcifs_option_snd_buf_size.equals(""))
-			System.setProperty("jcifs.smb.client.snd_buf_size", jcifs_option_snd_buf_size);//16644 120832
-        
-		if (!jcifs_option_listSize.equals(""))
-			System.setProperty("jcifs.smb.client.listSize",jcifs_option_listSize); //65536 1300
-		if (!jcifs_option_maxBuffers.equals(""))
-			System.setProperty("jcifs.smb.maxBuffers",jcifs_option_maxBuffers);//16 100
-		String tuser=null,tpass=null;
-		if (!file_userid.equals("")) tuser=file_userid;
-		if (!file_password.equals("")) tpass=file_password;
-		
-    	ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
-
-	};
-
-
 }

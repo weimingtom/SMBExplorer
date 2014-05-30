@@ -34,9 +34,7 @@ import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ListView;
 
@@ -66,17 +64,13 @@ public class RetrieveFileList implements Runnable  {
 	final static private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
 
 	private Handler uiHandler=null;
-	@SuppressWarnings("unused")
-	private String jcifs_option_rcv_buf_size="",jcifs_option_snd_buf_size="",
-			jcifs_option_listSize="",jcifs_option_maxBuffers="",jcifs_option_iobuff="",
-					jcifs_option_tcp_nodelay="", jcifs_option_log_level="";
 	
-	private Context currContext;
+	private NtlmPasswordAuthentication ntlmPaswordAuth;
 
 	public RetrieveFileList(Context c, MsgListAdapter ma, ListView ml,
 			ThreadCtrl ac, int dl, String ru, List<String> d_list,
 			String user, String pass, NotifyEvent ne) {
-		currContext=c;
+//		currContext=c;
 		msglistAdapter=ma;
 		msgListView=ml;
 		debugLevel=dl;
@@ -90,29 +84,36 @@ public class RetrieveFileList implements Runnable  {
 		dir_list=d_list;
 		
 		opCode="EC"; //check item is exists
-		
-		setJcifsOption();
-		setJcifsProperties(user,pass);
+
+		String tuser=null,tpass=null;
+		if (!user.equals("")) tuser=user;
+		if (!pass.equals("")) tpass=pass;
+		ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
 	}
 
 	
 	public RetrieveFileList(Context c, MsgListAdapter ma, ListView ml,
 			ThreadCtrl ac, int dl, String ru, 
 			ArrayList<TreeFilelistItem> fl,String user, String pass, NotifyEvent ne) {
-		currContext=c;
+//		currContext=c;
 		msglistAdapter=ma;
 		msgListView=ml;
 		debugLevel=dl;
 		remoteFileList=fl;
-
+		
 		uiHandler=new Handler();
 
 		getFLCtrl=ac; //new SMBExplorerThreadCtrl();
 		notifyEvent=ne;
 		remoteUrl=ru;
 		
-		setJcifsOption();
-		setJcifsProperties(user,pass);
+		opCode="FL";
+		
+		String tuser=null,tpass=null;
+		if (!user.equals("")) tuser=user;
+		if (!pass.equals("")) tpass=pass;
+		ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
+
 	}
 	
 	
@@ -125,12 +126,33 @@ public class RetrieveFileList implements Runnable  {
 		defaultUEH = Thread.currentThread().getUncaughtExceptionHandler();
         Thread.currentThread().setUncaughtExceptionHandler(unCaughtExceptionHandler);
 
-		
-		if (opCode.equals("FL")) {
-			remoteFileList.clear();
-			readFileList(remoteUrl);
-		} else if (opCode.equals("EC")) {
-			checkItemExists(remoteUrl);
+//        Log.v("","url="+remoteUrl);
+		String host_t1=remoteUrl.replace("smb://","").replaceAll("//", "/");
+		String host_t2=host_t1.substring(0,host_t1.indexOf("/"));
+		String host_t3=host_t2;
+//		Log.v("","1="+host_t1+", 2="+host_t2+", 3="+host_t3);
+		if (host_t2.indexOf(":")>=0) host_t3=host_t2.substring(0,host_t2.indexOf(":"));
+		boolean error=false;
+		String err_msg="";
+		if (NetworkUtil.isValidIpAddress(host_t3)) {
+			if (!isSmbHostIpAddressReachable(host_t3)) error=true;
+			err_msg="Can not be connected to specified IP address, IP address="+host_t3;
+		} else {
+			if (NetworkUtil.getSmbHostIpAddressFromName(host_t3)==null) error=true;
+			err_msg="Specified hostname is not found, Name="+host_t3;
+		}
+		if (error) {
+			getFLCtrl.setThreadResultError();
+			getFLCtrl.setDisable();
+			getFLCtrl.setThreadMessage(err_msg);
+		} else {
+			if (opCode.equals("FL")) {
+				remoteFileList.clear();
+				readFileList(remoteUrl);
+			} else if (opCode.equals("EC")) {
+				checkItemExists(remoteUrl);
+			}
+			
 		}
 		sendDebugLogMsg(1,"I","getFileList terminated.");
 		uiHandler.post(new Runnable(){
@@ -142,6 +164,17 @@ public class RetrieveFileList implements Runnable  {
 		getFLCtrl.setDisable();
 		
 	};
+	
+	final static public boolean isSmbHostIpAddressReachable(String address) {
+		boolean reachable=false;
+		for (int i=0;i<5;i++) {
+			if (NetworkUtil.isSmbHostIpAddressReachable(address, 1500)) {
+				reachable=true;
+				break;
+			}
+		}
+		return reachable;
+ 	};
 	
 // Default uncaught exception handler variable
     private UncaughtExceptionHandler defaultUEH;
@@ -169,69 +202,6 @@ public class RetrieveFileList implements Runnable  {
 //                defaultUEH.uncaughtException(thread, ex);
             }
     };
-
-	
-	private NtlmPasswordAuthentication ntlmPaswordAuth;
-	private void setJcifsOption() {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(currContext);
-		String cp=
-				prefs.getString(currContext.getString(R.string.settings_smb_perform_class), "");
-		
-		if (cp.equals("0")) {
-			jcifs_option_log_level="0";
-			jcifs_option_rcv_buf_size="16644";
-			jcifs_option_snd_buf_size="16644";
-			jcifs_option_listSize="";
-			jcifs_option_maxBuffers="";
-			jcifs_option_iobuff="4";
-			jcifs_option_tcp_nodelay="false";
-		} else if (cp.equals("1")) {
-			jcifs_option_log_level="0";
-			jcifs_option_rcv_buf_size="33288";
-			jcifs_option_snd_buf_size="33288";
-			jcifs_option_listSize="";
-			jcifs_option_maxBuffers="100";
-			jcifs_option_iobuff="4";
-			jcifs_option_tcp_nodelay="false";
-		} else if (cp.equals("2")) {
-			jcifs_option_log_level="0";
-			jcifs_option_rcv_buf_size="66576";
-			jcifs_option_snd_buf_size="66576";
-			jcifs_option_listSize="";
-			jcifs_option_maxBuffers="100";
-			jcifs_option_iobuff="8";
-			jcifs_option_tcp_nodelay="true";
-		} else {
-			jcifs_option_log_level=
-					prefs.getString(currContext.getString(R.string.settings_smb_log_level), "0");
-			if (jcifs_option_log_level.length()==0) jcifs_option_log_level="0";
-			
-			jcifs_option_rcv_buf_size=
-					prefs.getString(currContext.getString(R.string.settings_smb_rcv_buf_size),"");
-			jcifs_option_snd_buf_size=
-					prefs.getString(currContext.getString(R.string.settings_smb_snd_buf_size),"");
-			jcifs_option_listSize=
-					prefs.getString(currContext.getString(R.string.settings_smb_listSize), "");
-			jcifs_option_maxBuffers=
-					prefs.getString(currContext.getString(R.string.settings_smb_maxBuffers), "");
-			jcifs_option_iobuff=
-					prefs.getString(currContext.getString(R.string.settings_io_buffers), "");
-			jcifs_option_tcp_nodelay=
-					prefs.getString(currContext.getString(R.string.settings_smb_tcp_nodelay),"false");
-		}
-			
-	};
-	
-	private void setJcifsProperties(String user, String pass) {
-		System.setProperty("jcifs.util.loglevel", jcifs_option_log_level);
-		System.setProperty("jcifs.smb.lmCompatibility", "0");
-		System.setProperty("jcifs.smb.client.useExtendedSecurity", "false");
-
-		String tuser=null,tpass=null;
-		if (!user.equals("")) tuser=user;
-		if (!pass.equals("")) tpass=pass;
-		ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
-	};
 
 	private void readFileList(String url) {
 		sendDebugLogMsg(2,"I","Filelist directory: "+url);
@@ -342,8 +312,8 @@ public class RetrieveFileList implements Runnable  {
 	
 	
 	private void sendDebugLogMsg(int lvl, final String cat, final String msg) {
-		if (debugLevel>0) Log.v(DEBUG_TAG,"FILELIST"+" "+msg);
 		if (debugLevel>=lvl) {
+			Log.v(DEBUG_TAG,"FILELIST"+" "+msg);
 			uiHandler.post(new Runnable(){
 				@Override
 				public void run() {

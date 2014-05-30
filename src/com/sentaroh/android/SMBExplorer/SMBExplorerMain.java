@@ -219,6 +219,8 @@ public class SMBExplorerMain extends FragmentActivity {
 		getApplVersionName();
 		
 		enableKill = false;
+		
+		initJcifsOption();
 
 //		System.setProperty( "jcifs.netbios.retryTimeout", "200");
 //		Log.v("","esd="+LocalMountPoint.getExternalStorageDir());
@@ -649,6 +651,8 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		defaultSettingExitClean=
 				prefs.getBoolean(getString(R.string.settings_exit_clean), false);
+		
+		initJcifsOption();
 	}
 	
 	private void invokeSettingsActivity() {
@@ -697,14 +701,22 @@ public class SMBExplorerMain extends FragmentActivity {
 		setLocalFilelistLongClickListener();
 	};
 	
-	private void loadRemoteFilelist(String url) {
+	private void loadRemoteFilelist(final String url) {
 		NotifyEvent ne=new NotifyEvent(mContext);
 		ne.setListener(new NotifyEventListener() {
 			@Override
 			public void positiveResponse(Context c,Object[] o) {
 				remoteFileListAdapter = (TreeFilelistAdapter)o[0];
 				remoteFileListView.setAdapter(remoteFileListAdapter);
-				setFilelistCurrDir(remoteFileListDirBtn,remoteUrl);
+				String pn="";
+				for (int i=0;i<profileAdapter.getCount();i++) {
+					String tu="smb://"+profileAdapter.getItem(i).getAddr()+"/"+profileAdapter.getItem(i).getShare() ;
+					if (tu.equals(url)) {
+						pn=profileAdapter.getItem(i).getName();
+						break;
+					}
+				}
+				setFilelistCurrDir(remoteFileListDirBtn,pn);
 				setRemoteFilelistItemClickListener();
 				setRemoteFilelistLongClickListener();
 			}
@@ -2367,6 +2379,13 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	private void setFilelistCurrDir(Spinner tv,String dir_text) {
 //		tv.setText(dir_text);
+		for (int i=0;i<tv.getCount();i++) {
+			String list=(String)tv.getItemAtPosition(i);
+			if (list.equals(dir_text)) {
+				tv.setSelection(i);
+				break;
+			}
+		};
 	};
 
 	private ArrayList<TreeFilelistItem> createLocalFileList(boolean dir_only, String url) {
@@ -2407,7 +2426,7 @@ public class SMBExplorerMain extends FragmentActivity {
 									ff.canRead(),ff.canWrite(),
 									ff.isHidden(),ff.getParent(),0));
 						}
-						sendDebugLogMsg(1,"I","File :" + ff.getName()+", "+
+						sendDebugLogMsg(2,"I","File :" + ff.getName()+", "+
 							"length: " + ff.length()+", "+
 							"Lastmod: " + sdf.format(ff.lastModified())+", "+
 							"Lastmod: " + ff.lastModified()+", "+
@@ -3385,9 +3404,13 @@ public class SMBExplorerMain extends FragmentActivity {
 		baEt2.setText(subnet_o2);
 		baEt3.setText(subnet_o3);
 		baEt4.setText("1");
+		baEt4.setSelection(1);
 		eaEt1.setText(subnet_o1);
+		eaEt1.setEnabled(false);
 		eaEt2.setText(subnet_o2);
+		eaEt2.setEnabled(false);
 		eaEt3.setText(subnet_o3);
+		eaEt3.setEnabled(false);
 		eaEt4.setText("254");
 		
 		baEt1.addTextChangedListener(new TextWatcher() {
@@ -3515,20 +3538,31 @@ public class SMBExplorerMain extends FragmentActivity {
 			public void run() {//non UI thread
 //				System.setProperty( "jcifs.netbios.retryTimeout", "100");
 //				System.setProperty( "jcifs.netbios.retryCount", "2");
+				String found_addr="";
+				final String found_addr_title="   Found IP address:\n";
 				for (int i=scanIpAddrBeginAddr; i<=scanIpAddrEndAddr;i++) {
 					if (cancelIpAddressListCreation) break;
+					if (NetworkUtil.isSmbHostIpAddressReachable(scanIpAddrSubnet+"."+i,500) &&
+							NetworkUtil.isNbtAddressActive(scanIpAddrSubnet+"."+i) && 
+							!curr_ip.equals(scanIpAddrSubnet+"."+i)) {
+						String sn=NetworkUtil.getSmbHostNameFromAddress(scanIpAddrSubnet+"."+i);
+						rows.add(scanIpAddrSubnet+"."+i+" "+sn);
+						found_addr+="     "+scanIpAddrSubnet+"."+i+" "+sn+"\n";
+					}
 					final int ix=i;
+					final String found_addrx=found_addr;
 					handler.post(new Runnable() {// UI thread
 						@Override
 						public void run() {
-							tvmsg.setText(scanIpAddrSubnet+"."+ix);
+							if (found_addrx.length()==0) {
+								tvmsg.setText(scanIpAddrSubnet+"."+ix);	
+							} else {
+								tvmsg.setText(scanIpAddrSubnet+"."+ix+"\n"+
+										found_addr_title+found_addrx);
+							}
+							
 						}
 					});
-					if (NetworkUtil.isIpAddrReachable(scanIpAddrSubnet+"."+i) &&
-							NetworkUtil.isNbtAddressActive(scanIpAddrSubnet+"."+i) && 
-							!curr_ip.equals(scanIpAddrSubnet+"."+i)) {
-						rows.add(scanIpAddrSubnet+"."+i);
-					}
 				}
 //				System.setProperty( "jcifs.netbios.retryTimeout", "3000");
 				// dismiss progress bar dialog
@@ -3803,6 +3837,70 @@ public class SMBExplorerMain extends FragmentActivity {
 
 		// listJcifsProperty(prop);
 	};
+	
+	private void initJcifsOption() {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		String cp=
+				prefs.getString(getString(R.string.settings_smb_perform_class), "");
+
+		String jcifs_option_log_level="0", jcifs_option_rcv_buf_size="16644",
+				jcifs_option_snd_buf_size="16644",jcifs_option_listSize="",
+				jcifs_option_maxBuffers="", jcifs_option_tcp_nodelay="false";
+
+		if (cp.equals("0") || cp.equals("")) {
+			jcifs_option_log_level="0";
+			jcifs_option_rcv_buf_size="16644";
+			jcifs_option_snd_buf_size="16644";
+			jcifs_option_listSize="";
+			jcifs_option_maxBuffers="";
+			jcifs_option_tcp_nodelay="false";
+		} else if (cp.equals("1")) {
+			jcifs_option_log_level="0";
+			jcifs_option_rcv_buf_size="33288";
+			jcifs_option_snd_buf_size="33288";
+			jcifs_option_listSize="";
+			jcifs_option_maxBuffers="100";
+			jcifs_option_tcp_nodelay="false";
+		} else if (cp.equals("2")) {
+			jcifs_option_log_level="0";
+			jcifs_option_rcv_buf_size="66576";
+			jcifs_option_snd_buf_size="66576";
+			jcifs_option_listSize="";
+			jcifs_option_maxBuffers="100";
+			jcifs_option_tcp_nodelay="true";
+		} else {
+			jcifs_option_log_level=
+					prefs.getString(getString(R.string.settings_smb_log_level), "0");
+			if (jcifs_option_log_level.length()==0) jcifs_option_log_level="0";
+			
+			jcifs_option_rcv_buf_size=
+					prefs.getString(getString(R.string.settings_smb_rcv_buf_size),"66576");
+			jcifs_option_snd_buf_size=
+					prefs.getString(getString(R.string.settings_smb_snd_buf_size),"66576");
+			jcifs_option_listSize=
+					prefs.getString(getString(R.string.settings_smb_listSize), "");
+			jcifs_option_maxBuffers=
+					prefs.getString(getString(R.string.settings_smb_maxBuffers), "100");
+			jcifs_option_tcp_nodelay=
+					prefs.getString(getString(R.string.settings_smb_tcp_nodelay),"false");
+		}
+		System.setProperty("jcifs.util.loglevel", jcifs_option_log_level);
+		System.setProperty("jcifs.smb.lmCompatibility", "0");
+		System.setProperty("jcifs.smb.client.useExtendedSecurity", "false");
+
+		System.setProperty("jcifs.smb.client.tcpNoDelay",jcifs_option_tcp_nodelay);
+        
+		if (!jcifs_option_rcv_buf_size.equals(""))
+			System.setProperty("jcifs.smb.client.rcv_buf_size", jcifs_option_rcv_buf_size);//60416 120832
+		if (!jcifs_option_snd_buf_size.equals(""))
+			System.setProperty("jcifs.smb.client.snd_buf_size", jcifs_option_snd_buf_size);//16644 120832
+        
+		if (!jcifs_option_listSize.equals(""))
+			System.setProperty("jcifs.smb.client.listSize",jcifs_option_listSize); //65536 1300
+		if (!jcifs_option_maxBuffers.equals(""))
+			System.setProperty("jcifs.smb.maxBuffers",jcifs_option_maxBuffers);//16 100
+	};
+	
 
 	public void saveLogMessageDlg(final String curr_dir, final String ifn) {
 
