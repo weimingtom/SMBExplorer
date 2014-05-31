@@ -3542,7 +3542,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				final String found_addr_title="   Found IP address:\n";
 				for (int i=scanIpAddrBeginAddr; i<=scanIpAddrEndAddr;i++) {
 					if (cancelIpAddressListCreation) break;
-					if (NetworkUtil.isSmbHostIpAddressReachable(scanIpAddrSubnet+"."+i,500) &&
+					if (NetworkUtil.ping(scanIpAddrSubnet+"."+i) &&
 							NetworkUtil.isNbtAddressActive(scanIpAddrSubnet+"."+i) && 
 							!curr_ip.equals(scanIpAddrSubnet+"."+i)) {
 						String sn=NetworkUtil.getSmbHostNameFromAddress(scanIpAddrSubnet+"."+i);

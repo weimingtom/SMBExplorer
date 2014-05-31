@@ -135,7 +135,7 @@ public class RetrieveFileList implements Runnable  {
 		boolean error=false;
 		String err_msg="";
 		if (NetworkUtil.isValidIpAddress(host_t3)) {
-			if (!isSmbHostIpAddressReachable(host_t3)) error=true;
+			if (!NetworkUtil.isNbtAddressActive(host_t3)) error=true;
 			err_msg="Can not be connected to specified IP address, IP address="+host_t3;
 		} else {
 			if (NetworkUtil.getSmbHostIpAddressFromName(host_t3)==null) error=true;
@@ -164,17 +164,6 @@ public class RetrieveFileList implements Runnable  {
 		getFLCtrl.setDisable();
 		
 	};
-	
-	final static public boolean isSmbHostIpAddressReachable(String address) {
-		boolean reachable=false;
-		for (int i=0;i<5;i++) {
-			if (NetworkUtil.isSmbHostIpAddressReachable(address, 1500)) {
-				reachable=true;
-				break;
-			}
-		}
-		return reachable;
- 	};
 	
 // Default uncaught exception handler variable
     private UncaughtExceptionHandler defaultUEH;
