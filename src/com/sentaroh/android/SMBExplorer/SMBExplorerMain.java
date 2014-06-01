@@ -45,15 +45,14 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 
-import jcifs.UniAddress;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
@@ -71,6 +70,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
@@ -91,6 +91,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TabHost;
@@ -103,6 +104,7 @@ import com.sentaroh.android.Utilities.NotifyEvent.NotifyEventListener;
 import com.sentaroh.android.Utilities.ContextMenu.CustomContextMenu;
 import com.sentaroh.android.Utilities.ContextMenu.CustomContextMenuItem.CustomContextMenuOnClickListener;
 import com.sentaroh.android.Utilities.Dialog.CommonDialog;
+import com.sentaroh.android.Utilities.Dialog.DialogBackKeyListener;
 import com.sentaroh.android.Utilities.Widget.CustomSpinnerAdapter;
 import com.sentaroh.android.Utilities.TreeFilelist.TreeFilelistAdapter;
 import com.sentaroh.android.Utilities.TreeFilelist.TreeFilelistItem;
@@ -426,27 +428,6 @@ public class SMBExplorerMain extends FragmentActivity {
     	return result;
     };
 
-	private String getLocalIpAddress() {
-	    try {
-	        for (Enumeration<NetworkInterface> en = 
-	        		NetworkInterface.getNetworkInterfaces();
-	        		en.hasMoreElements();) {
-	            NetworkInterface intf = en.nextElement();
-	            for (Enumeration<InetAddress> enumIpAddr = 
-	            		intf.getInetAddresses(); 
-	            		enumIpAddr.hasMoreElements();) {
-	            	InetAddress inetAddress = enumIpAddr.nextElement();
-	                if (!inetAddress.isLoopbackAddress() && !(inetAddress.toString().indexOf(":")>=0)) {
-	                    return inetAddress.getHostAddress().toString();
-	                }
-	            }
-	        }
-	    } catch (SocketException ex) {
-	        Log.e(DEBUG_TAG, ex.toString());
-	    }
-	    return null;
-	};
-	
 	private void createTabAndView() {
 		tabHost=(TabHost)findViewById(android.R.id.tabhost);
 		tabHost.setup();
@@ -1309,12 +1290,27 @@ public class SMBExplorerMain extends FragmentActivity {
 			  	}
 		  	});
 		}
-		ccMenu.addMenuItem("Create directory",R.drawable.menu_create)
+		ccMenu.addMenuItem("Create directory /"+item.getName(),
+					R.drawable.menu_create)
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
-			  createItem(fla,"C", item,itemno);
-			  setAllFilelistItemUnChecked(fla);
+			  	String base_dir="";
+				if (item.isDir()) base_dir=item.getPath()+"/"+item.getName();
+				else base_dir=item.getPath();
+				createItem(fla,"C", base_dir);
+				setAllFilelistItemUnChecked(fla);
+		  	}
+	  	});
+		ccMenu.addMenuItem("Create directory /",R.drawable.menu_create)
+	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
+		  @Override
+		  public void onClick(CharSequence menuTitle) {
+				if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) 
+					createItem(fla,"C", localUrl);
+				else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) 
+					createItem(fla,"C", remoteUrl);
+				setAllFilelistItemUnChecked(fla);
 		  	}
 	  	});
 
@@ -1782,7 +1778,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 
 	private void createItem(final TreeFilelistAdapter fla,
-			final String item_optyp, final TreeFilelistItem fi, final int item_num) {
+			final String item_optyp, final String base_dir) {
 		sendDebugLogMsg(1,"I","createItem entered.");
 		
 		// カスタムダイアログの生成
@@ -1831,25 +1827,19 @@ public class SMBExplorerMain extends FragmentActivity {
 				} else {
 					int cmd=0;
 					if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) {
-						String td="";
-						if (fi.isDir()) td=fi.getPath()+"/"+fi.getName();
-						else td=fi.getPath();
 						fileioLinkParm=buildFileioLinkParm(fileioLinkParm,
-								td,"",newName.getText().toString(),"",
+								base_dir,"",newName.getText().toString(),"",
 								smbUser,smbPass); 
 //						refreshUrl=localUrl;
-						refreshUrl=td;
+						refreshUrl=base_dir;
 						cmd=FILEIO_PARM_LOCAL_CREATE;
 					} else {
-						String td="";
 						cmd=FILEIO_PARM_REMOTE_CREATE;
-						if (fi.isDir()) td=fi.getPath()+"/"+fi.getName();
-						else td=fi.getPath();
 						fileioLinkParm=buildFileioLinkParm(fileioLinkParm,
-								td,"",newName.getText().toString(),"",
+								base_dir,"",newName.getText().toString(),"",
 								smbUser,smbPass);
 //						refreshUrl=remoteUrl;
-						refreshUrl=td;
+						refreshUrl=base_dir;
 					}
 					sendDebugLogMsg(1,"I","createItem FILEIO task invoked.");
 					startFileioTask(fla,cmd,fileioLinkParm,
@@ -2812,7 +2802,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				ntfy.setListener(new NotifyEventListener() {
 					@Override
 					public void positiveResponse(Context arg0, Object[] arg1) {
-						editaddr.setText((String)arg1[0]);
+						editaddr.setText((String)arg1[1]);
 					}
 
 					@Override
@@ -2821,7 +2811,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					}
 					
 				});
-				setRemoteAddr(ntfy);
+				scanRemoteNetworkDlg(ntfy);
 			}
 		});
 
@@ -2963,7 +2953,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				ntfy.setListener(new NotifyEventListener() {
 					@Override
 					public void positiveResponse(Context arg0, Object[] arg1) {
-						editaddr.setText((String)arg1[0]);
+						editaddr.setText((String)arg1[1]);
 					}
 
 					@Override
@@ -2973,7 +2963,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					}
 					
 				});
-				setRemoteAddr(ntfy);
+				scanRemoteNetworkDlg(ntfy);
 			}
 		});
 
@@ -3283,123 +3273,95 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	};
 	
-	private void setRemoteAddr(final NotifyEvent p_ntfy) {
-		final ArrayList<String> rows = new ArrayList<String>();
-		NotifyEvent ntfy=new NotifyEvent(mContext);
-		ntfy.setListener(new NotifyEventListener() {
-			@Override
-			public void positiveResponse(Context c,Object[] o) {
-				if (rows.size()<1) rows.add(getString(R.string.msgs_ip_address_no_address));
-				//カスタムダイアログの生成
-			    final Dialog dialog=new Dialog(c);
-			    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-				dialog.setContentView(R.layout.item_select_list_dlg);
-			    TextView dlg_title=(TextView)dialog.findViewById(R.id.item_select_list_dlg_title);
-			    dlg_title.setText(getString(R.string.msgs_ip_address_select_title));
-			    TextView dlg_msg=(TextView)dialog.findViewById(R.id.item_select_list_dlg_msg);
-			    dlg_msg.setVisibility(TextView.GONE);
-			    TextView dlg_subtitle=(TextView)dialog.findViewById(R.id.item_select_list_dlg_subtitle);
-			    dlg_subtitle.setVisibility(TextView.GONE);
-//			    TextView filetext= (TextView)dialog.findViewById(R.id.item_select_list_dlg_itemtext);
-//			    filetext.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_timeout));
-//			    filetext.setVisibility(TextView.VISIBLE);
-			    Button btnRescan=(Button)dialog.findViewById(R.id.item_select_list_dlg_ok_btn);
-			    btnRescan.setVisibility(TextView.VISIBLE);
-			    btnRescan.setText(getString(R.string.msgs_ip_address_range_dlg_rescan));
-			    
-//			    final EditText toEt = (EditText)dialog.findViewById(R.id.item_select_list_dlg_itemname);
-//			    toEt.setVisibility(EditText.VISIBLE);
-			    
-			    CommonDialog.setDlgBoxSizeLimit(dialog,false);
-			    
-			    final ListView lv = (ListView) dialog.findViewById(android.R.id.list);
-			    lv.setAdapter(new ArrayAdapter<String>(mContext, R.layout.simple_list_item_1o, rows));
-			    lv.setScrollingCacheEnabled(false);
-			    lv.setScrollbarFadingEnabled(false);
-			    
-			    lv.setOnItemClickListener(new OnItemClickListener(){
-			    	public void onItemClick(AdapterView<?> items, View view, int idx, long id) {
-			    		if (rows.get(idx).startsWith("---")) return;
-			        	// リストアイテムを選択したときの処理
-			            dialog.dismiss();
-//			            setFixedOrientation(false);
-						p_ntfy.notifyToListener(true,new Object[]{rows.get(idx)});
-			        }
-			    });
-			    //RESCANボタンの指定
-			    btnRescan.setOnClickListener(new View.OnClickListener() {
-			        public void onClick(View v) {
-			            rows.clear();
-			            NotifyEvent ntfy=new NotifyEvent(mContext);
-			    		ntfy.setListener(new NotifyEventListener() {
-			    			@Override
-			    			public void positiveResponse(Context c,Object[] o) {
-			    				if (rows.size()<1) rows.add(getString(R.string.msgs_ip_address_no_address));
-			    			    lv.setAdapter(new ArrayAdapter<String>(mContext, R.layout.simple_list_item_1o, rows));
-			    			    lv.setScrollingCacheEnabled(false);
-			    			    lv.setScrollbarFadingEnabled(false);
-			    			}
-			    			@Override
-			    			public void negativeResponse(Context c,Object[] o) {}
-
-			    		});
-			    		createRemoteIpAddrList(rows,ntfy);
-			        }
-			    });
-
-			    //CANCELボタンの指定
-			    final Button btnCancel=(Button)dialog.findViewById(R.id.item_select_list_dlg_cancel_btn);
-			    btnCancel.setOnClickListener(new View.OnClickListener() {
-			        public void onClick(View v) {
-			            dialog.dismiss();
-//			            setFixedOrientation(false);
-			            p_ntfy.notifyToListener(false, null);
-			        }
-			    });
-				// Cancelリスナーの指定
-				dialog.setOnCancelListener(new Dialog.OnCancelListener() {
-					@Override
-					public void onCancel(DialogInterface arg0) {
-						btnCancel.performClick();
-					}
-				});
-//			    dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
-//			    setFixedOrientation(true);        
-//			    dialog.setCancelable(false);
-			    dialog.show();
-			}
-			@Override
-			public void negativeResponse(Context c,Object[] o) {}
-
-		});
-		getScanAddressRange(rows,ntfy);
-		
+	public static String getLocalIpAddress() {
+		String result="";
+		boolean exit=false;
+	    try {
+	        for (Enumeration<NetworkInterface> en = 
+	        		NetworkInterface.getNetworkInterfaces();
+	        		en.hasMoreElements();) {
+	            NetworkInterface intf = en.nextElement();
+	            for (Enumeration<InetAddress> enumIpAddr = 
+	            		intf.getInetAddresses(); 
+	            		enumIpAddr.hasMoreElements();) {
+	            	InetAddress inetAddress = enumIpAddr.nextElement();
+//	                if (!inetAddress.isLoopbackAddress() && !(inetAddress.toString().indexOf(":")>=0)) {
+//	                    return inetAddress.getHostAddress().toString();
+//	                }
+//	            	Log.v("","ip="+inetAddress.getHostAddress()+
+//	            			", name="+intf.getName());
+	            	if (inetAddress.isSiteLocalAddress()) {
+	                    result=inetAddress.getHostAddress();
+//	                    Log.v("","result="+result+", name="+intf.getName()+"-");
+	                    if (intf.getName().equals("wlan0")) {
+	                    	exit=true;
+	                    	break;
+	                    }
+	            	}
+	            }
+	            if (exit) break;
+	        }
+	    } catch (SocketException ex) {
+	        Log.e(DEBUG_TAG, ex.toString());
+	        result="192.168.0.1";
+	    }
+//		Log.v("","getLocalIpAddress result="+result);
+	    if (result.equals("")) result="192.168.0.1";
+	    return result;
 	};
 
-	private String scanIpAddrSubnet;
-	private int scanIpAddrBeginAddr,scanIpAddrEndAddr;
-	private void getScanAddressRange(final ArrayList<String> rows, 
-			final NotifyEvent p_ntfy) {
+	public static String getIfIpAddress() {
+		String result="";
+	    try {
+	        for (Enumeration<NetworkInterface> en = 
+	        		NetworkInterface.getNetworkInterfaces();
+	        		en.hasMoreElements();) {
+	            NetworkInterface intf = en.nextElement();
+	            for (Enumeration<InetAddress> enumIpAddr = 
+	            		intf.getInetAddresses(); 
+	            		enumIpAddr.hasMoreElements();) {
+	            	InetAddress inetAddress = enumIpAddr.nextElement();
+//	            	Log.v("","ip="+inetAddress.getHostAddress());
+	            	if (!inetAddress.isLoopbackAddress() &&
+	            			(inetAddress.getHostAddress().startsWith("0") || 
+	            					inetAddress.getHostAddress().startsWith("1") || 
+	            					inetAddress.getHostAddress().startsWith("2"))) {
+	                    result=inetAddress.getHostAddress();
+	                    break;
+	            	}
+	            }
+	        }
+	    } catch (SocketException ex) {
+	        Log.e(DEBUG_TAG, ex.toString());
+	        result="192.168.0.1";
+	    }
+//		Log.v("","getIfIpAddress result="+result);
+	    if (result.equals("")) result="192.168.0.1";
+	    return result;
+	};
+
+	public void scanRemoteNetworkDlg(final NotifyEvent p_ntfy) {
+		//カスタムダイアログの生成
+	    final Dialog dialog=new Dialog(mContext);
+	    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+	    dialog.setContentView(R.layout.scan_remote_ntwk_dlg);
+	    final Button btn_scan=(Button)dialog.findViewById(R.id.scan_remote_ntwk_btn_ok);
+	    final Button btn_cancel=(Button)dialog.findViewById(R.id.scan_remote_ntwk_btn_cancel);
+
 		final String from=getLocalIpAddress();
 		String subnet=from.substring(0,from.lastIndexOf("."));
 		String subnet_o1, subnet_o2,subnet_o3;
 		subnet_o1=subnet.substring(0,subnet.indexOf("."));
 		subnet_o2=subnet.substring(subnet.indexOf(".")+1,subnet.lastIndexOf("."));
 		subnet_o3=subnet.substring(subnet.lastIndexOf(".")+1,subnet.length());
-		// カスタムダイアログの生成
-		final Dialog dialog = new Dialog(this);
-		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		dialog.setContentView(R.layout.scan_address_range_dlg);
-		TextView tvtitle=(TextView) dialog.findViewById(R.id.scan_address_range_title);
-		tvtitle.setText(R.string.msgs_ip_address_range_dlg_title);
-		final EditText baEt1 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o1);
-		final EditText baEt2 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o2);
-		final EditText baEt3 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o3);
-		final EditText baEt4 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o4);
-		final EditText eaEt1 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o1);
-		final EditText eaEt2 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o2);
-		final EditText eaEt3 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o3);
-		final EditText eaEt4 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o4);
+		final EditText baEt1 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o1);
+		final EditText baEt2 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o2);
+		final EditText baEt3 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o3);
+		final EditText baEt4 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o4);
+		final EditText eaEt1 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o1);
+		final EditText eaEt2 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o2);
+		final EditText eaEt3 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o3);
+		final EditText eaEt4 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o4);
 		baEt1.setText(subnet_o1);
 		baEt2.setText(subnet_o2);
 		baEt3.setText(subnet_o3);
@@ -3444,236 +3406,348 @@ public class SMBExplorerMain extends FragmentActivity {
 			public void onTextChanged(CharSequence s, int start, int before,int count) {}
 		});
 
-		
-		final Button btnCancel = (Button) dialog.findViewById(R.id.scan_address_range_btn_cancel);
-		final Button btnOk = (Button) dialog.findViewById(R.id.scan_address_range_btn_ok);
-		CommonDialog.setDlgBoxSizeCompact(dialog);
-		// OKボタンの指定
-		btnOk.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
+//		baEt4.addTextChangedListener(new TextWatcher() {
+//			@Override
+//			public void afterTextChanged(Editable s) {
+//				if (auditScanAddressRangeValue(dialog)) btn_ok.setEnabled(true);
+//				else btn_ok.setEnabled(false);
+//			}
+//			@Override
+//			public void beforeTextChanged(CharSequence s, int start, int count,int after) {}
+//			@Override
+//			public void onTextChanged(CharSequence s, int start, int before,int count) {}
+//		});
+//
+//		eaEt4.addTextChangedListener(new TextWatcher() {
+//			@Override
+//			public void afterTextChanged(Editable s) {
+//				if (auditScanAddressRangeValue(dialog)) btn_ok.setEnabled(true);
+//				else btn_ok.setEnabled(false);
+//			}
+//			@Override
+//			public void beforeTextChanged(CharSequence s, int start, int count,int after) {}
+//			@Override
+//			public void onTextChanged(CharSequence s, int start, int before,int count) {}
+//		});
+
+	    CommonDialog.setDlgBoxSizeLimit(dialog, true);
+	    
+	    final NotifyEvent ntfy_lv_click=new NotifyEvent(mContext);
+	    ntfy_lv_click.setListener(new NotifyEventListener(){
+			@Override
+			public void positiveResponse(Context c, Object[] o) {
+	            dialog.dismiss();
+				p_ntfy.notifyToListener(true,o);
+			}
+			@Override
+			public void negativeResponse(Context c, Object[] o) {}
+	    });
+	    
+		final ArrayList<ScanAddressResultListItem> ipAddressList = new ArrayList<ScanAddressResultListItem>();
+		ScanAddressResultListItem li=new ScanAddressResultListItem();
+		li.server_name=mContext.getString(R.string.msgs_ip_address_no_address);
+		ipAddressList.add(li);
+	    final ListView lv = (ListView) dialog.findViewById(R.id.scan_remote_ntwk_scan_result_list);
+	    final AdapterScanAddressResultList adap=new AdapterScanAddressResultList
+		    	(mContext, R.layout.scan_address_result_list_item, ipAddressList, ntfy_lv_click);
+	    lv.setAdapter(adap);
+	    lv.setScrollingCacheEnabled(false);
+	    lv.setScrollbarFadingEnabled(false);
+	    
+	    //SCANボタンの指定
+	    btn_scan.setOnClickListener(new View.OnClickListener() {
+	        public void onClick(View v) {
+	            ipAddressList.clear();
+	            NotifyEvent ntfy=new NotifyEvent(mContext);
+	    		ntfy.setListener(new NotifyEventListener() {
+	    			@Override
+	    			public void positiveResponse(Context c,Object[] o) {
+	    				if (ipAddressList.size()<1) {
+	    					ScanAddressResultListItem li=new ScanAddressResultListItem();
+	    					li.server_name=mContext.getString(R.string.msgs_ip_address_no_address);
+	    					ipAddressList.add(li);
+	    				} 
+//	    				adap.clear();
+//	    				for (int i=0;i<ipAddressList.size();i++) 
+//	    					adap.add(ipAddressList.get(i));
+	    			}
+	    			@Override
+	    			public void negativeResponse(Context c,Object[] o) {}
+
+	    		});
 				if (auditScanAddressRangeValue(dialog)) {
-					baEt1.selectAll();
 					String ba1=baEt1.getText().toString();
-					baEt2.selectAll();
 					String ba2=baEt2.getText().toString();
-					baEt3.selectAll();
 					String ba3=baEt3.getText().toString();
-					baEt4.selectAll();
 					String ba4=baEt4.getText().toString();
-					eaEt4.selectAll();
 					String ea4=eaEt4.getText().toString();
-//					setFixedOrientation(false);
-					scanIpAddrSubnet=ba1+"."+ba2+"."+ba3;
-					scanIpAddrBeginAddr = Integer.parseInt(ba4);
-					scanIpAddrEndAddr = Integer.parseInt(ea4);
-					dialog.dismiss();
-					createRemoteIpAddrList(rows,p_ntfy);
+					String subnet=ba1+"."+ba2+"."+ba3;
+					int begin_addr = Integer.parseInt(ba4);
+					int end_addr = Integer.parseInt(ea4);
+					scanRemoteNetwork(dialog,lv,adap,ipAddressList,
+							subnet, begin_addr, end_addr, ntfy);
 				} else {
 					//error
 				}
-			}
-		});
-		// CANCELボタンの指定
-		btnCancel.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-//				setFixedOrientation(false);
-				dialog.dismiss();
-			}
-		});
+	        }
+	    });
+
+	    //CANCELボタンの指定
+	    btn_cancel.setOnClickListener(new View.OnClickListener() {
+	        public void onClick(View v) {
+	            dialog.dismiss();
+	            p_ntfy.notifyToListener(false, null);
+	        }
+	    });
 		// Cancelリスナーの指定
 		dialog.setOnCancelListener(new Dialog.OnCancelListener() {
 			@Override
 			public void onCancel(DialogInterface arg0) {
-				btnCancel.performClick();
+				btn_cancel.performClick();
 			}
 		});
-//		setFixedOrientation(true);
-//		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
-//		dialog.setCancelable(false);
-		dialog.show();
+	    dialog.show();
+
 	};
-	
-	boolean cancelIpAddressListCreation =false;
-	private void createRemoteIpAddrList(final ArrayList<String> rows,
+
+	private int mScanCompleteCount=0, mScanAddrCount=0;
+	private void scanRemoteNetwork(
+			final Dialog dialog,
+			final ListView lv_ipaddr,
+			final AdapterScanAddressResultList adap,
+			final ArrayList<ScanAddressResultListItem> ipAddressList,
+			final String subnet, final int begin_addr, final int end_addr,
 			final NotifyEvent p_ntfy) {
 		final Handler handler=new Handler();
-		final String curr_ip=getLocalIpAddress();
-		cancelIpAddressListCreation =false;
-		// カスタムダイアログの生成
-		final Dialog dialog = new Dialog(this);
-		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		dialog.setContentView(R.layout.progress_spin_dlg);
-		TextView tvtitle=(TextView) dialog.findViewById(R.id.progress_spin_dlg_title);
-		tvtitle.setText(R.string.msgs_progress_spin_dlg_addr_listing);
-		final TextView tvmsg=(TextView) dialog.findViewById(R.id.progress_spin_dlg_msg);
-		final Button btnCancel = (Button) dialog.findViewById(R.id.progress_spin_dlg_btn_cancel);
-		btnCancel.setText(R.string.msgs_progress_spin_dlg_addr_cancel);
-		
-		CommonDialog.setDlgBoxSizeCompact(dialog);
-		
+		final ThreadCtrl tc=new ThreadCtrl();
+		final LinearLayout ll_addr=(LinearLayout) dialog.findViewById(R.id.scan_remote_ntwk_scan_address);
+		final LinearLayout ll_prog=(LinearLayout) dialog.findViewById(R.id.scan_remote_ntwk_progress);
+		final TextView tvmsg=(TextView) dialog.findViewById(R.id.scan_remote_ntwk_progress_msg);
+		final Button btn_scan = (Button) dialog.findViewById(R.id.scan_remote_ntwk_btn_ok);
+		final Button btn_cancel = (Button) dialog.findViewById(R.id.scan_remote_ntwk_btn_cancel);
+		final Button scan_cancel = (Button) dialog.findViewById(R.id.scan_remote_ntwk_progress_cancel);
+		tvmsg.setText("");
+		scan_cancel.setText(R.string.msgs_progress_spin_dlg_addr_cancel);
+		ll_addr.setVisibility(LinearLayout.GONE);
+		ll_prog.setVisibility(LinearLayout.VISIBLE);
+		btn_scan.setEnabled(false);
+		btn_cancel.setEnabled(false);
+		adap.setButtonEnabled(false);
+		scan_cancel.setEnabled(true);
+	    dialog.setOnKeyListener(new DialogBackKeyListener(mContext));
+	    dialog.setCancelable(false);
 		// CANCELボタンの指定
-		btnCancel.setOnClickListener(new View.OnClickListener() {
+		scan_cancel.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				btnCancel.setText(getString(R.string.msgs_progress_dlg_canceling));
-				btnCancel.setEnabled(false);
+				scan_cancel.setText(mContext.getString(R.string.msgs_progress_dlg_canceling));
+				scan_cancel.setEnabled(false);
 				sendDebugLogMsg(1,"W","IP Address list creation was cancelled");
-				cancelIpAddressListCreation=true;
+				tc.setDisable();
 			}
 		});
-		// Cancelリスナーの指定
-		dialog.setOnCancelListener(new Dialog.OnCancelListener() {
-			@Override
-			public void onCancel(DialogInterface arg0) {
-				btnCancel.performClick();
-			}
-		});
-//		dialog.setOnKeyListener(new DialogOnKeyListener(currentContext));
-//		dialog.setCancelable(false);
 		dialog.show();
 		
-		sendDebugLogMsg(1,"I","Scan IP address ransge is "+scanIpAddrSubnet+
-				"."+scanIpAddrBeginAddr+" - "+scanIpAddrEndAddr);
+		sendDebugLogMsg(1,"I","Scan IP address ransge is "+subnet+ "."+begin_addr+" - "+end_addr);
+		
+		final String scan_prog=mContext.getString(R.string.msgs_ip_address_scan_progress);
+		String p_txt=String.format(scan_prog,0);
+		tvmsg.setText(p_txt);
+
        	new Thread(new Runnable() {
 			@Override
 			public void run() {//non UI thread
-//				System.setProperty( "jcifs.netbios.retryTimeout", "100");
-//				System.setProperty( "jcifs.netbios.retryCount", "2");
-				String found_addr="";
-				final String found_addr_title="   Found IP address:\n";
-				for (int i=scanIpAddrBeginAddr; i<=scanIpAddrEndAddr;i++) {
-					if (cancelIpAddressListCreation) break;
-					if (NetworkUtil.ping(scanIpAddrSubnet+"."+i) &&
-							NetworkUtil.isNbtAddressActive(scanIpAddrSubnet+"."+i) && 
-							!curr_ip.equals(scanIpAddrSubnet+"."+i)) {
-						String sn=NetworkUtil.getSmbHostNameFromAddress(scanIpAddrSubnet+"."+i);
-						rows.add(scanIpAddrSubnet+"."+i+" "+sn);
-						found_addr+="     "+scanIpAddrSubnet+"."+i+" "+sn+"\n";
+				mScanCompleteCount=0;
+				mScanAddrCount=end_addr-begin_addr+1;
+				int scan_thread=30;
+				for (int i=begin_addr; i<=end_addr;i+=scan_thread) {
+					if (!tc.isEnable()) break;
+					boolean scan_end=false;
+					for (int j=i;j<(i+scan_thread);j++) {
+						if (j<=end_addr) {
+							startRemoteNetworkScanThread(handler, tc, dialog, p_ntfy,
+									lv_ipaddr, adap, tvmsg, subnet+"."+j,ipAddressList);
+						} else {
+							scan_end=true;
+						}
 					}
-					final int ix=i;
-					final String found_addrx=found_addr;
+					if (!scan_end) {
+						for (int wc=0;wc<100;wc++) {
+							if (!tc.isEnable()) break;
+							SystemClock.sleep(30);
+						}
+					}
+				}
+				if (!tc.isEnable()) {
 					handler.post(new Runnable() {// UI thread
 						@Override
 						public void run() {
-							if (found_addrx.length()==0) {
-								tvmsg.setText(scanIpAddrSubnet+"."+ix);	
-							} else {
-								tvmsg.setText(scanIpAddrSubnet+"."+ix+"\n"+
-										found_addr_title+found_addrx);
-							}
-							
+							closeScanRemoteNetworkProgressDlg(dialog, p_ntfy, lv_ipaddr, adap, tvmsg);
 						}
 					});
 				}
-//				System.setProperty( "jcifs.netbios.retryTimeout", "3000");
-				// dismiss progress bar dialog
-				handler.post(new Runnable() {// UI thread
-					@Override
-					public void run() {
-						dialog.dismiss();
-						if (p_ntfy!=null)
-							p_ntfy.notifyToListener(true, null);
-					}
-				});
 			}
 		})
        	.start();
 	};
 
-	@SuppressWarnings("unused")
+	private void closeScanRemoteNetworkProgressDlg(
+			final Dialog dialog,
+			final NotifyEvent p_ntfy,
+			final ListView lv_ipaddr,
+			final AdapterScanAddressResultList adap,
+			final TextView tvmsg) {
+		final LinearLayout ll_addr=(LinearLayout) dialog.findViewById(R.id.scan_remote_ntwk_scan_address);
+		final LinearLayout ll_prog=(LinearLayout) dialog.findViewById(R.id.scan_remote_ntwk_progress);
+		final Button btn_scan = (Button) dialog.findViewById(R.id.scan_remote_ntwk_btn_ok);
+		final Button btn_cancel = (Button) dialog.findViewById(R.id.scan_remote_ntwk_btn_cancel);
+		ll_addr.setVisibility(LinearLayout.VISIBLE);
+		ll_prog.setVisibility(LinearLayout.GONE);
+		btn_scan.setEnabled(true);
+		btn_cancel.setEnabled(true);
+		adap.setButtonEnabled(true);
+	    dialog.setOnKeyListener(null);
+	    dialog.setCancelable(true);
+		if (p_ntfy!=null) p_ntfy.notifyToListener(true, null);
+		
+	};
+	
+	private void startRemoteNetworkScanThread(final Handler handler,
+			final ThreadCtrl tc,
+			final Dialog dialog,
+			final NotifyEvent p_ntfy,
+			final ListView lv_ipaddr,
+			final AdapterScanAddressResultList adap,
+			final TextView tvmsg,
+			final String addr,
+			final ArrayList<ScanAddressResultListItem> ipAddressList) {
+		final String scan_prog=mContext.getString(R.string.msgs_ip_address_scan_progress);
+		Thread th=new Thread(new Runnable() {
+			@Override
+			public void run() {
+				if (isIpAddrReachable(addr)) {
+					mScanCompleteCount++;
+					String srv_name=getSmbHostName(addr);
+					ScanAddressResultListItem li=new ScanAddressResultListItem();
+					li.server_address=addr;
+					li.server_name=srv_name;
+					ipAddressList.add(li);
+					Collections.sort(ipAddressList, new Comparator<ScanAddressResultListItem>(){
+						@Override
+						public int compare(ScanAddressResultListItem lhs,
+								ScanAddressResultListItem rhs) {
+							return lhs.server_address.compareTo(rhs.server_address);
+						}
+					});
+				} else {
+					mScanCompleteCount++;
+				}
+				handler.post(new Runnable() {// UI thread
+					@Override
+					public void run() {
+						synchronized(lv_ipaddr) {
+							lv_ipaddr.setSelection(lv_ipaddr.getCount());
+							adap.notifyDataSetChanged();
+							String p_txt=String.format(scan_prog, 
+									(mScanCompleteCount*100)/mScanAddrCount);
+							tvmsg.setText(p_txt);
+							
+							if (mScanCompleteCount==mScanAddrCount) {
+								closeScanRemoteNetworkProgressDlg(dialog, p_ntfy, lv_ipaddr, adap, tvmsg);
+							}
+						}
+					}
+				});
+			}
+       	});
+       	th.start();
+	};
+
+	private boolean isIpAddrReachable(String address) {
+		boolean reachable=false;
+//		reachable=NetworkUtil.ping(address);
+		if (!NetworkUtil.isIpAddressAndPortConnected(address,139,5000)) {
+			reachable=NetworkUtil.isIpAddressAndPortConnected(address,445,5000);
+		} else reachable=true;
+		sendDebugLogMsg(2,"I","isIpAddrReachable Address="+address+", reachable="+reachable);
+		return reachable;
+	};
+	
 	private String getSmbHostName(String address) {
-		String srv_name="";
-    	try {
-			UniAddress ua = UniAddress.getByName(address);
-			String cn;
-	        cn = ua.firstCalledName();
-	        do {
-	            if (!cn.startsWith("*")) srv_name=cn; 
-            	sendDebugLogMsg(1,"I","getSmbHostName Address="+address+
-	            		", cn="+cn+", name="+srv_name);
-	        } while(( cn = ua.nextCalledName() ) != null );
-			
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
+		String srv_name=NetworkUtil.getSmbHostNameFromAddress(address);
+		sendDebugLogMsg(1,"I","getSmbHostName Address="+address+", name="+srv_name);
     	return srv_name;
  	};
- 	
- 	private boolean auditScanAddressRangeValue(Dialog dialog) {
-		boolean result=false;
-		final EditText baEt1 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o1);
-		final EditText baEt2 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o2);
-		final EditText baEt3 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o3);
-		final EditText baEt4 = (EditText) dialog.findViewById(R.id.scan_address_range_begin_address_o4);
-		final EditText eaEt1 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o1);
-		final EditText eaEt2 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o2);
-		final EditText eaEt3 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o3);
-		final EditText eaEt4 = (EditText) dialog.findViewById(R.id.scan_address_range_end_address_o4);
-		final TextView tvmsg = (TextView) dialog.findViewById(R.id.scan_address_range_msg);
 
-		baEt1.selectAll();
+	private boolean auditScanAddressRangeValue(Dialog dialog) {
+		boolean result=false;
+		final EditText baEt1 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o1);
+		final EditText baEt2 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o2);
+		final EditText baEt3 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o3);
+		final EditText baEt4 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o4);
+		final EditText eaEt1 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o1);
+		final EditText eaEt2 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o2);
+		final EditText eaEt3 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o3);
+		final EditText eaEt4 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o4);
+		final TextView tvmsg = (TextView) dialog.findViewById(R.id.scan_remote_ntwk_msg);
+
 		String ba1=baEt1.getText().toString();
-		baEt2.selectAll();
 		String ba2=baEt2.getText().toString();
-		baEt3.selectAll();
 		String ba3=baEt3.getText().toString();
-		baEt4.selectAll();
 		String ba4=baEt4.getText().toString();
-		eaEt1.selectAll();
 		String ea1=eaEt1.getText().toString();
-		eaEt2.selectAll();
 		String ea2=eaEt2.getText().toString();
-		eaEt3.selectAll();
 		String ea3=eaEt3.getText().toString();
-		eaEt4.selectAll();
 		String ea4=eaEt4.getText().toString();
+		
+    	tvmsg.setText("");
 		if (ba1.equals("")) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_begin_notspecified));
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_begin_notspecified));
 			baEt1.requestFocus();
 			return false;
 		} else if (ba2.equals("")) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_begin_notspecified));
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_begin_notspecified));
 			baEt2.requestFocus();
 			return false;
 		} else if (ba3.equals("")) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_begin_notspecified));
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_begin_notspecified));
 			baEt3.requestFocus();
 			return false;
 		} else if (ba4.equals("")) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_begin_notspecified));
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_begin_notspecified));
 			baEt4.requestFocus();
 			return false;
 		} else if (ea1.equals("")) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
 			eaEt1.requestFocus();
 			return false;
 		} else if (ea2.equals("")) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
 			eaEt2.requestFocus();
 			return false;
 		} else if (ea3.equals("")) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
 			eaEt3.requestFocus();
 			return false;
 		} else if (ea4.equals("")) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
 			eaEt4.requestFocus();
 			return false;
 		}
 		int iba1 = Integer.parseInt(ba1);
-		if (iba1<=0||iba1>=255) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_begin_range_error));
+		if (iba1>255) {
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_addr_range_error));
 			baEt1.requestFocus();
 			return false;
 		}
 		int iba2 = Integer.parseInt(ba2);
-		if (iba2<=0||iba2>=255) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_begin_range_error));
+		if (iba2>255) {
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_addr_range_error));
 			baEt2.requestFocus();
 			return false;
 		}
 		int iba3 = Integer.parseInt(ba3);
-		if (iba3<=0||iba3>=255) {
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_begin_range_error));
+		if (iba3>255) {
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_addr_range_error));
 			baEt3.requestFocus();
 			return false;
 		}
@@ -3685,15 +3759,15 @@ public class SMBExplorerMain extends FragmentActivity {
 					result=true;
 				} else {
 					baEt4.requestFocus();
-					tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_begin_addr_gt_end_addr));
+					tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_begin_addr_gt_end_addr));
 				}
 			} else {
 				eaEt4.requestFocus();
-				tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_end_range_error));
+				tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_end_range_error));
 			}
 		} else {
 			baEt4.requestFocus();
-			tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_begin_range_error));
+			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_begin_range_error));
 		}
 
 		if (iba1==192&&iba2==168) {
@@ -3707,30 +3781,12 @@ public class SMBExplorerMain extends FragmentActivity {
 				} else {
 					//not private
 					result=false;
-					tvmsg.setText(getString(R.string.msgs_ip_address_range_dlg_not_private));
+					tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_not_private));
 				}
 			}
 		}
 		
 		return result;
-	};
-	
-	@SuppressWarnings("unused")
-	private boolean checkIpAddrReachable(String address,int timeout) {
-		try {
-	        InetAddress ip = InetAddress.getByName(address);
-            
-            if (ip.isReachable(timeout)) { // Try for one tenth of a second
-                return true;
-            }
-	        return false;
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			return false;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
 	};
 
 	public void importProfileDlg(final String curr_dir, String file_name) {

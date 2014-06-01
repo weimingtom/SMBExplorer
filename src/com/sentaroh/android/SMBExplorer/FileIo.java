@@ -221,8 +221,8 @@ public class FileIo implements Runnable {
 				allcopy=fileioLinkParm.get(i).isAllCopyEnabled();
 
 				String tuser=null,tpass=null;
-				if (!file_userid.equals("")) tuser=file_userid;
-				if (!file_password.equals("")) tpass=file_password;
+				if (file_userid!=null && !file_userid.equals("")) tuser=file_userid;
+				if (file_password!=null && !file_password.equals("")) tpass=file_password;
 		    	ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
 
 				sendDebugLogMsg(9,"I","FILEIO task invoked."+
@@ -674,6 +674,7 @@ public class FileIo implements Runnable {
 	            	if (!copyLocalToLocal(fromUrl+"/"+element, toUrl+"/"+element )) 
 	            		return false;
 	            }
+				makeLocalDirs(toUrl+"/");
 			} else { // file copy
 				makeLocalDirs(toUrl);
 				result=copyFileLocalToLocal(iLf,fromUrl,toUrl,"Copying");
@@ -741,6 +742,7 @@ public class FileIo implements Runnable {
 	            			fromUrl+"/"+element, toUrl+"/"+element );
 	            	if (!success) return false;
 	            }
+				makeRemoteDirs(toUrl+"/");
 			} else { // file copy
 				makeRemoteDirs(toUrl);
 				tmp_toUrl=makeTempFilePath(toUrl);
@@ -837,7 +839,6 @@ public class FileIo implements Runnable {
 			return false;
 		} catch (SmbException e) {
 			e.printStackTrace();
-			Log.v("","nt="+e.getNtStatus());
 			sendLogMsg("E","Copy error:"+e.toString());
 			fileioThreadCtrl.setThreadMessage("Copy error:"+e.toString());
 			result=false;
@@ -963,6 +964,7 @@ public class FileIo implements Runnable {
 		    	result=moveLocalToLocal(fromUrl+"/"+element, toUrl+"/"+element );
 		    	if (!result) return false;
 		    }
+			makeLocalDirs(toUrl+"/");
 			iLf.delete();
 			sendLogMsg("I",fromUrl+" was deleted.");
 		} else { // file rename
@@ -996,7 +998,7 @@ public class FileIo implements Runnable {
     private boolean isSameMountPoint(String f_fp, String t_fp) {
     	boolean result=false;
     	ArrayList<String> ml=LocalMountPoint.buildLocalMountPointList();
-    	for (int i=0;i<ml.size();i++) Log.v("","ml="+ml.get(i));
+//    	for (int i=0;i<ml.size();i++) Log.v("","ml="+ml.get(i));
     	if (LocalMountPoint.isExternal2MountPioint(f_fp) || 
     			LocalMountPoint.isExternal2MountPioint(t_fp)) {
         	if (LocalMountPoint.isExternal2MountPioint(f_fp)==
@@ -1038,6 +1040,7 @@ public class FileIo implements Runnable {
 	            			fromUrl+"/"+element, toUrl+"/"+element );
 	            	if (!success) return false;
 	            }
+				makeRemoteDirs(toUrl+"/");
 				hf=new SmbFile(fromUrl+"/" ,ntlmPaswordAuth);
 				hf.delete();
 				sendLogMsg("I",fromUrl+" was deleted.");

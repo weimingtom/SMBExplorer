@@ -166,16 +166,16 @@
 		        android:orientation="horizontal" >
 
 			    <TextView
-			        android:layout_width="60dp"
+			        android:layout_width="50dp"
 			        android:layout_height="wrap_content"
 			        android:text="Share"
 			        android:textAppearance="?android:attr/textAppearanceSmall" />
 
 			    <Button
 			        android:id="@+id/remote_profile_get_btn1"
-			        android:layout_width="90dp"
+			        android:layout_width="100dp"
 			        android:layout_height="wrap_content"
-			        android:text="Listing..." />
+			        android:text="Show list" />
 		
 
 

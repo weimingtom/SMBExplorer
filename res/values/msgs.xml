@@ -45,24 +45,23 @@
     <string name="profile_list_name_string">Profile</string>
     <string name="profile_list_active_string">A</string>
     
-  	<string name="msgs_progress_spin_dlg_addr_listing">Scanning IP address</string>
-   	<string name="msgs_progress_spin_dlg_addr_cancel">Cancel scanning</string>
-   	<string name="msgs_ip_address_select_title">Select detected IP address</string>
-   	<string name="msgs_ip_address_no_address">---No IP address detected---</string>
-   	
-   	<string name="msgs_ip_address_range_dlg_title">IP Address Range</string>
-   	<string name="msgs_ip_address_range_dlg_begin">Begin</string>
-   	<string name="msgs_ip_address_range_dlg_end">End</string>
-   	<string name="msgs_ip_address_range_dlg_timeout">Timeout(milli second)</string>
-   	<string name="msgs_ip_address_range_dlg_rescan">Rescan</string>
-   	
-   	<string name="msgs_ip_address_range_dlg_begin_notspecified">Begin address was not specified.</string>
-   	<string name="msgs_ip_address_range_dlg_begin_range_error">Begin address range is must be 1 to 254.</string>
-   	<string name="msgs_ip_address_range_dlg_end_notspecified">End address was not specified.</string>
-   	<string name="msgs_ip_address_range_dlg_end_range_error">End address range is must be 1 to 254.</string>
-   	<string name="msgs_ip_address_range_dlg_begin_addr_gt_end_addr">Begin address is greater than end address.</string>
-   	<string name="msgs_ip_address_range_dlg_not_private">Global address was can not be scan.</string>
-   		
    	<string name="msgs_progress_dlg_canceling">Canceling</string>
 
+   	<string name="msgs_progress_spin_dlg_addr_cancel">Cancel scan</string>
+   	<string name="msgs_scan_ip_address_select_title">Scan remote network</string>
+	<string name="msgs_scan_ip_address_scan_btn">Scan</string>   	
+   	<string name="msgs_ip_address_no_address">---No IP address detected---</string>
+   	<string name="msgs_ip_address_scan_progress">Remote network scan is %s%% Completed</string>
+   	
+   	<string name="msgs_ip_address_range_dlg_begin">Begin</string>
+   	<string name="msgs_ip_address_range_dlg_end">End</string>
+   	
+   	<string name="msgs_ip_address_range_dlg_begin_notspecified">Begin address was not specified.</string>
+   	<string name="msgs_ip_address_range_dlg_addr_range_error">Address range is must be 0 to 255.</string>
+   	<string name="msgs_ip_address_range_dlg_begin_range_error">Begin address range is must be 1 to 254.</string>
+   	<string name="msgs_ip_address_range_dlg_end_notspecified">End address was not specified.</string>
+   	<string name="msgs_ip_address_range_dlg_begin_addr_gt_end_addr">Begin address is greater than end address.</string>
+   	<string name="msgs_ip_address_range_dlg_end_range_error">End address range is must be 1 to 254.</string>
+   	<string name="msgs_ip_address_range_dlg_not_private">Global address was can not be scan.</string>
+   		
 </resources>
