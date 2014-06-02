@@ -3347,7 +3347,11 @@ public class SMBExplorerMain extends FragmentActivity {
 	    dialog.setContentView(R.layout.scan_remote_ntwk_dlg);
 	    final Button btn_scan=(Button)dialog.findViewById(R.id.scan_remote_ntwk_btn_ok);
 	    final Button btn_cancel=(Button)dialog.findViewById(R.id.scan_remote_ntwk_btn_cancel);
-
+	    final TextView tvmsg = (TextView) dialog.findViewById(R.id.scan_remote_ntwk_msg);
+	    final TextView tv_result = (TextView) dialog.findViewById(R.id.scan_remote_ntwk_scan_result_title);
+	    tvmsg.setText(mContext.getString(R.string.msgs_scan_ip_address_press_scan_btn));
+	    tv_result.setVisibility(TextView.GONE);
+	    
 		final String from=getLocalIpAddress();
 		String subnet=from.substring(0,from.lastIndexOf("."));
 		String subnet_o1, subnet_o2,subnet_o3;
@@ -3358,77 +3362,14 @@ public class SMBExplorerMain extends FragmentActivity {
 		final EditText baEt2 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o2);
 		final EditText baEt3 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o3);
 		final EditText baEt4 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o4);
-		final EditText eaEt1 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o1);
-		final EditText eaEt2 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o2);
-		final EditText eaEt3 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o3);
 		final EditText eaEt4 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o4);
 		baEt1.setText(subnet_o1);
 		baEt2.setText(subnet_o2);
 		baEt3.setText(subnet_o3);
 		baEt4.setText("1");
 		baEt4.setSelection(1);
-		eaEt1.setText(subnet_o1);
-		eaEt1.setEnabled(false);
-		eaEt2.setText(subnet_o2);
-		eaEt2.setEnabled(false);
-		eaEt3.setText(subnet_o3);
-		eaEt3.setEnabled(false);
 		eaEt4.setText("254");
-		
-		baEt1.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void afterTextChanged(Editable s) {
-				eaEt1.setText(s);
-			}
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count,int after) {}
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before,int count) {}
-		});
-		baEt2.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void afterTextChanged(Editable s) {
-				eaEt2.setText(s);
-			}
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count,int after) {}
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before,int count) {}
-		});
-		baEt3.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void afterTextChanged(Editable s) {
-				eaEt3.setText(s);
-			}
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count,int after) {}
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before,int count) {}
-		});
-
-//		baEt4.addTextChangedListener(new TextWatcher() {
-//			@Override
-//			public void afterTextChanged(Editable s) {
-//				if (auditScanAddressRangeValue(dialog)) btn_ok.setEnabled(true);
-//				else btn_ok.setEnabled(false);
-//			}
-//			@Override
-//			public void beforeTextChanged(CharSequence s, int start, int count,int after) {}
-//			@Override
-//			public void onTextChanged(CharSequence s, int start, int before,int count) {}
-//		});
-//
-//		eaEt4.addTextChangedListener(new TextWatcher() {
-//			@Override
-//			public void afterTextChanged(Editable s) {
-//				if (auditScanAddressRangeValue(dialog)) btn_ok.setEnabled(true);
-//				else btn_ok.setEnabled(false);
-//			}
-//			@Override
-//			public void beforeTextChanged(CharSequence s, int start, int count,int after) {}
-//			@Override
-//			public void onTextChanged(CharSequence s, int start, int before,int count) {}
-//		});
+		baEt4.requestFocus();
 
 	    CommonDialog.setDlgBoxSizeLimit(dialog, true);
 	    
@@ -3444,9 +3385,9 @@ public class SMBExplorerMain extends FragmentActivity {
 	    });
 	    
 		final ArrayList<ScanAddressResultListItem> ipAddressList = new ArrayList<ScanAddressResultListItem>();
-		ScanAddressResultListItem li=new ScanAddressResultListItem();
-		li.server_name=mContext.getString(R.string.msgs_ip_address_no_address);
-		ipAddressList.add(li);
+//		ScanAddressResultListItem li=new ScanAddressResultListItem();
+//		li.server_name=mContext.getString(R.string.msgs_ip_address_no_address);
+//		ipAddressList.add(li);
 	    final ListView lv = (ListView) dialog.findViewById(R.id.scan_remote_ntwk_scan_result_list);
 	    final AdapterScanAddressResultList adap=new AdapterScanAddressResultList
 		    	(mContext, R.layout.scan_address_result_list_item, ipAddressList, ntfy_lv_click);
@@ -3463,10 +3404,12 @@ public class SMBExplorerMain extends FragmentActivity {
 	    			@Override
 	    			public void positiveResponse(Context c,Object[] o) {
 	    				if (ipAddressList.size()<1) {
-	    					ScanAddressResultListItem li=new ScanAddressResultListItem();
-	    					li.server_name=mContext.getString(R.string.msgs_ip_address_no_address);
-	    					ipAddressList.add(li);
-	    				} 
+	    					tvmsg.setText(mContext.getString(R.string.msgs_scan_ip_address_not_detected));
+	    					tv_result.setVisibility(TextView.GONE);
+	    				} else {
+	    					tvmsg.setText(mContext.getString(R.string.msgs_scan_ip_address_select_detected_host));
+	    					tv_result.setVisibility(TextView.VISIBLE);
+	    				}
 //	    				adap.clear();
 //	    				for (int i=0;i<ipAddressList.size();i++) 
 //	    					adap.add(ipAddressList.get(i));
@@ -3476,6 +3419,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	    		});
 				if (auditScanAddressRangeValue(dialog)) {
+					tv_result.setVisibility(TextView.GONE);
 					String ba1=baEt1.getText().toString();
 					String ba2=baEt2.getText().toString();
 					String ba3=baEt3.getText().toString();
@@ -3511,6 +3455,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 
 	private int mScanCompleteCount=0, mScanAddrCount=0;
+	private String mLockScanCompleteCount="";
 	private void scanRemoteNetwork(
 			final Dialog dialog,
 			final ListView lv_ipaddr,
@@ -3571,7 +3516,7 @@ public class SMBExplorerMain extends FragmentActivity {
 						}
 					}
 					if (!scan_end) {
-						for (int wc=0;wc<100;wc++) {
+						for (int wc=0;wc<210;wc++) {
 							if (!tc.isEnable()) break;
 							SystemClock.sleep(30);
 						}
@@ -3584,6 +3529,13 @@ public class SMBExplorerMain extends FragmentActivity {
 							closeScanRemoteNetworkProgressDlg(dialog, p_ntfy, lv_ipaddr, adap, tvmsg);
 						}
 					});
+				} else {
+					handler.postDelayed(new Runnable() {// UI thread
+						@Override
+						public void run() {
+							closeScanRemoteNetworkProgressDlg(dialog, p_ntfy, lv_ipaddr, adap, tvmsg);
+						}
+					},10000);
 				}
 			}
 		})
@@ -3625,33 +3577,37 @@ public class SMBExplorerMain extends FragmentActivity {
 			@Override
 			public void run() {
 				if (isIpAddrReachable(addr)) {
-					mScanCompleteCount++;
-					String srv_name=getSmbHostName(addr);
-					ScanAddressResultListItem li=new ScanAddressResultListItem();
-					li.server_address=addr;
-					li.server_name=srv_name;
-					ipAddressList.add(li);
-					Collections.sort(ipAddressList, new Comparator<ScanAddressResultListItem>(){
-						@Override
-						public int compare(ScanAddressResultListItem lhs,
-								ScanAddressResultListItem rhs) {
-							return lhs.server_address.compareTo(rhs.server_address);
-						}
-					});
+					synchronized(mLockScanCompleteCount) {
+						mScanCompleteCount++;
+						String srv_name=getSmbHostName(addr);
+						ScanAddressResultListItem li=new ScanAddressResultListItem();
+						li.server_address=addr;
+						li.server_name=srv_name;
+						ipAddressList.add(li);
+						Collections.sort(ipAddressList, new Comparator<ScanAddressResultListItem>(){
+							@Override
+							public int compare(ScanAddressResultListItem lhs,
+									ScanAddressResultListItem rhs) {
+								return lhs.server_address.compareTo(rhs.server_address);
+							}
+						});
+					}
 				} else {
-					mScanCompleteCount++;
+					synchronized(mLockScanCompleteCount) {
+						mScanCompleteCount++;
+					}
 				}
 				handler.post(new Runnable() {// UI thread
 					@Override
 					public void run() {
-						synchronized(lv_ipaddr) {
+						synchronized(mLockScanCompleteCount) {
 							lv_ipaddr.setSelection(lv_ipaddr.getCount());
 							adap.notifyDataSetChanged();
 							String p_txt=String.format(scan_prog, 
 									(mScanCompleteCount*100)/mScanAddrCount);
 							tvmsg.setText(p_txt);
 							
-							if (mScanCompleteCount==mScanAddrCount) {
+							if (mScanCompleteCount>=mScanAddrCount) {
 								closeScanRemoteNetworkProgressDlg(dialog, p_ntfy, lv_ipaddr, adap, tvmsg);
 							}
 						}
@@ -3665,8 +3621,8 @@ public class SMBExplorerMain extends FragmentActivity {
 	private boolean isIpAddrReachable(String address) {
 		boolean reachable=false;
 //		reachable=NetworkUtil.ping(address);
-		if (!NetworkUtil.isIpAddressAndPortConnected(address,139,5000)) {
-			reachable=NetworkUtil.isIpAddressAndPortConnected(address,445,5000);
+		if (!NetworkUtil.isIpAddressAndPortConnected(address,139,3000)) {
+			reachable=NetworkUtil.isIpAddressAndPortConnected(address,445,3000);
 		} else reachable=true;
 		sendDebugLogMsg(2,"I","isIpAddrReachable Address="+address+", reachable="+reachable);
 		return reachable;
@@ -3684,9 +3640,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		final EditText baEt2 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o2);
 		final EditText baEt3 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o3);
 		final EditText baEt4 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_begin_address_o4);
-		final EditText eaEt1 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o1);
-		final EditText eaEt2 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o2);
-		final EditText eaEt3 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o3);
 		final EditText eaEt4 = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_end_address_o4);
 		final TextView tvmsg = (TextView) dialog.findViewById(R.id.scan_remote_ntwk_msg);
 
@@ -3694,9 +3647,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		String ba2=baEt2.getText().toString();
 		String ba3=baEt3.getText().toString();
 		String ba4=baEt4.getText().toString();
-		String ea1=eaEt1.getText().toString();
-		String ea2=eaEt2.getText().toString();
-		String ea3=eaEt3.getText().toString();
 		String ea4=eaEt4.getText().toString();
 		
     	tvmsg.setText("");
@@ -3715,18 +3665,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		} else if (ba4.equals("")) {
 			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_begin_notspecified));
 			baEt4.requestFocus();
-			return false;
-		} else if (ea1.equals("")) {
-			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
-			eaEt1.requestFocus();
-			return false;
-		} else if (ea2.equals("")) {
-			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
-			eaEt2.requestFocus();
-			return false;
-		} else if (ea3.equals("")) {
-			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
-			eaEt3.requestFocus();
 			return false;
 		} else if (ea4.equals("")) {
 			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_end_notspecified));
@@ -3770,21 +3708,21 @@ public class SMBExplorerMain extends FragmentActivity {
 			tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_begin_range_error));
 		}
 
-		if (iba1==192&&iba2==168) {
-			//class c private
-		} else {
-			if (iba1==10) {
-				//class a private
-			} else {
-				if (iba1==172 && (iba2>=16&&iba2<=31)) {
-					//class b private
-				} else {
-					//not private
-					result=false;
-					tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_not_private));
-				}
-			}
-		}
+//		if (iba1==192&&iba2==168) {
+//			//class c private
+//		} else {
+//			if (iba1==10) {
+//				//class a private
+//			} else {
+//				if (iba1==172 && (iba2>=16&&iba2<=31)) {
+//					//class b private
+//				} else {
+//					//not private
+//					result=false;
+//					tvmsg.setText(mContext.getString(R.string.msgs_ip_address_range_dlg_not_private));
+//				}
+//			}
+//		}
 		
 		return result;
 	};

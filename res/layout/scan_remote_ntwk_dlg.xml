@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:ignore="HardcodedText,InefficientWeight" >
+    tools:ignore="HardcodedText,InefficientWeight,UselessParent" >
 
     <TextView
         android:id="@+id/scan_remote_ntwk_title"
@@ -38,13 +38,6 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp" >
 
-            <TextView
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:text="@string/msgs_ip_address_range_dlg_begin"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
             <EditText
                 android:id="@+id/scan_remote_ntwk_begin_address_o1"
                 android:layout_width="53dp"
@@ -57,7 +50,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
                 android:text="."
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -72,7 +64,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
                 android:text="."
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -87,7 +78,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
                 android:text="."
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -98,78 +88,20 @@
                 android:layout_weight="1"
                 android:inputType="number"
                 android:maxLength="3" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp" >
-
-            <TextView
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:text="@string/msgs_ip_address_range_dlg_end"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-            <EditText
-                android:id="@+id/scan_remote_ntwk_end_address_o1"
-                android:layout_width="53dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:inputType="number"
-                android:maxLength="3"
-                android:state_enabled="false" >
-
-                <requestFocus />
-            </EditText>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:text="."
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <EditText
-                android:id="@+id/scan_remote_ntwk_end_address_o2"
-                android:layout_width="53dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:inputType="number"
-                android:maxLength="3"
-                android:state_enabled="false" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:text="."
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <EditText
-                android:id="@+id/scan_remote_ntwk_end_address_o3"
-                android:layout_width="53dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:inputType="number"
-                android:maxLength="3"
-                android:state_enabled="false" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:text="."
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:text="-"
+                android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <EditText
                 android:id="@+id/scan_remote_ntwk_end_address_o4"
                 android:layout_width="53dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:inputType="number" />
+                android:inputType="number"
+                android:maxLength="3" />
         </LinearLayout>
     </LinearLayout>
 
@@ -207,13 +139,22 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/scan_remote_ntwk_scan_result_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/msgs_scan_ip_address_scan_result_title"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
     <ListView
         android:id="@+id/scan_remote_ntwk_scan_result_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
-        android:layout_marginTop="10dp"
         android:layout_weight="1" >
     </ListView>
 
