@@ -713,7 +713,7 @@ public class FileIo implements Runnable {
 		String target_fn=tmp_wu.replace(target_dir, "");
 		target_fn=target_fn.substring(0,(target_fn.length()-1));
 		String tmp_target=target_dir+"SMBExplorer.work.tmp"+last_sep;
-//		Log.v("","tmp="+tmp_target+", to="+targetUrl);
+		Log.v("","tmp="+tmp_target+", to="+targetUrl);
 		return tmp_target;
 	}
 
@@ -1481,11 +1481,15 @@ public class FileIo implements Runnable {
 		String target_dir="";
 		if (targetPath.lastIndexOf("/")<=0) return false;
 		else {
-			target_dir=targetPath.substring(0,targetPath.lastIndexOf("/"));
-			target_dir=target_dir.substring(0,target_dir.lastIndexOf("/"));
+			if (targetPath.endsWith("/")) {//path is dir
+				target_dir=targetPath;
+			} else {
+				target_dir=targetPath.substring(0,targetPath.lastIndexOf("/"));
+			}
 		}
 
 		SmbFile hf = new SmbFile(target_dir + "/",ntlmPaswordAuth);
+		Log.v("","tdir="+target_dir);
 		if (!hf.exists()) {
 			hf.mkdirs();
 		}

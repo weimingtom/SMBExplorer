@@ -86,9 +86,11 @@ import android.view.Window;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -648,8 +650,8 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 	
 	private void refreshFilelistView() {
-		setLocalDirBtnListener();
-		setRemoteDirBtnListener();
+//		setLocalDirBtnListener();
+//		setRemoteDirBtnListener();
 		if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) {
 //			int pos = localFileListView.getFirstVisiblePosition();
 //			int posTop = localFileListView.getChildAt(0).getTop();
@@ -659,7 +661,7 @@ public class SMBExplorerMain extends FragmentActivity {
 //			int pos = remoteFileListView.getFirstVisiblePosition();
 //			int posTop =0;
 //			if (remoteFileListView.getChildAt(0)!=null) posTop=remoteFileListView.getChildAt(0).getTop();
-			loadRemoteFilelist(remoteUrl);
+			if (!remoteUrl.equals("")) loadRemoteFilelist(remoteUrl);
 //			remoteFileListView.setSelectionFromTop(pos,posTop);
 		} else return; //file list not selected
 	};
@@ -689,23 +691,32 @@ public class SMBExplorerMain extends FragmentActivity {
 			public void positiveResponse(Context c,Object[] o) {
 				remoteFileListAdapter = (TreeFilelistAdapter)o[0];
 				remoteFileListView.setAdapter(remoteFileListAdapter);
-				String pn="";
-				for (int i=0;i<profileAdapter.getCount();i++) {
-					String tu="smb://"+profileAdapter.getItem(i).getAddr()+"/"+profileAdapter.getItem(i).getShare() ;
-					if (tu.equals(url)) {
-						pn=profileAdapter.getItem(i).getName();
-						break;
-					}
-				}
-				setFilelistCurrDir(remoteFileListDirBtn,pn);
+//				String pn="";
+//				for (int i=0;i<profileAdapter.getCount();i++) {
+//					ProfileListItem item=profileAdapter.getItem(i);
+//					String tu = buildRemoteUrl(item);
+//					if (tu.equals(url)) {
+//						pn=item.getName();
+//						break;
+//					}
+//				}
+//				setFilelistCurrDir(remoteFileListDirBtn,pn);
 				setRemoteFilelistItemClickListener();
 				setRemoteFilelistLongClickListener();
 			}
 
 			@Override
 			public void negativeResponse(Context c,Object[] o) {
-				setFilelistCurrDir(remoteFileListDirBtn,
-						"Fileist creation error occured");
+				Spinner spinner = (Spinner) findViewById(R.id.explorer_filelist_remote_tab_dir);
+				spinner.setSelection(0);
+				remoteUrl="";
+				if (remoteFileListAdapter!=null) {
+					ArrayList<TreeFilelistItem> tfli=remoteFileListAdapter.getDataList();
+					tfli.clear();
+					remoteFileListAdapter.setDataList(tfli);
+				}
+//				setFilelistCurrDir(remoteFileListDirBtn,
+//						"Fileist creation error occured");
 			}
 		});
 		createRemoteFileList(url,ne);
@@ -761,8 +772,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			if (profileAdapter.getItem(i).getType().equals("R") && 
 					profileAdapter.getItem(i).getActive().equals("A")) {
 				spAdapter.add(profileAdapter.getItem(i).getName());
-				String surl="smb://" + profileAdapter.getItem(i).getAddr() +
-						"/"+ profileAdapter.getItem(i).getShare() ;
+				String surl=buildRemoteUrl(profileAdapter.getItem(i));
 //				Log.v("","surl="+surl+", rurl="+remoteUrl);
 				if (surl.equals(remoteUrl))
 			        spinner.setSelection(a_no);
@@ -783,19 +793,20 @@ public class SMBExplorerMain extends FragmentActivity {
 						pli=profileAdapter.getItem(i);
 					}
 				}
-				if (spAdapter.getItem(0).startsWith("---")) {
-					long ns_id=spinner.getSelectedItemId()-1;
-					spAdapter.remove(spAdapter.getItem(0));
-					spinner.setSelection((int)ns_id);
-				}
-				String turl="smb://" + pli.getAddr() + "/"+ pli.getShare() ;
+//				if (spAdapter.getItem(0).startsWith("---")) {
+//					long ns_id=spinner.getSelectedItemId()-1;
+//					spAdapter.remove(spAdapter.getItem(0));
+//					spinner.setSelection((int)ns_id);
+//				}
+				String turl=buildRemoteUrl(pli);
 				if (turl.equals(remoteUrl)) tabHost.setCurrentTabByTag(SMBEXPLORER_TAB_REMOTE);
 				else {	
 					tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(true);
 //					currentSelectedProfileType = "R";
 					tabHost.setCurrentTabByTag(SMBEXPLORER_TAB_REMOTE);
 					setJcifsProperties(pli.getUser(), pli.getPass());
-					remoteUrl = "smb://"+pli.getAddr()+"/"+pli.getShare() ;
+//					remoteUrl = "smb://"+pli.getAddr()+"/"+pli.getShare() ;
+					remoteUrl = buildRemoteUrl(pli);
 					loadRemoteFilelist(remoteUrl);
 				}
             }
@@ -803,6 +814,13 @@ public class SMBExplorerMain extends FragmentActivity {
             public void onNothingSelected(AdapterView<?> arg0) {
             }
         });
+	};
+	
+	private String buildRemoteUrl(ProfileListItem pli) {
+		String url="", sep="";
+		if (!pli.getPort().equals("")) sep=":";
+		url = "smb://"+pli.getAddr()+sep+pli.getPort()+"/"+pli.getShare() ;
+		return url;
 	};
 
 	private void setProfilelistItemClickListener() {
@@ -823,8 +841,18 @@ public class SMBExplorerMain extends FragmentActivity {
 //						currentSelectedProfileType = "R";
 						tabHost.setCurrentTabByTag(SMBEXPLORER_TAB_REMOTE);
 						setJcifsProperties(item.getUser(), item.getPass());
-						remoteUrl = "smb://"+item.getAddr()+"/"+item.getShare() ;
-						loadRemoteFilelist(remoteUrl);
+//						String sep="";
+//						if (!item.getPort().equals("")) sep=":";
+//						remoteUrl = "smb://"+item.getAddr()+sep+item.getPort()+"/"+item.getShare() ;
+//						loadRemoteFilelist(remoteUrl);
+						Spinner spinner = (Spinner) findViewById(R.id.explorer_filelist_remote_tab_dir);
+						for (int i=0;i<spinner.getCount();i++) {
+							if (spinner.getItemAtPosition(i).toString().equals(item.getName())) {
+								spinner.setSelection(i);
+								break;
+							}
+						}
+						
 					}
 				} else {
 					String turl=item.getName();
@@ -934,7 +962,16 @@ public class SMBExplorerMain extends FragmentActivity {
 											remoteUrl);
 								}
 								@Override
-								public void negativeResponse(Context c,Object[] o) {}
+								public void negativeResponse(Context c,Object[] o) {
+									Spinner spinner = (Spinner) findViewById(R.id.explorer_filelist_remote_tab_dir);
+									spinner.setSelection(0);
+									remoteUrl="";
+									if (remoteFileListAdapter!=null) {
+										ArrayList<TreeFilelistItem> tfli=remoteFileListAdapter.getDataList();
+										tfli.clear();
+										remoteFileListAdapter.setDataList(tfli);
+									}
+								}
 							});
 							createRemoteFileList(item.getPath()+"/"+item.getName(),ne);
 						}
@@ -1047,7 +1084,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		  public void onClick(CharSequence menuTitle) {
 				addRemoteProfile("", "", defaultSettingUsername, 
 						defaultSettingPassword,
-						defaultSettingAddr, "", "");
+						defaultSettingAddr, "", "","");
 		  	}
 	  	});
 
@@ -1057,7 +1094,8 @@ public class SMBExplorerMain extends FragmentActivity {
 		  public void onClick(CharSequence menuTitle) {
 				ProfileListItem item = profileAdapter.getItem(itemno);
 				editRemoteProfile(item.getActive(), item.getName(), item.getUser(),
-						item.getPass(), item.getAddr(), item.getShare(), "",itemno);
+						item.getPass(), item.getAddr(), item.getPort(), 
+						item.getShare(), "",itemno);
 				setAllProfileItemUnChecked();
 		  	}
 	  	});
@@ -1737,7 +1775,16 @@ public class SMBExplorerMain extends FragmentActivity {
 //					remoteFileListAdapter.createShowList();
 				}
 				@Override
-				public void negativeResponse(Context c,Object[] o) {}
+				public void negativeResponse(Context c,Object[] o) {
+					Spinner spinner = (Spinner) findViewById(R.id.explorer_filelist_remote_tab_dir);
+					spinner.setSelection(0);
+					remoteUrl="";
+					if (remoteFileListAdapter!=null) {
+						ArrayList<TreeFilelistItem> tfli=remoteFileListAdapter.getDataList();
+						tfli.clear();
+						remoteFileListAdapter.setDataList(tfli);
+					}
+				}
 			});
 			createRemoteFileList(refreshUrl,ne);
 		} else return; //file list not selected
@@ -2459,7 +2506,6 @@ public class SMBExplorerMain extends FragmentActivity {
 	private void createRemoteFileList(String url, final NotifyEvent parent_event) {
 		result_createFileListView = true;
 		sendDebugLogMsg(1,"I","Create remote filelist remote url:"+url);
-	
 		// File List
 		final NotifyEvent n_event=new NotifyEvent(this);
 		// set listener 
@@ -2759,7 +2805,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	private void addRemoteProfile(final String prof_act,
 			final String prof_name, final String prof_user,
-			final String prof_pass, final String prof_addr,
+			final String prof_pass, final String prof_addr, final String prof_port,
 			final String prof_share, final String msg_text) {
 
 		// カスタムダイアログの生成
@@ -2784,6 +2830,8 @@ public class SMBExplorerMain extends FragmentActivity {
 		editpass.setText(prof_pass);
 		final EditText editshare = (EditText) dialog.findViewById(R.id.remote_profile_share);
 		editshare.setText(prof_share);
+		final EditText editport = (EditText) dialog.findViewById(R.id.remote_profile_port_number);
+		editport.setText(prof_port);
 		
 		CommonDialog.setDlgBoxSizeCompact(dialog);
 
@@ -2811,7 +2859,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					}
 					
 				});
-				scanRemoteNetworkDlg(ntfy);
+				scanRemoteNetworkDlg(ntfy, editport.getText().toString());
 			}
 		});
 
@@ -2881,9 +2929,10 @@ public class SMBExplorerMain extends FragmentActivity {
 					String prof_pass=editpass.getText().toString();
 					String prof_addr=editaddr.getText().toString();
 					String prof_share=editshare.getText().toString();
+					String prof_port=editport.getText().toString();
 					profileAdapter.add(new ProfileListItem(
 							"R",new_name, new_act,prof_user , prof_pass,prof_addr,
-									prof_share,false));
+									prof_port, prof_share,false));
 					saveProfile(false,"","");
 					profileAdapter = 
 							createProfileList(false,""); // create profile list
@@ -2909,7 +2958,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	}
 
 	private void editRemoteProfile(String prof_act, String prof_name,
-			String prof_user, String prof_pass, String prof_addr,
+			String prof_user, String prof_pass, String prof_addr, final String prof_port,
 			String prof_share, String msg_text, final int item_num) {
 
 		// カスタムダイアログの生成
@@ -2937,6 +2986,8 @@ public class SMBExplorerMain extends FragmentActivity {
 		editpass.setText(prof_pass);
 		final EditText editshare = (EditText) dialog.findViewById(R.id.remote_profile_share);
 		editshare.setText(prof_share);
+		final EditText editport = (EditText) dialog.findViewById(R.id.remote_profile_port_number);
+		editport.setText(prof_port);
 
 		final CheckBox tg = (CheckBox) dialog.findViewById(R.id.remote_profile_active);
 		if (prof_act.equals("A"))
@@ -2963,7 +3014,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					}
 					
 				});
-				scanRemoteNetworkDlg(ntfy);
+				scanRemoteNetworkDlg(ntfy, editport.getText().toString());
 			}
 		});
 
@@ -3016,16 +3067,12 @@ public class SMBExplorerMain extends FragmentActivity {
 				dialog.dismiss();
 //				setFixedOrientation(false);
 
-				editaddr.selectAll();
 				new_addr = editaddr.getText().toString();
-				edituser.selectAll();
 				new_user = edituser.getText().toString();
-				editpass.selectAll();
 				new_pass = editpass.getText().toString();
-				editshare.selectAll();
 				new_share = editshare.getText().toString();
-				editname.selectAll();
 				new_name = editname.getText().toString();
+				String new_port=editport.getText().toString();
 
 				if (tg.isChecked()) new_act = "A";
 				else new_act = "I";
@@ -3036,7 +3083,8 @@ public class SMBExplorerMain extends FragmentActivity {
 
 				profileAdapter.remove(item);
 				profileAdapter.insert(new ProfileListItem("R",
-						new_name, new_act, new_user, new_pass, new_addr,new_share,false),
+						new_name, new_act, new_user, new_pass, new_addr,new_port,
+						new_share,false),
 						item_num);
 				
 				saveProfile(false,"","");
@@ -3068,11 +3116,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			item = profileAdapter.getItem(i);
 
 			if (item.isChk()) {
-				profileAdapter.remove(item);
-				profileAdapter.insert(new ProfileListItem(
-					item.getType(), item.getName(), 
-					"A",item.getUser(), item.getPass(),item.getAddr(),
-					item.getShare(),false),i);
+				item.setActive("A");
 			} 
 		}
 		
@@ -3089,11 +3133,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			item = profileAdapter.getItem(i);
 
 			if (item.isChk()) {
-				profileAdapter.remove(item);
-				profileAdapter.insert(new ProfileListItem(
-					item.getType(), item.getName(), 
-					"I",item.getUser(), item.getPass(),item.getAddr(),
-					item.getShare(),false),i);
+				item.setActive("I");
 			} 
 		}
 		
@@ -3148,7 +3188,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		for (int i=0;i<ml.size();i++) {
 			ProfileListItem pli=new ProfileListItem(
 					"L",ml.get(i), "A", 
-					"", "", "", 
+					"", "", "", "",
 					"", false);
 			lcl.add(pli);
 		}
@@ -3178,7 +3218,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				while ((pl = br.readLine()) != null && !error_CreateProfileListResult) {
 					alp = parseProfileString(pl);
 					rem.add(new ProfileListItem(alp[0], alp[1], alp[2],
-							alp[3], alp[4], alp[5], alp[6],false));
+							alp[3], alp[4], alp[5], alp[6], alp[7],false));
 				}
 			}
 			br.close();
@@ -3197,7 +3237,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		}
 		Collections.sort(rem);
 		lcl.addAll(rem);
-		if (lcl.size()==0) lcl.add(new ProfileListItem("", "No profiles", "I", "", "", "", "",false));
+		if (lcl.size()==0) lcl.add(new ProfileListItem("", "No profiles", "I", "", "", "", "","",false));
 		// profileListView = (ListView)findViewById(android.R.id.list);
 		pfl = new ProfileListAdapter(this, R.layout.profile_list_view_item, lcl);
 		profileListView.setAdapter(pfl);
@@ -3229,7 +3269,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					if (item.getType().equals("R")) {
 						String pl = item.getType() + "\t" + item.getName() + "\t"
 								+ item.getActive() + "\t" + item.getUser() + "\t"
-								+ item.getPass() + "\t" + item.getAddr() + "\t"
+								+ item.getPass() + "\t" + item.getAddr() + "\t"+ item.getPort() + "\t"
 								+ item.getShare();
 						sendDebugLogMsg(9,"I","saveProfileToFile=" + pl);
 						pw.println(pl);
@@ -3340,7 +3380,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	    return result;
 	};
 
-	public void scanRemoteNetworkDlg(final NotifyEvent p_ntfy) {
+	public void scanRemoteNetworkDlg(final NotifyEvent p_ntfy, String port_number) {
 		//カスタムダイアログの生成
 	    final Dialog dialog=new Dialog(mContext);
 	    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -3370,8 +3410,27 @@ public class SMBExplorerMain extends FragmentActivity {
 		baEt4.setSelection(1);
 		eaEt4.setText("254");
 		baEt4.requestFocus();
-
+		
+		final CheckBox cb_use_port_number = (CheckBox) dialog.findViewById(R.id.scan_remote_ntwk_use_port);
+		final EditText et_port_number = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_port_number);
+		
 	    CommonDialog.setDlgBoxSizeLimit(dialog, true);
+	    
+	    if (port_number.equals("")) {
+		    et_port_number.setEnabled(false);
+		    cb_use_port_number.setChecked(false);
+	    } else {
+		    et_port_number.setEnabled(true);
+		    et_port_number.setText(port_number);
+		    cb_use_port_number.setChecked(true);
+	    }
+	    cb_use_port_number.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView,
+					boolean isChecked) {
+				et_port_number.setEnabled(isChecked);
+			}
+	    });
 	    
 	    final NotifyEvent ntfy_lv_click=new NotifyEvent(mContext);
 	    ntfy_lv_click.setListener(new NotifyEventListener(){
@@ -3471,6 +3530,10 @@ public class SMBExplorerMain extends FragmentActivity {
 		final Button btn_scan = (Button) dialog.findViewById(R.id.scan_remote_ntwk_btn_ok);
 		final Button btn_cancel = (Button) dialog.findViewById(R.id.scan_remote_ntwk_btn_cancel);
 		final Button scan_cancel = (Button) dialog.findViewById(R.id.scan_remote_ntwk_progress_cancel);
+		
+		final CheckBox cb_use_port_number = (CheckBox) dialog.findViewById(R.id.scan_remote_ntwk_use_port);
+		final EditText et_port_number = (EditText) dialog.findViewById(R.id.scan_remote_ntwk_port_number);
+
 		tvmsg.setText("");
 		scan_cancel.setText(R.string.msgs_progress_spin_dlg_addr_cancel);
 		ll_addr.setVisibility(LinearLayout.GONE);
@@ -3504,13 +3567,15 @@ public class SMBExplorerMain extends FragmentActivity {
 				mScanCompleteCount=0;
 				mScanAddrCount=end_addr-begin_addr+1;
 				int scan_thread=30;
+				String scan_port="";
+				if (cb_use_port_number.isChecked()) scan_port=et_port_number.getText().toString();
 				for (int i=begin_addr; i<=end_addr;i+=scan_thread) {
 					if (!tc.isEnable()) break;
 					boolean scan_end=false;
 					for (int j=i;j<(i+scan_thread);j++) {
 						if (j<=end_addr) {
 							startRemoteNetworkScanThread(handler, tc, dialog, p_ntfy,
-									lv_ipaddr, adap, tvmsg, subnet+"."+j,ipAddressList);
+									lv_ipaddr, adap, tvmsg, subnet+"."+j,ipAddressList, scan_port);
 						} else {
 							scan_end=true;
 						}
@@ -3571,12 +3636,13 @@ public class SMBExplorerMain extends FragmentActivity {
 			final AdapterScanAddressResultList adap,
 			final TextView tvmsg,
 			final String addr,
-			final ArrayList<ScanAddressResultListItem> ipAddressList) {
+			final ArrayList<ScanAddressResultListItem> ipAddressList,
+			final String scan_port) {
 		final String scan_prog=mContext.getString(R.string.msgs_ip_address_scan_progress);
 		Thread th=new Thread(new Runnable() {
 			@Override
 			public void run() {
-				if (isIpAddrReachable(addr)) {
+				if (isIpAddrReachable(addr,scan_port)) {
 					synchronized(mLockScanCompleteCount) {
 						mScanCompleteCount++;
 						String srv_name=getSmbHostName(addr);
@@ -3618,19 +3684,32 @@ public class SMBExplorerMain extends FragmentActivity {
        	th.start();
 	};
 
-	private boolean isIpAddrReachable(String address) {
+	private boolean isIpAddrReachable(String address, String scan_port) {
 		boolean reachable=false;
 //		reachable=NetworkUtil.ping(address);
-		if (!NetworkUtil.isIpAddressAndPortConnected(address,139,3000)) {
-			reachable=NetworkUtil.isIpAddressAndPortConnected(address,445,3000);
-		} else reachable=true;
-		sendDebugLogMsg(2,"I","isIpAddrReachable Address="+address+", reachable="+reachable);
+		if (scan_port.equals("")) {
+			if (!NetworkUtil.isIpAddressAndPortConnected(address,139,3000)) {
+				reachable=NetworkUtil.isIpAddressAndPortConnected(address,445,3000);
+			} else reachable=true;
+		} else {
+			reachable=NetworkUtil.isIpAddressAndPortConnected(address,
+					Integer.parseInt(scan_port),3000);
+		}
+		sendDebugLogMsg(2,"I","isIpAddrReachable Address="+address+
+				", port="+scan_port+", reachable="+reachable);
 		return reachable;
 	};
+
+//	@SuppressWarnings("unused")
+//	private boolean isNbtAddressActive(String address) {
+//		boolean result=NetworkUtil.isNbtAddressActive(address);
+//    	sendDebugLogMsg(1,"I","isSmbHost Address="+address+", result="+result);
+//		return result;
+//	};
 	
 	private String getSmbHostName(String address) {
 		String srv_name=NetworkUtil.getSmbHostNameFromAddress(address);
-		sendDebugLogMsg(1,"I","getSmbHostName Address="+address+", name="+srv_name);
+       	sendDebugLogMsg(1,"I","getSmbHostName Address="+address+", name="+srv_name);
     	return srv_name;
  	};
 

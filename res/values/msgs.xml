@@ -56,6 +56,8 @@
 	<string name="msgs_scan_ip_address_scan_result_title">Scan result</string>
    	<string name="msgs_ip_address_scan_progress">Remote network scan is %s%% Completed</string>
    	
+   	<string name="msgs_remote_profile_dlg_use_port_number">Use port number</string>
+   	
    	<string name="msgs_ip_address_range_dlg_begin">Begin</string>
    	<string name="msgs_ip_address_range_dlg_end">End</string>
    	

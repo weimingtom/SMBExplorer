@@ -130,16 +130,19 @@ public class RetrieveFileList implements Runnable  {
 		String host_t1=remoteUrl.replace("smb://","").replaceAll("//", "/");
 		String host_t2=host_t1.substring(0,host_t1.indexOf("/"));
 		String host_t3=host_t2;
-//		Log.v("","1="+host_t1+", 2="+host_t2+", 3="+host_t3);
 		if (host_t2.indexOf(":")>=0) host_t3=host_t2.substring(0,host_t2.indexOf(":"));
 		boolean error=false;
 		String err_msg="";
 		if (NetworkUtil.isValidIpAddress(host_t3)) {
-			if (!NetworkUtil.isNbtAddressActive(host_t3)) error=true;
-			err_msg="Can not be connected to specified IP address, IP address="+host_t3;
+			if (!isSmbHostAddressConnected(host_t3)) {
+				error=true;
+				err_msg="Can not be connected to specified IP address, IP address="+host_t3;
+			}
 		} else {
-			if (NetworkUtil.getSmbHostIpAddressFromName(host_t3)==null) error=true;
-			err_msg="Specified hostname is not found, Name="+host_t3;
+			if (NetworkUtil.getSmbHostIpAddressFromName(host_t3)==null) {
+				error=true;
+				err_msg="Specified hostname is not found, Name="+host_t3;
+			}
 		}
 		if (error) {
 			getFLCtrl.setThreadResultError();
@@ -165,6 +168,13 @@ public class RetrieveFileList implements Runnable  {
 		
 	};
 	
+	public static boolean isSmbHostAddressConnected(String addr) {
+		boolean result=false;
+		if (NetworkUtil.isIpAddressAndPortConnected(addr,139,3500) || 
+				NetworkUtil.isIpAddressAndPortConnected(addr,445,3500)) result=true;
+		return result;
+	}
+
 // Default uncaught exception handler variable
     private UncaughtExceptionHandler defaultUEH;
     

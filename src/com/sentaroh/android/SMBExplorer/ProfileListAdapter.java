@@ -52,6 +52,7 @@ public class ProfileListAdapter extends ArrayAdapter<ProfileListItem> {
 	public ProfileListItem getItem(int i) {
 		 return items.get(i);
 	}
+	@SuppressWarnings("unused")
 	@Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View v = convertView;
@@ -94,11 +95,7 @@ public class ProfileListAdapter extends ArrayAdapter<ProfileListItem> {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView,
 				boolean isChecked) {
-				items.set(p, //"L", "Local", "A", "", "", "", "",false)
-						new ProfileListItem(o.getType(), o.getName(),
-								o.getActive(),o.getUser(), o.getPass(),
-								o.getAddr(),o.getShare(),
-								isChecked));
+				o.setChk(isChecked);
 				}
 			});
         holder.cb_cb1.setChecked(items.get(position).isChk());
@@ -119,11 +116,12 @@ class ProfileListItem implements Comparable<ProfileListItem>{
 	private String profileUser;
 	private String profilePass;
 	private String profileAddr;
+	private String profilePort="";
 	private String profileShare;
 	private boolean profileIschk;
 	
 	public ProfileListItem(String pft,String pfn, String pfa, 
-			String pf_user, String pf_pass, String pf_addr, 
+			String pf_user, String pf_pass, String pf_addr, String pf_port, 
 			String pf_share, boolean ic){
 		profileType = pft;
 		profileName = pfn;
@@ -131,6 +129,7 @@ class ProfileListItem implements Comparable<ProfileListItem>{
 		profileUser = pf_user;
 		profilePass = pf_pass;
 		profileAddr = pf_addr;
+		profilePort = pf_port;
 		profileShare = pf_share;
 		profileIschk = ic;
 		
@@ -142,7 +141,9 @@ class ProfileListItem implements Comparable<ProfileListItem>{
 	public String getUser(){return profileUser;}
 	public String getPass(){return profilePass;}
 	public String getAddr(){return profileAddr;}
+	public String getPort(){return profilePort;}
 	public String getShare(){return profileShare;}
+	public void setActive(String p){profileActive=p;}
 	public boolean isChk(){return profileIschk;}
 	public void setChk(boolean p){profileIschk=p;}
 	
