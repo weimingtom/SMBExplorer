@@ -47,7 +47,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -124,9 +123,6 @@ public class SMBExplorerMain extends FragmentActivity {
 
 	private boolean result_createFileListView=false;
 	
-	private MsgListAdapter messageListAdapter =null;
-	private ListView messageListView=null;
-
 	private ProfileListAdapter profileAdapter=null;
 	private ListView profileListView=null;
 	private boolean error_CreateProfileListResult=false;
@@ -154,9 +150,6 @@ public class SMBExplorerMain extends FragmentActivity {
 	private Context mContext;
 	
 	private String smbUser, smbPass;
-	
-	private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
-	private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
 	
 	private CustomContextMenu ccMenu = null;
 	
@@ -209,15 +202,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		createTabAndView() ;
 
 		profileListView = (ListView) findViewById(R.id.explorer_profile_tab_listview);
-		messageListView = (ListView) findViewById(R.id.explorer_message_tab_listview);
-		if (messageListAdapter==null) {
-			ArrayList<MsgListItem> tml = new ArrayList<MsgListItem>(); 
-			messageListAdapter = 
-				new MsgListAdapter(this,this,R.layout.msg_list_view_item,tml);
-		}
-		messageListView.setAdapter(messageListAdapter);
-		messageListAdapter.setNotifyOnChange(true);
-
+		
 		sendDebugLogMsg(1, "I", "onCreate entered");
 		
 		getApplVersionName();
@@ -274,7 +259,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		localFileListView.setFastScrollEnabled(true);
 		remoteFileListView.setFastScrollEnabled(true);
-		messageListView.setFastScrollEnabled(true);
 		
 		setLocalDirBtnListener();
 		setRemoteDirBtnListener();
@@ -285,7 +269,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		setLocalFilelistLongClickListener();
 		setRemoteFilelistItemClickListener();
 		setRemoteFilelistLongClickListener();
-		setMsglistLongClickListener();
 		
 		refreshOptionMenu();
 	};
@@ -333,9 +316,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			public void run() {
 				setContentView(R.layout.main);
 
-				int msgPos,msgPosTop=0,profPos,profPosTop=0,lclPos,lclPosTop=0,remPos=0,remPosTop=0;
-				msgPos=messageListView.getFirstVisiblePosition();
-				if (messageListView.getChildAt(0)!=null) msgPosTop=messageListView.getChildAt(0).getTop();
+				int profPos,profPosTop=0,lclPos,lclPosTop=0,remPos=0,remPosTop=0;
 				profPos=profileListView.getFirstVisiblePosition();
 				if (profileListView.getChildAt(0)!=null) profPosTop=profileListView.getChildAt(0).getTop();
 				lclPos=localFileListView.getFirstVisiblePosition();
@@ -346,12 +327,6 @@ public class SMBExplorerMain extends FragmentActivity {
 				createTabAndView() ;
 
 				profileListView = (ListView) findViewById(R.id.explorer_profile_tab_listview);
-				messageListView = (ListView) findViewById(R.id.explorer_message_tab_listview);
-				messageListView.setAdapter(messageListAdapter);
-				messageListAdapter.setNotifyOnChange(true);
-				messageListView.setAdapter(messageListAdapter);
-				messageListView.setSelectionFromTop(msgPos,msgPosTop);
-				messageListView.setFastScrollEnabled(true);
 
 				profileListView.setAdapter(profileAdapter);
 				profileListView.setSelectionFromTop(profPos,profPosTop);
@@ -365,10 +340,10 @@ public class SMBExplorerMain extends FragmentActivity {
 				remoteFileListView.setFastScrollEnabled(true);
 				if (remoteUrl.equals("")) {
 //						remoteFileListDirBtn.setText("Profile not selected");
-//						tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(false);
+//						tabHost.getTabWidget().getChildTabViewAt(2).setEnabled(false);
 				} else {
 					remoteFileListView.setAdapter(remoteFileListAdapter);
-//						tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(true);
+//						tabHost.getTabWidget().getChildTabViewAt(2).setEnabled(true);
 				}
 				remoteFileListView.setSelectionFromTop(remPos,remPosTop);
 				setPasteItemList();
@@ -386,7 +361,6 @@ public class SMBExplorerMain extends FragmentActivity {
 				setLocalFilelistLongClickListener();
 				setRemoteFilelistItemClickListener();
 				setRemoteFilelistLongClickListener();
-				setMsglistLongClickListener();
 
 				refreshOptionMenu();
 			}
@@ -439,13 +413,6 @@ public class SMBExplorerMain extends FragmentActivity {
 				.setIndicator(childview2)
 				.setContent(R.id.explorer_profile_tab);
 		tabHost.addTab(tabSpec1);
-		
-		
-		View childview3 = new CustomTabContentView(this, "Messages");
-		TabHost.TabSpec tabSpec2=tabHost.newTabSpec("@M")
-				.setIndicator(childview3)
-				.setContent(R.id.explorer_message_tab);
-		tabHost.addTab(tabSpec2);
 		
 		View childview4 = new CustomTabContentView(this, SMBEXPLORER_TAB_LOCAL);
 		TabHost.TabSpec tabSpec4=tabHost.newTabSpec(SMBEXPLORER_TAB_LOCAL)
@@ -677,7 +644,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 //		currentSelectedProfileType="L";
 		
-		tabHost.getTabWidget().getChildTabViewAt(2).setEnabled(true);
+		tabHost.getTabWidget().getChildTabViewAt(1).setEnabled(true);
 		
 		setFilelistCurrDir(localFileListDirBtn,lurl);
 		setLocalFilelistItemClickListener();
@@ -801,7 +768,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				String turl=buildRemoteUrl(pli);
 				if (turl.equals(remoteUrl)) tabHost.setCurrentTabByTag(SMBEXPLORER_TAB_REMOTE);
 				else {	
-					tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(true);
+					tabHost.getTabWidget().getChildTabViewAt(2).setEnabled(true);
 //					currentSelectedProfileType = "R";
 					tabHost.setCurrentTabByTag(SMBEXPLORER_TAB_REMOTE);
 					setJcifsProperties(pli.getUser(), pli.getPass());
@@ -837,7 +804,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					String turl="smb://" + item.getAddr() + "/"+ item.getShare() ;
 					if (turl.equals(remoteUrl)) tabHost.setCurrentTabByTag(SMBEXPLORER_TAB_REMOTE);
 					else {	
-						tabHost.getTabWidget().getChildTabViewAt(3).setEnabled(true);
+						tabHost.getTabWidget().getChildTabViewAt(2).setEnabled(true);
 //						currentSelectedProfileType = "R";
 						tabHost.setCurrentTabByTag(SMBEXPLORER_TAB_REMOTE);
 						setJcifsProperties(item.getUser(), item.getPass());
@@ -1015,19 +982,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		});
 	};
 
-	private void setMsglistLongClickListener() {
-		messageListView
-			.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
-					int arg2, long arg3) {
-				createMsglistContextMenu(arg1, arg2);
-				return true;
-			}
-		});
-	};
-
-	
 	private void createProfileContextMenu(View view, int idx) {
 		ProfileListItem item;
 		int scn=0;
@@ -1173,40 +1127,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		ccMenu.createMenu();
 	};
 	
-	
-	private void createMsglistContextMenu(View view, int idx) {
-
-		ccMenu.addMenuItem("Save log message",R.drawable.menu_create)
-	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
-		  @Override
-		  public void onClick(CharSequence menuTitle) {
-			  saveLogMessageDlg("/SMBExplorer","log.txt");
-		  	}
-	  	});
-		ccMenu.addMenuItem("Move to top",R.drawable.menu_top)
-	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
-		  @Override
-		  public void onClick(CharSequence menuTitle) {
-			  messageListView.setSelection(0);
-		  	}
-	  	});
-		ccMenu.addMenuItem("Move to bottom",R.drawable.menu_bottom)
-	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
-		  @Override
-		  public void onClick(CharSequence menuTitle) {
-			  messageListView.setSelection(messageListView.getCount());
-		  	}
-	  	});
-		ccMenu.addMenuItem("Clear log message",R.drawable.menu_trash)
-	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
-		  @Override
-		  public void onClick(CharSequence menuTitle) {
-				messageListAdapter.clear();
-				messageListAdapter.setNotifyOnChange(true);
-		  	}
-	  	});
-		ccMenu.createMenu();
-	};
 	
 	private void createFilelistContextMenu(View view, int idx, TreeFilelistAdapter fla) {
 		TreeFilelistItem item ;
@@ -1644,6 +1564,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		dialog.setContentView(R.layout.progress_spin_dlg);
 		((TextView)dialog.findViewById(R.id.progress_spin_dlg_title)).setText(dt);
 		final Button btnCancel =(Button)dialog.findViewById(R.id.progress_spin_dlg_btn_cancel);
+		TextView tv_msg=(TextView)dialog.findViewById(R.id.progress_spin_dlg_msg);
 
 		CommonDialog.setDlgBoxSizeCompact(dialog);
 		
@@ -1675,8 +1596,7 @@ public class SMBExplorerMain extends FragmentActivity {
 						commonDlg.showCommonDialog(false,"W","File I/O task was cancelled.","",null);
 						sendLogMsg("W","File I/O task was cancelled.");
 						refreshFilelistView();
-					}
-					else {
+					} else {
 						commonDlg.showCommonDialog(false,"E",
 								"File I/O task was failed."+"\n"+
 								tc.getThreadMessage(),"",null);
@@ -1702,8 +1622,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 		});
 		
-		Thread th = new Thread(new FileIo(messageListView,
-				messageListAdapter, dialog, op_cd, alp,tc, debugLevel,ne,this));
+		Thread th = new Thread(new FileIo(dialog, tv_msg, op_cd, alp,tc, debugLevel,ne,this));
 		tc.initThreadCtrl();
 		th.setPriority(Thread.MIN_PRIORITY);
 		th.start(); 
@@ -2157,14 +2076,12 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	private void setPasteItemList() {
 		TextView pp=(TextView)findViewById(R.id.explorer_filelist_profile_tab_pastelist);
-		TextView pm=(TextView)findViewById(R.id.explorer_filelist_message_tab_pastelist);
 		TextView pl=(TextView)findViewById(R.id.explorer_filelist_local_tab_pastelist);
 		TextView pr=(TextView)findViewById(R.id.explorer_filelist_remote_tab_pastelist);
 		if (isPasteEnabled) {
 			String op="Copy : ";
 			if (!isPasteCopy) op="Cut : ";
 			pp.setText(op+pasteItemList);
-			pm.setText(op+pasteItemList);
 			pl.setText(op+pasteItemList);
 			pr.setText(op+pasteItemList);
 		}
@@ -2174,11 +2091,9 @@ public class SMBExplorerMain extends FragmentActivity {
 		isPasteEnabled=false;
 		pasteItemList="";
 		TextView pp=(TextView)findViewById(R.id.explorer_filelist_profile_tab_pastelist);
-		TextView pm=(TextView)findViewById(R.id.explorer_filelist_message_tab_pastelist);
 		TextView pl=(TextView)findViewById(R.id.explorer_filelist_local_tab_pastelist);
 		TextView pr=(TextView)findViewById(R.id.explorer_filelist_remote_tab_pastelist);
 		pp.setText(pasteItemList);
-		pm.setText(pasteItemList);
 		pl.setText(pasteItemList);
 		pr.setText(pasteItemList);
 	};
@@ -2646,8 +2561,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 		});
 		
-		Thread th = new Thread(new RetrieveFileList(this, messageListAdapter, 
-				messageListView, tc, debugLevel, url, d_list,user,pass,ne));
+		Thread th = new Thread(new RetrieveFileList(this, tc, debugLevel, url, d_list,user,pass,ne));
 		th.start();
 		
 //		showDelayedProgDlg(200,dialog,tc);
@@ -2688,8 +2602,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			}
 		});
 		
-		Thread th = new Thread(new RetrieveFileList(this, messageListAdapter, 
-				messageListView, tc, debugLevel, url, 
+		Thread th = new Thread(new RetrieveFileList(this, tc, debugLevel, url, 
 				remoteFileList,user,pass,ne));
 		th.start();
 		
@@ -3975,116 +3888,23 @@ public class SMBExplorerMain extends FragmentActivity {
 	};
 	
 
-	public void saveLogMessageDlg(final String curr_dir, final String ifn) {
-
-		NotifyEvent ne=new NotifyEvent(mContext);
-		// set commonDialog response 
-		ne.setListener(new NotifyEventListener() {
-			@Override
-			public void positiveResponse(Context c,Object[] o) {
-    			String fpath=(String)o[0];
-    			String fd=fpath.substring(0,fpath.lastIndexOf("/"));
-    			String fn=fpath.replace(fd+"/","");
-    			saveLogMessageToFile(fd,fn);
-			}
-			@Override
-			public void negativeResponse(Context c,Object[] o) {}
-		});
-		commonDlg.fileOnlySelectWithCreate(SMBExplorerRootDir,
-				curr_dir,ifn,"Select a destination for log messages.",ne);
-	};
-
-	public void saveLogMessageToFile(final String profile_dir,
-			final String profile_filename) {
-
-		File lf = new File(profile_dir + "/" + profile_filename);
-		if (lf.exists()) {
-			NotifyEvent ne=new NotifyEvent(this);
-			// set commonDialog response 
-			ne.setListener(new NotifyEventListener() {
-				@Override
-				public void positiveResponse(Context c,Object[] o) {
-	
-					writeLogMessageToFile(profile_dir,profile_filename);
-					commonDlg.showCommonDialog(false,"I", 
-							String.format(getString(R.string.msgs_save_log_msg_file),
-							profile_dir+profile_filename),"",null);
-				}
-			
-				@Override
-				public void negativeResponse(Context c,Object[] o) {
-					
-				}
-			});
-			commonDlg.showCommonDialog(false,"W",
-					String.format(getString(R.string.msgs_save_log_msg_override_confirm),
-					profile_dir + "/" + profile_filename),"",ne);
-			return;
-		} else {
-			writeLogMessageToFile(profile_dir,profile_filename);
-			commonDlg.showCommonDialog(false,"I", 
-					String.format(getString(R.string.msgs_save_log_msg_file),
-					profile_dir+profile_filename),"",null);
-
-		}
-	};
-
-	private void writeLogMessageToFile(String profile_dir, String profile_filename) {
-		PrintWriter pw;
-		try {
-			File lf = new File(profile_dir);
-			if (!lf.exists())
-				lf.mkdir();
-			BufferedWriter bw = new BufferedWriter(new FileWriter(
-					profile_dir+"/"+profile_filename));
-			pw = new PrintWriter(bw);
-			if (messageListAdapter.getCount() > 0) {
-				for (int i = 0; i <= (messageListAdapter.getCount() - 1); i++) {
-					String item = messageListAdapter.getItem(i).toString();
-					pw.println(item);
-				}
-			}
-			pw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			commonDlg.showCommonDialog(false,"W",
-					getString(R.string.msgs_exception)+
-					profile_dir + "/" + profile_filename,e.toString(),null);
-		}
-	};
-
 	private void sendLogMsg(String cat, String logmsg) {
 
-			synchronized(messageListAdapter) {
-				Calendar cd = Calendar.getInstance();
-				messageListAdapter.add(
-			    		 new MsgListItem(cat,sdfDate.format(cd.getTime()),
-									sdfTime.format(cd.getTime()),"MAIN    ",logmsg));}
+		Log.v(DEBUG_TAG,cat+" "+"MAIN    "+" "+logmsg);
 	};
 	
 	private void sendDebugLogMsg(int lvl, String cat, String logmsg) {
 
 		if (debugLevel>=lvl) {
-			Calendar cd = Calendar.getInstance();
 			Log.v(DEBUG_TAG,cat+" "+"MAIN    "+" "+logmsg);
-			if (messageListAdapter==null) return;
-			synchronized(messageListAdapter) {
-				
-				messageListAdapter.add(
-			    		 new MsgListItem(cat,sdfDate.format(cd.getTime()),
-									sdfTime.format(cd.getTime()),"MAIN    ",logmsg));}
 		}
 	};
 
 	private void saveTaskData() {
 		sendDebugLogMsg(1,"I", "saveTaskData entered");
 		
-		if (isTaskDataExisted() && !messageListAdapter.resetDataChanged()) return; 
-		
 		ActivityDataHolder data = new ActivityDataHolder();
 
-		data.msglist=messageListAdapter.getAllItem();
-		
 		data.local_tfl=localFileListAdapter.getDataList();
 		if (remoteFileListAdapter!=null)
 			data.remote_tfl=remoteFileListAdapter.getDataList();
@@ -4097,8 +3917,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		data.is_paste_enabled=isPasteEnabled;
 		data.is_paste_from_local=isPasteFromLocal;
 		
-		data.msgPos=messageListView.getFirstVisiblePosition();
-		if (messageListView.getChildAt(0)!=null) data.msgPosTop=messageListView.getChildAt(0).getTop();
 		data.profPos=profileListView.getFirstVisiblePosition();
 		if (profileListView.getChildAt(0)!=null) data.profPosTop=profileListView.getChildAt(0).getTop();
 		data.lclPos=localFileListView.getFirstVisiblePosition();
@@ -4132,16 +3950,6 @@ public class SMBExplorerMain extends FragmentActivity {
 		    ois.close();
 		    lf.delete();
 		    
-		    ArrayList<MsgListItem> o_ml=new ArrayList<MsgListItem>(); 
-			for (int i=0;i<messageListAdapter.getCount();i++) o_ml.add(messageListAdapter.getItem(i));
-		    messageListAdapter.clear();
-			messageListAdapter.setAllItem(data.msglist);
-			messageListView.setAdapter(messageListAdapter);
-
-			for (int i=0;i<o_ml.size();i++) messageListAdapter.add(o_ml.get(i));
-			messageListAdapter.notifyDataSetChanged();
-			messageListAdapter.resetDataChanged();
-			
 			localFileListAdapter =new TreeFilelistAdapter(mContext);
 			localFileListAdapter.setDataList(data.local_tfl);
 
@@ -4162,7 +3970,6 @@ public class SMBExplorerMain extends FragmentActivity {
 			isPasteFromLocal=data.is_paste_from_local;
 			
 			profileListView.setSelectionFromTop(data.profPos,data.profPosTop);
-			messageListView.setSelectionFromTop(data.msgPos,data.msgPosTop);
 			localFileListView.setSelectionFromTop(data.lclPos,data.lclPosTop);
 			remoteFileListView.setSelectionFromTop(data.remPos,data.remPosTop);
 
@@ -4173,6 +3980,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		}
 	};
 	
+	@SuppressWarnings("unused")
 	private boolean isTaskDataExisted() {
     	File lf =new File(getFilesDir()+"/"+SERIALIZABLE_FILE_NAME);
 	    return lf.exists();
@@ -4204,7 +4012,6 @@ class ActivityDataHolder implements Externalizable  {
 
 	private static final long serialVersionUID = 1L;
 
-	ArrayList<MsgListItem> msglist;
 	ArrayList<TreeFilelistItem> local_tfl;
 	ArrayList<TreeFilelistItem> remote_tfl;
 	
@@ -4226,7 +4033,6 @@ class ActivityDataHolder implements Externalizable  {
 			throw new IOException("serialVersionUID was not matched by saved UID");
 		}
 
-		msglist=(ArrayList<MsgListItem>) SerializeUtil.readArrayList(objin);
 		local_tfl=(ArrayList<TreeFilelistItem>) SerializeUtil.readArrayList(objin);
 		remote_tfl=(ArrayList<TreeFilelistItem>) SerializeUtil.readArrayList(objin);
 		paste_list=(ArrayList<TreeFilelistItem>) SerializeUtil.readArrayList(objin);
@@ -4252,7 +4058,6 @@ class ActivityDataHolder implements Externalizable  {
 	public void writeExternal(ObjectOutput objout) throws IOException {
 //		Log.v("","wr");
 		objout.writeLong(serialVersionUID);
-		SerializeUtil.writeArrayList(objout, msglist);
 		SerializeUtil.writeArrayList(objout, local_tfl);
 		SerializeUtil.writeArrayList(objout, remote_tfl);
 		SerializeUtil.writeArrayList(objout, paste_list);

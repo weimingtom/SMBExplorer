@@ -33,10 +33,7 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
@@ -58,7 +55,6 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.sentaroh.android.Utilities.*;
@@ -74,9 +70,6 @@ public class FileIo implements Runnable {
 	
 	private int debugLevel = 0;
 	
-	private MsgListAdapter msglistAdapter;
-	private ListView msgListView;
-	
 	private int SMB_BUFF_SIZE =65536*4;
 	
 	private NotifyEvent notifyEvent ;
@@ -84,15 +77,10 @@ public class FileIo implements Runnable {
 	private boolean fileioTaskResultOk = true;
 	
 	private Dialog threadDlg;
-	private TextView dlgMsg;
 	
 	private ThreadCtrl fileioThreadCtrl;
 	
 	private ArrayList<FileIoLinkParm> fileioLinkParm;
-	
-	private Calendar calInstance;
-	private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
-	private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
 	
 	private int file_op_cd;
 	private String file_tgt_url1, file_tgt_url2, file_tgt_name;
@@ -114,17 +102,16 @@ public class FileIo implements Runnable {
     private static ByteBuffer mFileChBuffer = null;
 
 	private NtlmPasswordAuthentication ntlmPaswordAuth;
-
+	
+	private TextView mProgressDlgMsg=null;
+	
 	// @Override
-	public FileIo(ListView lv,
-			MsgListAdapter ma, Dialog pd, int op_cd,
+	public FileIo(Dialog pd, TextView tv_msg, int op_cd,
 			ArrayList<FileIoLinkParm> alp, ThreadCtrl tc, int dl,NotifyEvent ne, 
 			Context cc) {
 		
-		msgListView = lv;
-		msglistAdapter = ma;
-		
 		threadDlg=pd;
+		mProgressDlgMsg=tv_msg;
 		fileioThreadCtrl=tc;
 		file_op_cd=op_cd;
 		fileioLinkParm=alp;
@@ -132,8 +119,6 @@ public class FileIo implements Runnable {
 		notifyEvent=ne;
 		
 		currContext=cc;
-		
-		dlgMsg = (TextView) threadDlg.findViewById(R.id.progress_spin_dlg_msg);
 		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(cc);
 		settingsMslScan=prefs.getBoolean("settings_msl_scan", false);
@@ -244,19 +229,23 @@ public class FileIo implements Runnable {
 			} else if (fileioThreadCtrl.isEnable()) {
 				fileioThreadCtrl.setThreadResultError();
 				sendLogMsg("W","Task was ended with error.");
-			}
-			else {
+			} else {
 				fileioThreadCtrl.setThreadResultCancelled();
 				sendLogMsg("W","Task was cancelled.");
 			}
 			fileioThreadCtrl.setDisable();
 			mediaScanner.disconnect();
 			waitMediaScanner(false);
-			notifyThreadTerminate(); //dismiss progress dialog
+
+			uiHandler.post(new Runnable() {// UI thread
+				@Override
+				public void run() {
+					threadDlg.dismiss();
+					notifyEvent.notifyToListener(true, null);
+				}
+			});		
 		} finally {
 			wake_lock.release();
-//		    fileIoArea = null;
-//		    mFileChBuffer = null;
 		}
 	};
 	
@@ -372,75 +361,23 @@ public class FileIo implements Runnable {
 	
 	private void sendMsgToProgDlg(final boolean log, final String log_cat, final String log_msg) {
 //		if (debugLevel>0) Log.v(DEBUG_TAG,"P "+msg);
+		if (log) Log.v(DEBUG_TAG,log_msg);
 		uiHandler.post(new Runnable() {// UI thread
 			@Override
 			public void run() {
-				if (!log) {// arg2=1 both, arg2=0 dialog only, arg2=2 log only
-					dlgMsg.setText(log_msg);
-				} else { //
-					Log.v(DEBUG_TAG,log_msg);
-					dlgMsg.setText(log_msg);
-					calInstance = Calendar.getInstance();
-					msglistAdapter.add(
-								new MsgListItem(log_cat,
-										sdfDate.format(calInstance.getTime()),
-										sdfTime.format(calInstance.getTime()),
-										"MirrorIO",log_msg));
-				}
-				msgListView.setSelection(msgListView.getCount());
+				mProgressDlgMsg.setText(log_msg);
 			}
 		});		
-
 		
 	};
 
 	private void sendLogMsg(final String log_cat, final String log_msg) {
 		Log.v(DEBUG_TAG,log_msg);
-		uiHandler.post(new Runnable() {// UI thread
-			@Override
-			public void run() {
-				calInstance = Calendar.getInstance();
-				msglistAdapter.add(
-						new MsgListItem(log_cat,
-								sdfDate.format(calInstance.getTime()),
-								sdfTime.format(calInstance.getTime()),
-								"FILEIO  ",log_msg));
-				msgListView.setSelection(msgListView.getCount());
-			}
-		});		
 	};
 
 	private void sendDebugLogMsg(int lvl, final String log_cat, final String log_msg) {
 
 		if (debugLevel>0) Log.v(DEBUG_TAG,log_msg);
-		if (debugLevel>=lvl) {
-			uiHandler.post(new Runnable() {// UI thread
-				@Override
-				public void run() {
-					calInstance = Calendar.getInstance();
-					msglistAdapter.add(
-							new MsgListItem(log_cat,
-									sdfDate.format(calInstance.getTime()),
-									sdfTime.format(calInstance.getTime()),
-									"FILEIO  ",log_msg));
-					msgListView.setSelection(msgListView.getCount());
-				}
-			});		
-		}
-	};
-	
-	private void notifyThreadTerminate() {
-
-		if (debugLevel>0)  
-			Log.v(DEBUG_TAG,"Send empty log msg");
-		uiHandler.post(new Runnable() {// UI thread
-			@Override
-			public void run() {
-				threadDlg.dismiss();
-				notifyEvent.notifyToListener(true, null);
-			}
-		});		
-
 	};
 	
 	private boolean createLocalDir(String newUrl) {
@@ -701,19 +638,19 @@ public class FileIo implements Runnable {
 		return result;
     };
     
-	private String makeTempFilePath(String  targetUrl) {
+	@SuppressWarnings("unused")
+	private String makeRemoteTempFilePath(String  targetUrl) {
 		String tmp_wu="";
 		String last_sep="";
 		if (targetUrl.endsWith("/")) {
 			tmp_wu=targetUrl.substring(0,(targetUrl.length()-1));
 			last_sep="/";
 		} else tmp_wu=targetUrl;
-		String target_dir=tmp_wu.substring(0,tmp_wu.lastIndexOf("/"));
-		target_dir=target_dir.substring(0,target_dir.lastIndexOf("/"))+"/";
-		String target_fn=tmp_wu.replace(target_dir, "");
-		target_fn=target_fn.substring(0,(target_fn.length()-1));
-		String tmp_target=target_dir+"SMBExplorer.work.tmp"+last_sep;
-		Log.v("","tmp="+tmp_target+", to="+targetUrl);
+		String target_dir1=tmp_wu.substring(0,tmp_wu.lastIndexOf("/"));
+		String target_fn=tmp_wu.replace(target_dir1, "").substring(1);
+		String tmp_target=target_dir1+"/SMBExplorer.work.tmp"+last_sep;
+//		Log.v("","tmp="+tmp_target+", to="+targetUrl+", wu="+tmp_wu+", tdir1="+target_dir1+
+//				", tfn="+target_fn);
 		return tmp_target;
 	}
 
@@ -745,7 +682,7 @@ public class FileIo implements Runnable {
 				makeRemoteDirs(toUrl+"/");
 			} else { // file copy
 				makeRemoteDirs(toUrl);
-				tmp_toUrl=makeTempFilePath(toUrl);
+				tmp_toUrl=makeRemoteTempFilePath(toUrl);
 				
 				ohf = new SmbFile(tmp_toUrl,ntlmPaswordAuth);
 				if (ohf.exists()) ohf.delete();
@@ -892,7 +829,7 @@ public class FileIo implements Runnable {
 					
 			} else { // file copy
 				makeRemoteDirs(toUrl);
-				tmp_toUrl=makeTempFilePath(toUrl);
+				tmp_toUrl=makeRemoteTempFilePath(toUrl);
 				hf = new SmbFile(tmp_toUrl,ntlmPaswordAuth);
 				if (hf.exists()) hf.delete();
 				result=copyFileLocalToRemote(hf,lf,fromUrl,toUrl,"Copying");

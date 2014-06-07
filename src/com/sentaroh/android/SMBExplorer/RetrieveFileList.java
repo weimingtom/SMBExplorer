@@ -25,30 +25,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.MalformedURLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.ListView;
-
 import com.sentaroh.android.Utilities.*;
 import com.sentaroh.android.Utilities.TreeFilelist.TreeFilelistItem;
 
-@SuppressLint("SimpleDateFormat")
 public class RetrieveFileList implements Runnable  {
 	private final static String DEBUG_TAG = "SMBExplorer";
 	
 	private int debugLevel = 0;
-
-	private ListView msgListView;
-	private MsgListAdapter msglistAdapter;
 
 	private ThreadCtrl getFLCtrl=null;
 	
@@ -60,19 +52,14 @@ public class RetrieveFileList implements Runnable  {
 	
 	private NotifyEvent notifyEvent ;
 	
-	final static private SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
-	final static private SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss");
-
 	private Handler uiHandler=null;
 	
 	private NtlmPasswordAuthentication ntlmPaswordAuth;
 
-	public RetrieveFileList(Context c, MsgListAdapter ma, ListView ml,
+	public RetrieveFileList(Context c, 
 			ThreadCtrl ac, int dl, String ru, List<String> d_list,
 			String user, String pass, NotifyEvent ne) {
 //		currContext=c;
-		msglistAdapter=ma;
-		msgListView=ml;
 		debugLevel=dl;
 		
 		getFLCtrl=ac; //new SMBExplorerThreadCtrl();
@@ -92,12 +79,10 @@ public class RetrieveFileList implements Runnable  {
 	}
 
 	
-	public RetrieveFileList(Context c, MsgListAdapter ma, ListView ml,
+	public RetrieveFileList(Context c, 
 			ThreadCtrl ac, int dl, String ru, 
 			ArrayList<TreeFilelistItem> fl,String user, String pass, NotifyEvent ne) {
 //		currContext=c;
-		msglistAdapter=ma;
-		msgListView=ml;
 		debugLevel=dl;
 		remoteFileList=fl;
 		
@@ -313,17 +298,6 @@ public class RetrieveFileList implements Runnable  {
 	private void sendDebugLogMsg(int lvl, final String cat, final String msg) {
 		if (debugLevel>=lvl) {
 			Log.v(DEBUG_TAG,"FILELIST"+" "+msg);
-			uiHandler.post(new Runnable(){
-				@Override
-				public void run() {
-					msglistAdapter.add(
-							new MsgListItem(cat,
-									sdfDate.format(System.currentTimeMillis()),
-									sdfTime.format(System.currentTimeMillis()),
-									"FILELIST",msg));
-					msgListView.setSelection(msgListView.getCount());
-				}
-			});
 		}
 	};
 	

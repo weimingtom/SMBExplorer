@@ -50,28 +50,7 @@
 			        android:textAppearance="?android:attr/textAppearanceMedium" 
 			        android:text="" />
 			</LinearLayout>
-			<LinearLayout
-                android:id="@+id/explorer_message_tab"
-			    android:layout_width="fill_parent"
-			    android:layout_height="fill_parent"
-			    android:orientation="vertical" 
-			    >
-			    <include layout="@layout/divider_line1" />
-			    <ListView android:id="@+id/explorer_message_tab_listview"
-			        android:fadeScrollbars="false"
-			        android:layout_width="fill_parent"
-			        android:layout_height="0dp" 
-			        android:layout_weight="1"/>
-			    <include layout="@layout/divider_line1" />
-			    <TextView
-			        android:id="@+id/explorer_filelist_message_tab_pastelist"
-			        android:layout_width="fill_parent"
-			        android:layout_height="wrap_content"
-			        android:maxLines="1"
-			        android:ellipsize="end"
-			        android:textAppearance="?android:attr/textAppearanceMedium" 
-			        android:text="" />
-			</LinearLayout>
+			
 			<LinearLayout
                 android:id="@+id/explorer_filelist_local_tab"
 			    android:layout_width="fill_parent"
