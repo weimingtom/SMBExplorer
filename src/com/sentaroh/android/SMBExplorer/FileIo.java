@@ -40,13 +40,14 @@ import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.MediaScannerConnectionClient;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.WifiLock;
 import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -76,8 +77,6 @@ public class FileIo implements Runnable {
 
 	private boolean fileioTaskResultOk = true;
 	
-	private Dialog threadDlg;
-	
 	private ThreadCtrl fileioThreadCtrl;
 	
 	private ArrayList<FileIoLinkParm> fileioLinkParm;
@@ -106,11 +105,10 @@ public class FileIo implements Runnable {
 	private TextView mProgressDlgMsg=null;
 	
 	// @Override
-	public FileIo(Dialog pd, TextView tv_msg, int op_cd,
+	public FileIo(TextView tv_msg, int op_cd,
 			ArrayList<FileIoLinkParm> alp, ThreadCtrl tc, int dl,NotifyEvent ne, 
 			Context cc) {
 		
-		threadDlg=pd;
 		mProgressDlgMsg=tv_msg;
 		fileioThreadCtrl=tc;
 		file_op_cd=op_cd;
@@ -240,7 +238,6 @@ public class FileIo implements Runnable {
 			uiHandler.post(new Runnable() {// UI thread
 				@Override
 				public void run() {
-					threadDlg.dismiss();
 					notifyEvent.notifyToListener(true, null);
 				}
 			});		
@@ -250,113 +247,129 @@ public class FileIo implements Runnable {
 	};
 	
 	private void fileOperation() {
-		
-		switch (file_op_cd) {
-			case FILEIO_PARM_LOCAL_CREATE:
-				sendMsgToProgDlg(false,"","Creating local directory "+file_tgt_name);
-				fileioTaskResultOk=createLocalDir(
-						file_tgt_url1+"/"+file_tgt_name);
-				break;
-			case FILEIO_PARM_REMOTE_CREATE:
-				sendMsgToProgDlg(false,"","Creating remote directory "+file_tgt_name);
-				fileioTaskResultOk=createRemoteDir(
-						file_tgt_url1+"/"+file_tgt_name+"/");
-				break;
-			case FILEIO_PARM_LOCAL_RENAME:
-				sendMsgToProgDlg(false,"","Renaming local "+file_tgt_name);
-				fileioTaskResultOk=renameLocalItem(
-						file_tgt_url1+"/"+file_tgt_name, 
-						file_tgt_url2+"/"+file_tgt_newname);
-				break;
-			case FILEIO_PARM_REMOTE_RENAME:
-				sendMsgToProgDlg(false,"","Renaming remote "+file_tgt_name);
-				fileioTaskResultOk=renameRemoteItem(
-						file_tgt_url1+"/"+file_tgt_name+"/", 
-						file_tgt_url2+"/"+file_tgt_newname+"/");
-				break;
-			case FILEIO_PARM_LOCAL_DELETE:
-				sendMsgToProgDlg(false,"","Deleteing local "+file_tgt_name);
-				fileioTaskResultOk=deleteLocalItem(
-						file_tgt_url1+"/"+file_tgt_name);
-				break;
-			case FILEIO_PARM_REMOTE_DELETE:
-				sendMsgToProgDlg(false,"","Deleteing remote "+file_tgt_name);
-				fileioTaskResultOk=deleteRemoteItem(
-						file_tgt_url1+"/"+file_tgt_name+"/");
-				break;
-			case FILEIO_PARM_COPY_REMOTE_TO_LOCAL:
-				sendMsgToProgDlg(false,"","Copying remote to local '"+file_tgt_name+"'");
-				fileioTaskResultOk=copyRemoteToLocal(
-						file_tgt_url1+"/"+file_tgt_name, 
-						file_tgt_url2+"/"+file_tgt_name);
-				break;
-			case FILEIO_PARM_COPY_REMOTE_TO_REMOTE:
-				sendMsgToProgDlg(false,"","Copying remote to remote '"+file_tgt_name+"'");
-				fileioTaskResultOk=copyRemoteToRemote(
-						file_tgt_url1+"/"+file_tgt_name+"/", 
-						file_tgt_url2+"/"+file_tgt_name+"/");
-				break;
-			case FILEIO_PARM_COPY_LOCAL_TO_LOCAL:
-				sendMsgToProgDlg(false,"","Copying local to local '"+file_tgt_name+"'");
-				fileioTaskResultOk=copyLocalToLocal(
-						file_tgt_url1+"/"+file_tgt_name, 
-						file_tgt_url2+"/"+file_tgt_name);
-				break;
-			case FILEIO_PARM_COPY_LOCAL_TO_REMOTE:
-				sendMsgToProgDlg(false,"","Copying local to remote '"+file_tgt_name+"'");
-				fileioTaskResultOk=copyLocalToRemote(
-						file_tgt_url1+"/"+file_tgt_name, 
-						file_tgt_url2+"/"+file_tgt_name+"/");
-				break;
-			case FILEIO_PARM_MOVE_REMOTE_TO_LOCAL:
-				sendMsgToProgDlg(false,"","Moving remote to local '"+file_tgt_name+"'");
-				fileioTaskResultOk=copyRemoteToLocal(
-						file_tgt_url1+"/"+file_tgt_name+"/", 
-						file_tgt_url2+"/"+file_tgt_name);
-				if (fileioTaskResultOk)
+		WifiManager wm = 
+				(WifiManager)currContext.getSystemService(Context.WIFI_SERVICE);
+		WifiLock wl=wm.createWifiLock(WifiManager.WIFI_MODE_FULL, "SMBSync-wifi");
+		try {
+			switch (file_op_cd) {
+				case FILEIO_PARM_LOCAL_CREATE:
+					sendMsgToProgDlg(false,"","Creating local directory "+file_tgt_name);
+					fileioTaskResultOk=createLocalDir(
+							file_tgt_url1+"/"+file_tgt_name);
+					break;
+				case FILEIO_PARM_REMOTE_CREATE:
+					sendMsgToProgDlg(false,"","Creating remote directory "+file_tgt_name);
+					if (!wl.isHeld()) wl.acquire();
+					fileioTaskResultOk=createRemoteDir(
+							file_tgt_url1+"/"+file_tgt_name+"/");
+					break;
+				case FILEIO_PARM_LOCAL_RENAME:
+					sendMsgToProgDlg(false,"","Renaming local "+file_tgt_name);
+					fileioTaskResultOk=renameLocalItem(
+							file_tgt_url1+"/"+file_tgt_name, 
+							file_tgt_url2+"/"+file_tgt_newname);
+					break;
+				case FILEIO_PARM_REMOTE_RENAME:
+					sendMsgToProgDlg(false,"","Renaming remote "+file_tgt_name);
+					if (!wl.isHeld()) wl.acquire();
+					fileioTaskResultOk=renameRemoteItem(
+							file_tgt_url1+"/"+file_tgt_name+"/", 
+							file_tgt_url2+"/"+file_tgt_newname+"/");
+					break;
+				case FILEIO_PARM_LOCAL_DELETE:
+					sendMsgToProgDlg(false,"","Deleteing local "+file_tgt_name);
+					fileioTaskResultOk=deleteLocalItem(
+							file_tgt_url1+"/"+file_tgt_name);
+					break;
+				case FILEIO_PARM_REMOTE_DELETE:
+					sendMsgToProgDlg(false,"","Deleteing remote "+file_tgt_name);
+					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=deleteRemoteItem(
 							file_tgt_url1+"/"+file_tgt_name+"/");
-				break;
-			case FILEIO_PARM_MOVE_REMOTE_TO_REMOTE:
-				sendMsgToProgDlg(false,"","Moving remote to remote '"+file_tgt_name+"'");
-				if (file_tgt_url1.equals(file_tgt_url2)) {
-					fileioTaskResultOk=moveRemoteToRemote(
+					break;
+				case FILEIO_PARM_COPY_REMOTE_TO_LOCAL:
+					sendMsgToProgDlg(false,"","Copying remote to local '"+file_tgt_name+"'");
+					if (!wl.isHeld()) wl.acquire();
+					fileioTaskResultOk=copyRemoteToLocal(
+							file_tgt_url1+"/"+file_tgt_name, 
+							file_tgt_url2+"/"+file_tgt_name);
+					break;
+				case FILEIO_PARM_COPY_REMOTE_TO_REMOTE:
+					sendMsgToProgDlg(false,"","Copying remote to remote '"+file_tgt_name+"'");
+					if (!wl.isHeld()) wl.acquire();
+					fileioTaskResultOk=copyRemoteToRemote(
 							file_tgt_url1+"/"+file_tgt_name+"/", 
 							file_tgt_url2+"/"+file_tgt_name+"/");
-				} else {
-					fileioTaskResultOk=copyRemoteToRemote(
+					break;
+				case FILEIO_PARM_COPY_LOCAL_TO_LOCAL:
+					sendMsgToProgDlg(false,"","Copying local to local '"+file_tgt_name+"'");
+					fileioTaskResultOk=copyLocalToLocal(
+							file_tgt_url1+"/"+file_tgt_name, 
+							file_tgt_url2+"/"+file_tgt_name);
+					break;
+				case FILEIO_PARM_COPY_LOCAL_TO_REMOTE:
+					sendMsgToProgDlg(false,"","Copying local to remote '"+file_tgt_name+"'");
+					if (!wl.isHeld()) wl.acquire();
+					fileioTaskResultOk=copyLocalToRemote(
+							file_tgt_url1+"/"+file_tgt_name, 
+							file_tgt_url2+"/"+file_tgt_name+"/");
+					break;
+				case FILEIO_PARM_MOVE_REMOTE_TO_LOCAL:
+					sendMsgToProgDlg(false,"","Moving remote to local '"+file_tgt_name+"'");
+					if (!wl.isHeld()) wl.acquire();
+					fileioTaskResultOk=copyRemoteToLocal(
 							file_tgt_url1+"/"+file_tgt_name+"/", 
 							file_tgt_url2+"/"+file_tgt_name);
 					if (fileioTaskResultOk)
 						fileioTaskResultOk=deleteRemoteItem(
 								file_tgt_url1+"/"+file_tgt_name+"/");
-				}
-				break;
-			case FILEIO_PARM_MOVE_LOCAL_TO_LOCAL:
-				sendMsgToProgDlg(false,"","Moving local to local '"+file_tgt_name+"'");
-				fileioTaskResultOk=moveLocalToLocal(
-						file_tgt_url1+"/"+file_tgt_name, 
-						file_tgt_url2+"/"+file_tgt_name);
-				break;
-			case FILEIO_PARM_MOVE_LOCAL_TO_REMOTE:
-				sendMsgToProgDlg(false,"","Moving local to remote '"+file_tgt_name+"'");
-				fileioTaskResultOk=copyLocalToRemote(
-						file_tgt_url1+"/"+file_tgt_name, 
-						file_tgt_url2+"/"+file_tgt_name+"/");
-				if (fileioTaskResultOk)
-					fileioTaskResultOk=deleteLocalItem(
-							file_tgt_url1+"/"+file_tgt_name);
-				break;
-			case FILEIO_PARM_DOWLOAD_REMOTE_FILE:
-				sendMsgToProgDlg(false,"","Downloading remote file '"+file_tgt_name+"'");
-				fileioTaskResultOk=downloadRemoteFile(
-						file_tgt_url1+"/"+file_tgt_name, 
-						file_tgt_url2+"/"+file_tgt_name);
-				break;
-
-			default:
-				break;
-		};
+					break;
+				case FILEIO_PARM_MOVE_REMOTE_TO_REMOTE:
+					sendMsgToProgDlg(false,"","Moving remote to remote '"+file_tgt_name+"'");
+					if (!wl.isHeld()) wl.acquire();
+					if (file_tgt_url1.equals(file_tgt_url2)) {
+						fileioTaskResultOk=moveRemoteToRemote(
+								file_tgt_url1+"/"+file_tgt_name+"/", 
+								file_tgt_url2+"/"+file_tgt_name+"/");
+					} else {
+						fileioTaskResultOk=copyRemoteToRemote(
+								file_tgt_url1+"/"+file_tgt_name+"/", 
+								file_tgt_url2+"/"+file_tgt_name);
+						if (fileioTaskResultOk)
+							fileioTaskResultOk=deleteRemoteItem(
+									file_tgt_url1+"/"+file_tgt_name+"/");
+					}
+					break;
+				case FILEIO_PARM_MOVE_LOCAL_TO_LOCAL:
+					sendMsgToProgDlg(false,"","Moving local to local '"+file_tgt_name+"'");
+					fileioTaskResultOk=moveLocalToLocal(
+							file_tgt_url1+"/"+file_tgt_name, 
+							file_tgt_url2+"/"+file_tgt_name);
+					break;
+				case FILEIO_PARM_MOVE_LOCAL_TO_REMOTE:
+					sendMsgToProgDlg(false,"","Moving local to remote '"+file_tgt_name+"'");
+					if (!wl.isHeld()) wl.acquire();
+					fileioTaskResultOk=copyLocalToRemote(
+							file_tgt_url1+"/"+file_tgt_name, 
+							file_tgt_url2+"/"+file_tgt_name+"/");
+					if (fileioTaskResultOk)
+						fileioTaskResultOk=deleteLocalItem(
+								file_tgt_url1+"/"+file_tgt_name);
+					break;
+				case FILEIO_PARM_DOWLOAD_REMOTE_FILE:
+					sendMsgToProgDlg(false,"","Downloading remote file '"+file_tgt_name+"'");
+					if (!wl.isHeld()) wl.acquire();
+					fileioTaskResultOk=downloadRemoteFile(
+							file_tgt_url1+"/"+file_tgt_name, 
+							file_tgt_url2+"/"+file_tgt_name);
+					break;
+	
+				default:
+					break;
+			};
+		} finally {
+			if (wl.isHeld()) wl.release();
+		}
 	};
 	
 	private void sendMsgToProgDlg(final boolean log, final String log_cat, final String log_msg) {
@@ -1171,6 +1184,8 @@ public class FileIo implements Runnable {
 	    	if (!fileioThreadCtrl.isEnable()) {
 				fin.close();
 			    fout.close();
+			    File t_lf=new File(toUrl);
+			    t_lf.delete();
 	    		return false;
 	    	} 
 	        fout.write(fileIoArea, 0, (int) n );
@@ -1209,6 +1224,7 @@ public class FileIo implements Runnable {
 	    	if (!fileioThreadCtrl.isEnable()) {
 				in.close();
 			    out.close();
+			    if (ohf.exists()) ohf.delete();
 	    		return false;
 	    	} 
 	        out.write( fileIoArea, 0, n );
@@ -1252,6 +1268,7 @@ public class FileIo implements Runnable {
 	    	if (!fileioThreadCtrl.isEnable()) {
 				in.close();
 			    out.close();
+			    if (hf.exists()) hf.delete();
 	    		return false;
 	    	}
 	        out.write( fileIoArea, 0, n );
@@ -1295,6 +1312,8 @@ public class FileIo implements Runnable {
 	    	if (!fileioThreadCtrl.isEnable()) {
 				in.close();
 			    out.close();
+			    File t_file=new File(toUrl);
+			    t_file.delete();
 	    		return false;
 	    	}
 	        out.write( fileIoArea, 0, n );
@@ -1426,7 +1445,7 @@ public class FileIo implements Runnable {
 		}
 
 		SmbFile hf = new SmbFile(target_dir + "/",ntlmPaswordAuth);
-		Log.v("","tdir="+target_dir);
+//		Log.v("","tdir="+target_dir);
 		if (!hf.exists()) {
 			hf.mkdirs();
 		}

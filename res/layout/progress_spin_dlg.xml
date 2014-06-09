@@ -21,7 +21,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:orientation="horizontal" >
-
         <ProgressBar
             android:id="@+id/progress_spin_dlg_progressBar"
             android:layout_width="wrap_content"
