@@ -44,7 +44,7 @@ public class RetrieveFileList implements Runnable  {
 
 	private ThreadCtrl getFLCtrl=null;
 	
-	private ArrayList<TreeFilelistItem> remoteFileList;
+	private ArrayList<TreeFilelistItem> remoteFileList=null;
 	private String remoteUrl;//, currDir;
 	private List<String> dir_list;
 	
@@ -70,7 +70,7 @@ public class RetrieveFileList implements Runnable  {
 		
 		dir_list=d_list;
 		
-		opCode="EC"; //check item is exists
+		opCode=OPCD_EXISTS_CHECK; //check item is exists
 
 		String tuser=null,tpass=null;
 		if (!user.equals("")) tuser=user;
@@ -78,10 +78,14 @@ public class RetrieveFileList implements Runnable  {
 		ntlmPaswordAuth = new NtlmPasswordAuthentication( null,tuser,tpass);
 	}
 
+	public final static String OPCD_FILE_LIST="FL"; 
+	public final static String OPCD_REFRESH_FILE_LIST="RF";
+	public final static String OPCD_EXISTS_CHECK="EC";
 	
 	public RetrieveFileList(Context c, 
-			ThreadCtrl ac, int dl, String ru, 
-			ArrayList<TreeFilelistItem> fl,String user, String pass, NotifyEvent ne) {
+			ThreadCtrl ac, int dl, String opcd, String ru, 
+			ArrayList<TreeFilelistItem> fl,
+			String user, String pass, NotifyEvent ne) {
 //		currContext=c;
 		debugLevel=dl;
 		remoteFileList=fl;
@@ -92,7 +96,7 @@ public class RetrieveFileList implements Runnable  {
 		notifyEvent=ne;
 		remoteUrl=ru;
 		
-		opCode="FL";
+		opCode=opcd;
 		
 		String tuser=null,tpass=null;
 		if (!user.equals("")) tuser=user;
@@ -134,11 +138,14 @@ public class RetrieveFileList implements Runnable  {
 			getFLCtrl.setDisable();
 			getFLCtrl.setThreadMessage(err_msg);
 		} else {
-			if (opCode.equals("FL")) {
+			if (opCode.equals(OPCD_FILE_LIST)) {
 				remoteFileList.clear();
-				readFileList(remoteUrl);
-			} else if (opCode.equals("EC")) {
+				ArrayList<TreeFilelistItem> tl=readFileList(remoteUrl);
+				for (int i=0;i<tl.size();i++) remoteFileList.add(tl.get(i));
+			} else if (opCode.equals(OPCD_EXISTS_CHECK)) {
 				checkItemExists(remoteUrl);
+			} else if (opCode.equals(OPCD_REFRESH_FILE_LIST)) {
+				refreshFileList();
 			}
 			
 		}
@@ -186,8 +193,18 @@ public class RetrieveFileList implements Runnable  {
 //                defaultUEH.uncaughtException(thread, ex);
             }
     };
+    
+    private void refreshFileList() {
+    	ArrayList<String>ref_dir_list=TreeFileListUtil.createRefDirList(remoteFileList);
+    	for (int i=0;i<ref_dir_list.size();i++) {
+//    		Log.v("","i="+i);
+    		ArrayList<TreeFilelistItem> tl=readFileList(ref_dir_list.get(i)+"/");
+    		TreeFileListUtil.updateTreeFileListArray(ref_dir_list.get(i),tl,remoteFileList);
+    	}
+    };
 
-	private void readFileList(String url) {
+	private ArrayList<TreeFilelistItem> readFileList(String url) {
+		ArrayList<TreeFilelistItem> rem_list=new ArrayList<TreeFilelistItem>();
 		sendDebugLogMsg(2,"I","Filelist directory: "+url);
 		try {		
 			SmbFile remoteFile = new SmbFile(url,ntlmPaswordAuth);
@@ -237,7 +254,7 @@ public class RetrieveFileList implements Runnable  {
 								fl[i].isHidden(),
 								fp,0);
 						fi.setSubDirItemCount(dirct);
-						remoteFileList.add(fi);
+						rem_list.add(fi);
 						sendDebugLogMsg(2,"I","Filelist added: "+
 							"Name="+fn+", "+
 							"isDirectory="+fl[i].isDirectory()+", "+
@@ -269,7 +286,7 @@ public class RetrieveFileList implements Runnable  {
 			getFLCtrl.setDisable();
 			getFLCtrl.setThreadMessage(e.toString());
 		}
-
+		return rem_list;
 	};
 
 	private void checkItemExists(String url) {

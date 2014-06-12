@@ -183,8 +183,8 @@ public class FileIo implements Runnable {
 		try {
 			if (fileIoArea==null) {
 //				Log.v("","allocated");
-			    fileIoArea = new byte[SMB_BUFF_SIZE*8];
-			    mFileChBuffer = ByteBuffer.allocateDirect(SMB_BUFF_SIZE*8);
+			    fileIoArea = new byte[SMB_BUFF_SIZE];
+			    mFileChBuffer = ByteBuffer.allocateDirect(SMB_BUFF_SIZE);
 			}
 
 			wake_lock.acquire();
@@ -253,69 +253,58 @@ public class FileIo implements Runnable {
 		try {
 			switch (file_op_cd) {
 				case FILEIO_PARM_LOCAL_CREATE:
-					sendMsgToProgDlg(false,"","Creating local directory "+file_tgt_name);
 					fileioTaskResultOk=createLocalDir(
 							file_tgt_url1+"/"+file_tgt_name);
 					break;
 				case FILEIO_PARM_REMOTE_CREATE:
-					sendMsgToProgDlg(false,"","Creating remote directory "+file_tgt_name);
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=createRemoteDir(
 							file_tgt_url1+"/"+file_tgt_name+"/");
 					break;
 				case FILEIO_PARM_LOCAL_RENAME:
-					sendMsgToProgDlg(false,"","Renaming local "+file_tgt_name);
 					fileioTaskResultOk=renameLocalItem(
 							file_tgt_url1+"/"+file_tgt_name, 
 							file_tgt_url2+"/"+file_tgt_newname);
 					break;
 				case FILEIO_PARM_REMOTE_RENAME:
-					sendMsgToProgDlg(false,"","Renaming remote "+file_tgt_name);
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=renameRemoteItem(
 							file_tgt_url1+"/"+file_tgt_name+"/", 
 							file_tgt_url2+"/"+file_tgt_newname+"/");
 					break;
 				case FILEIO_PARM_LOCAL_DELETE:
-					sendMsgToProgDlg(false,"","Deleteing local "+file_tgt_name);
 					fileioTaskResultOk=deleteLocalItem(
 							file_tgt_url1+"/"+file_tgt_name);
 					break;
 				case FILEIO_PARM_REMOTE_DELETE:
-					sendMsgToProgDlg(false,"","Deleteing remote "+file_tgt_name);
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=deleteRemoteItem(
 							file_tgt_url1+"/"+file_tgt_name+"/");
 					break;
 				case FILEIO_PARM_COPY_REMOTE_TO_LOCAL:
-					sendMsgToProgDlg(false,"","Copying remote to local '"+file_tgt_name+"'");
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=copyRemoteToLocal(
 							file_tgt_url1+"/"+file_tgt_name, 
 							file_tgt_url2+"/"+file_tgt_name);
 					break;
 				case FILEIO_PARM_COPY_REMOTE_TO_REMOTE:
-					sendMsgToProgDlg(false,"","Copying remote to remote '"+file_tgt_name+"'");
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=copyRemoteToRemote(
 							file_tgt_url1+"/"+file_tgt_name+"/", 
 							file_tgt_url2+"/"+file_tgt_name+"/");
 					break;
 				case FILEIO_PARM_COPY_LOCAL_TO_LOCAL:
-					sendMsgToProgDlg(false,"","Copying local to local '"+file_tgt_name+"'");
 					fileioTaskResultOk=copyLocalToLocal(
 							file_tgt_url1+"/"+file_tgt_name, 
 							file_tgt_url2+"/"+file_tgt_name);
 					break;
 				case FILEIO_PARM_COPY_LOCAL_TO_REMOTE:
-					sendMsgToProgDlg(false,"","Copying local to remote '"+file_tgt_name+"'");
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=copyLocalToRemote(
 							file_tgt_url1+"/"+file_tgt_name, 
 							file_tgt_url2+"/"+file_tgt_name+"/");
 					break;
 				case FILEIO_PARM_MOVE_REMOTE_TO_LOCAL:
-					sendMsgToProgDlg(false,"","Moving remote to local '"+file_tgt_name+"'");
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=copyRemoteToLocal(
 							file_tgt_url1+"/"+file_tgt_name+"/", 
@@ -325,7 +314,6 @@ public class FileIo implements Runnable {
 								file_tgt_url1+"/"+file_tgt_name+"/");
 					break;
 				case FILEIO_PARM_MOVE_REMOTE_TO_REMOTE:
-					sendMsgToProgDlg(false,"","Moving remote to remote '"+file_tgt_name+"'");
 					if (!wl.isHeld()) wl.acquire();
 					if (file_tgt_url1.equals(file_tgt_url2)) {
 						fileioTaskResultOk=moveRemoteToRemote(
@@ -341,13 +329,11 @@ public class FileIo implements Runnable {
 					}
 					break;
 				case FILEIO_PARM_MOVE_LOCAL_TO_LOCAL:
-					sendMsgToProgDlg(false,"","Moving local to local '"+file_tgt_name+"'");
 					fileioTaskResultOk=moveLocalToLocal(
 							file_tgt_url1+"/"+file_tgt_name, 
 							file_tgt_url2+"/"+file_tgt_name);
 					break;
 				case FILEIO_PARM_MOVE_LOCAL_TO_REMOTE:
-					sendMsgToProgDlg(false,"","Moving local to remote '"+file_tgt_name+"'");
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=copyLocalToRemote(
 							file_tgt_url1+"/"+file_tgt_name, 
@@ -357,7 +343,6 @@ public class FileIo implements Runnable {
 								file_tgt_url1+"/"+file_tgt_name);
 					break;
 				case FILEIO_PARM_DOWLOAD_REMOTE_FILE:
-					sendMsgToProgDlg(false,"","Downloading remote file '"+file_tgt_name+"'");
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=downloadRemoteFile(
 							file_tgt_url1+"/"+file_tgt_name, 
@@ -372,16 +357,19 @@ public class FileIo implements Runnable {
 		}
 	};
 	
-	private void sendMsgToProgDlg(final boolean log, final String log_cat, final String log_msg) {
+	private String mPrevProgMsg="";
+	private void sendMsgToProgDlg(final String log_msg) {
 //		if (debugLevel>0) Log.v(DEBUG_TAG,"P "+msg);
-		if (log) Log.v(DEBUG_TAG,log_msg);
-		uiHandler.post(new Runnable() {// UI thread
-			@Override
-			public void run() {
-				mProgressDlgMsg.setText(log_msg);
-			}
-		});		
-		
+		if (!mPrevProgMsg.equals(log_msg)) {
+			mPrevProgMsg=log_msg;
+			uiHandler.post(new Runnable() {// UI thread
+				@Override
+				public void run() {
+					mProgressDlgMsg.setText(log_msg);
+//					Log.v("","pop="+log_msg);
+				}
+			});		
+		}
 	};
 
 	private void sendLogMsg(final String log_cat, final String log_msg) {
@@ -503,15 +491,15 @@ public class FileIo implements Runnable {
     	if (!fileioThreadCtrl.isEnable()) return false;
     	
     	//url="/sdcard/NEW";
-    	sendDebugLogMsg(1,"I","Delete local item="+url);
+    	sendDebugLogMsg(1,"I","Delete local file entered, File="+url);
     	
     	try {
     		sf = new File( url );
 			result=deleteLocalFile(sf);
 		} catch (Exception e) {
 			e.printStackTrace();
-			sendLogMsg("E","Delete error:"+e.toString());
-			fileioThreadCtrl.setThreadMessage("Delete error:"+e.toString());
+			sendLogMsg("E","Local file delete error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Local file delete error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -521,7 +509,6 @@ public class FileIo implements Runnable {
     private boolean deleteLocalFile(File lf) {
         //ファイルやフォルダを削除  
         //フォルダの場合、中にあるすべてのファイルやサブフォルダも削除されます  
-    	sendDebugLogMsg(1,"I","Deleted:"+lf.getName()+", isdir="+lf.isDirectory());
         if (lf.isDirectory()) {//ディレクトリの場合  
             String[] children = lf.list();//ディレクトリにあるすべてのファイルを処理する  
             for (int i=0; i<children.length; i++) {  
@@ -536,8 +523,8 @@ public class FileIo implements Runnable {
         if (!fileioThreadCtrl.isEnable()) return false;
 	    boolean result=lf.delete();
 	    if (settingsMslScan) deleteMediaStoreItem(lf.getPath());
-	    sendMsgToProgDlg(false,"",lf.getName()+" was deleted");
-	    sendDebugLogMsg(1,"I","Deleted:"+lf.getName()+", result="+result);
+	    sendMsgToProgDlg(lf.getName()+" was deleted");
+	    sendDebugLogMsg(1,"I","File was Deleted. File="+lf.getPath());
 	    return result;
         
     };
@@ -548,7 +535,7 @@ public class FileIo implements Runnable {
     	
     	if (!fileioThreadCtrl.isEnable()) return false;
     	
-    	sendDebugLogMsg(1,"I","Delete remote item="+url);
+    	sendDebugLogMsg(1,"I","Delete remote file entered, File="+url);
     	
     	try {
     		result=true;
@@ -556,8 +543,8 @@ public class FileIo implements Runnable {
 			result=deleteRemoteFile(sf);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-			sendLogMsg("E","Delete error:"+e.toString());
-			fileioThreadCtrl.setThreadMessage("Delete error:"+e.toString());
+			sendLogMsg("E","Remote file delete error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Remote file delete error:"+e.toString());
 			result=false;
 			return false;
 		}
@@ -568,8 +555,7 @@ public class FileIo implements Runnable {
         //ファイルやフォルダを削除  
         //フォルダの場合、中にあるすべてのファイルやサブフォルダも削除されます  
     	try {
-				sendDebugLogMsg(1,"I","Deleted:"+rf.getName()+", isdir="+rf.isDirectory());
-	        if (rf.isDirectory()) {//ディレクトリの場合  
+			if (rf.isDirectory()) {//ディレクトリの場合  
 	            String[] children = rf.list();//ディレクトリにあるすべてのファイルを処理する  
 	            for (int i=0; i<children.length; i++) {  
 	            	if (!fileioThreadCtrl.isEnable()) return false;
@@ -583,22 +569,22 @@ public class FileIo implements Runnable {
 		    // 削除  
 	        if (!fileioThreadCtrl.isEnable()) return false;
 		    rf.delete();
-		    sendMsgToProgDlg(true,"",rf.getName().replace("/", "")+" was deleted");
-		    sendDebugLogMsg(1,"I","Deleted:"+rf.getName());
+		    sendMsgToProgDlg(rf.getName().replace("/", "")+" was deleted");
+		    sendDebugLogMsg(1,"I","File was Deleted. File="+rf.getPath());
 		} catch (SmbException e) {
 			e.printStackTrace();
-			sendLogMsg("E","Delete error:"+e.toString());
-			fileioThreadCtrl.setThreadMessage("Delete error:"+e.toString());
+			sendLogMsg("E","Remote file delete error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Remote file delete error:"+e.toString());
 			return false;
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-			sendLogMsg("E","Delete error:"+e.toString());
-			fileioThreadCtrl.setThreadMessage("Delete error:"+e.toString());
+			sendLogMsg("E","Remote file delete error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Remote file delete error:"+e.toString());
 			return false;
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
-			sendLogMsg("E","Delete error:"+e.toString());
-			fileioThreadCtrl.setThreadMessage("Delete error:"+e.toString());
+			sendLogMsg("E","Remote file delete error:"+e.toString());
+			fileioThreadCtrl.setThreadMessage("Remote file delete error:"+e.toString());
 			return false;
 		}
 	    return true;
@@ -611,7 +597,7 @@ public class FileIo implements Runnable {
         
         if (!fileioThreadCtrl.isEnable()) return false;
         
-        sendDebugLogMsg(1,"I","Copy Local to Local from item="+fromUrl+",to item="+toUrl);
+        sendDebugLogMsg(1,"I","Copy Local to Local from="+fromUrl+", to="+toUrl);
                 
 		try {
 			iLf = new File(fromUrl );
@@ -707,13 +693,12 @@ public class FileIo implements Runnable {
 						SmbFile hfd=new SmbFile(toUrl,ntlmPaswordAuth);
 						if (hfd.exists()) hfd.delete();
 						ohf.renameTo(hfd);
-					} else {
-						if (ohf.exists()) ohf.delete();
 					}
 
 				} else {
 					result=false;
 					sendLogMsg("E","EA founded, copy canceled");
+					fileioThreadCtrl.setThreadMessage("Copy error:"+"EA founded, copy canceled");
 				}
 			}
 		} catch (MalformedURLException e) {
@@ -779,6 +764,7 @@ public class FileIo implements Runnable {
 				} else {
 					result=false;
 					sendLogMsg("E","EA founded, copy canceled");
+					fileioThreadCtrl.setThreadMessage("Copy error:"+"EA founded, copy canceled");
 				}
 			}
 		} catch (MalformedURLException e) {
@@ -816,8 +802,8 @@ public class FileIo implements Runnable {
     };
     
     private boolean copyLocalToRemote(String fromUrl, String toUrl)  {
-        SmbFile hf=null ;
-        File lf,lfd ;
+        SmbFile ohf=null ;
+        File ilf,lfd ;
         boolean result = false;
         
         if (!fileioThreadCtrl.isEnable()) return false;
@@ -827,11 +813,11 @@ public class FileIo implements Runnable {
 		String tmp_toUrl="";
 
 		try {
-			lf = new File(fromUrl );
-			if (lf.isDirectory()) { // Directory copy
+			ilf = new File(fromUrl );
+			if (ilf.isDirectory()) { // Directory copy
 				result=true;
 				lfd = new File(fromUrl+"/");
-				hf = new SmbFile(toUrl,ntlmPaswordAuth);
+				ohf = new SmbFile(toUrl,ntlmPaswordAuth);
 				
 				String[] children = lfd.list();
 				for (String element : children) {
@@ -843,15 +829,13 @@ public class FileIo implements Runnable {
 			} else { // file copy
 				makeRemoteDirs(toUrl);
 				tmp_toUrl=makeRemoteTempFilePath(toUrl);
-				hf = new SmbFile(tmp_toUrl,ntlmPaswordAuth);
-				if (hf.exists()) hf.delete();
-				result=copyFileLocalToRemote(hf,lf,fromUrl,toUrl,"Copying");
+				ohf = new SmbFile(tmp_toUrl,ntlmPaswordAuth);
+				if (ohf.exists()) ohf.delete();
+				result=copyFileLocalToRemote(ohf,ilf,fromUrl,toUrl,"Copying");
 				if (result) {
 					SmbFile hfd=new SmbFile(toUrl,ntlmPaswordAuth);
 					if (hfd.exists()) hfd.delete();
-					hf.renameTo(hfd);
-				} else {
-					if (hf.exists()) hf.delete();
+					ohf.renameTo(hfd);
 				}
 			}
 		} catch (MalformedURLException e) {
@@ -867,7 +851,7 @@ public class FileIo implements Runnable {
 			result=false;
 			if (!tmp_toUrl.equals("")) {
 				try {
-					if (hf.exists()) hf.delete();
+					if (ohf.exists()) ohf.delete();
 				} catch (SmbException e1) {
 				}
 			}
@@ -969,7 +953,7 @@ public class FileIo implements Runnable {
     };
     
     private boolean moveRemoteToRemote(String fromUrl, String toUrl)  {
-        SmbFile hf,hfd, ohf = null;
+        SmbFile ihf,hfd, ohf = null;
         boolean result = false;
         
         if (!fileioThreadCtrl.isEnable()) return false;
@@ -977,8 +961,8 @@ public class FileIo implements Runnable {
         sendDebugLogMsg(1,"I","Move Remote to Remote from item="+fromUrl+", to item="+toUrl);
                 
 		try {
-			hf = new SmbFile(fromUrl ,ntlmPaswordAuth);
-			if (hf.isDirectory()) { // Directory copy
+			ihf = new SmbFile(fromUrl ,ntlmPaswordAuth);
+			if (ihf.isDirectory()) { // Directory copy
 				result=true;
 				hfd = new SmbFile(fromUrl+"/",ntlmPaswordAuth);
 				ohf = new SmbFile(toUrl,ntlmPaswordAuth);
@@ -991,8 +975,8 @@ public class FileIo implements Runnable {
 	            	if (!success) return false;
 	            }
 				makeRemoteDirs(toUrl+"/");
-				hf=new SmbFile(fromUrl+"/" ,ntlmPaswordAuth);
-				hf.delete();
+				ihf=new SmbFile(fromUrl+"/" ,ntlmPaswordAuth);
+				ihf.delete();
 				sendLogMsg("I",fromUrl+" was deleted.");
 			} else { // file move
 				if (!fileioThreadCtrl.isEnable()) return false;
@@ -1011,11 +995,11 @@ public class FileIo implements Runnable {
 					ohf = new SmbFile(toUrl,ntlmPaswordAuth);
 					ohf=new SmbFile(toUrl+"/",ntlmPaswordAuth);
 					if (ohf.exists()) ohf.delete();
-					hf.renameTo(ohf);
+					ihf.renameTo(ohf);
 					result=ohf.exists();
 				} else {
-					result=copyFileRemoteToRemote(hf,ohf,fromUrl,toUrl,"Copying");
-					if (!result) hf.delete();
+					result=copyFileRemoteToRemote(ihf,ohf,fromUrl,toUrl,"Copying");
+					if (result) ihf.delete();
 				}
 				if (result) sendLogMsg("I",fromUrl+" was moved to "+toUrl);
 				else sendLogMsg("I","Move was failed. fromUrl="+ fromUrl+", toUrl="+toUrl);
@@ -1078,7 +1062,7 @@ public class FileIo implements Runnable {
 				} else {
 					result=false;
 					sendLogMsg("E","EA founded, copy canceled");
-					fileioThreadCtrl.setThreadMessage("EA founded, copy canceled");
+					fileioThreadCtrl.setThreadMessage("Download error:"+"EA founded, copy canceled");
 				}
 			}
 		} catch (MalformedURLException e) {
@@ -1131,7 +1115,7 @@ public class FileIo implements Runnable {
 	    long fileBytes=iLf.length();
 	    String fn=iLf.getName();
 	
-	    sendMsgToProgDlg(false,"",title_header+" : "+iLf.getName());
+    	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,0));
 
 	    mFileChBuffer.clear();
 	    while (( n = inCh.read( mFileChBuffer )) > 0) {
@@ -1140,7 +1124,7 @@ public class FileIo implements Runnable {
             outCh.write(mFileChBuffer);
             tot += n;
 	        if (n<fileBytes) 
-	        	sendMsgToProgDlg(false,"",String.format(title_header+" %s %s%% completed.",fn,
+	        	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,
 	        					(tot*100)/fileBytes));
 	        mFileChBuffer.clear();
         }
@@ -1149,7 +1133,8 @@ public class FileIo implements Runnable {
 	    outCh.close();
 	    
 	    oLf = new File(toUrl);
-	    if (setLastModified) oLf.setLastModified(iLf.lastModified());
+	    boolean slm=false;
+	    if (setLastModified) slm=oLf.setLastModified(iLf.lastModified());
 	    long t = System.currentTimeMillis() - t0;
 	    if (settingsMslScan) scanMediaStoreLibraryFile(toUrl);
 	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+
@@ -1178,7 +1163,7 @@ public class FileIo implements Runnable {
 	    long fileBytes=iLf.length();
 	    String fn=iLf.getName();
 	
-	    sendMsgToProgDlg(false,"",title_header+" : "+iLf.getName());
+    	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,0));
 
 	    while(( n = fin.read( fileIoArea )) > 0 ) {
 	    	if (!fileioThreadCtrl.isEnable()) {
@@ -1191,7 +1176,7 @@ public class FileIo implements Runnable {
 	        fout.write(fileIoArea, 0, (int) n );
 	        tot += n;
 	        if (n<fileBytes) 
-	        	sendMsgToProgDlg(false,"",String.format(title_header+" %s %s%% completed.",fn,
+	        	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,
 	        					(tot*100)/fileBytes));
 	    }
 	    fin.close();
@@ -1217,9 +1202,9 @@ public class FileIo implements Runnable {
 	    long tot = 0;
 	    long fileBytes=ihf.length();
 	    String fn=ihf.getName();
+    	sendMsgToProgDlg(
+    			String.format(title_header+" %s %s%% completed.",fn,0));
 	
-	    sendMsgToProgDlg(false,"",title_header+" :"+fn);
-	    
 	    while(( n = in.read( fileIoArea )) > 0 ) {
 	    	if (!fileioThreadCtrl.isEnable()) {
 				in.close();
@@ -1230,7 +1215,7 @@ public class FileIo implements Runnable {
 	        out.write( fileIoArea, 0, n );
 	        tot += n;
 	        if (n<fileBytes) 
-	        	sendMsgToProgDlg(false,"",
+	        	sendMsgToProgDlg(
 	        			String.format(title_header+" %s %s%% completed.",fn,
 	        					(tot*100)/fileBytes));
 	    }
@@ -1262,7 +1247,8 @@ public class FileIo implements Runnable {
 	    long fileBytes=lf.length();
 	    String fn=lf.getName();
 	    
-	    sendMsgToProgDlg(false,"",title_header+" :"+fn);
+    	sendMsgToProgDlg(
+    			String.format(title_header+" %s %s%% completed.",fn,0));
 	    
 	    while(( n = in.read( fileIoArea )) > 0 ) {
 	    	if (!fileioThreadCtrl.isEnable()) {
@@ -1274,7 +1260,7 @@ public class FileIo implements Runnable {
 	        out.write( fileIoArea, 0, n );
 	        tot += n;
 	        if (n<fileBytes) 
-	        	sendMsgToProgDlg(false,"",
+	        	sendMsgToProgDlg(
 	        			String.format(title_header+" %s %s%% completed.",fn,
 	        					(tot*100)/fileBytes));
 	    }
@@ -1306,7 +1292,8 @@ public class FileIo implements Runnable {
 	    long fileBytes=hf.length();
 	    String fn=hf.getName();
 	    
-	    sendMsgToProgDlg(false,"",title_header+" : "+fn);
+    	sendMsgToProgDlg(
+    			String.format(title_header+" %s,  %s%% completed.",fn,0));
 	    
 	    while(( n = in.read( fileIoArea )) > 0 ) {
 	    	if (!fileioThreadCtrl.isEnable()) {
@@ -1319,7 +1306,7 @@ public class FileIo implements Runnable {
 	        out.write( fileIoArea, 0, n );
 	        tot += n;
 	        if (tot<fileBytes) 
-	        	sendMsgToProgDlg(false,"",
+	        	sendMsgToProgDlg(
 	        			String.format(title_header+" %s,  %s%% completed.",fn,
 	        					(tot*100)/fileBytes));
 	    }
@@ -1434,18 +1421,20 @@ public class FileIo implements Runnable {
 	private boolean makeRemoteDirs(String targetPath) 
 					throws MalformedURLException, SmbException {
 		boolean result=false;
-		String target_dir="";
+		String target_dir1="";
+		String target_dir2="";
 		if (targetPath.lastIndexOf("/")<=0) return false;
 		else {
 			if (targetPath.endsWith("/")) {//path is dir
-				target_dir=targetPath;
+				target_dir1=targetPath.substring(0,targetPath.lastIndexOf("/"));
 			} else {
-				target_dir=targetPath.substring(0,targetPath.lastIndexOf("/"));
+				target_dir1=targetPath;
 			}
+			target_dir2=target_dir1.substring(0,target_dir1.lastIndexOf("/"));
 		}
 
-		SmbFile hf = new SmbFile(target_dir + "/",ntlmPaswordAuth);
-//		Log.v("","tdir="+target_dir);
+		SmbFile hf = new SmbFile(target_dir2 + "/",ntlmPaswordAuth);
+//		Log.v("","tdir="+target_dir2);
 		if (!hf.exists()) {
 			hf.mkdirs();
 		}

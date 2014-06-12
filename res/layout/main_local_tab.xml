@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/explorer_filelist_local_tab"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
-    
+    android:orientation="vertical"
+    tools:ignore="HardcodedText" >
+
     <Spinner
         android:id="@+id/explorer_filelist_local_tab_dir"
         style="@android:style/Widget.Spinner"
@@ -19,45 +21,51 @@
 
     <include layout="@layout/divider_line1" />
 
-    <LinearLayout
-         android:layout_width="fill_parent"
-         android:layout_height="0dp"
-         android:layout_weight="1"
-         android:orientation="vertical" >
-         <LinearLayout
-             android:id="@+id/explorer_filelist_local_progress"
-             android:layout_width="fill_parent"
-             android:layout_height="wrap_content"
-             android:orientation="horizontal"
-             android:visibility="gone" >
-	        <ProgressBar
-	             android:id="@+id/explorer_filelist_local_progress_spin"
-	             android:layout_width="wrap_content"
-	             android:layout_height="wrap_content"
-	             android:layout_gravity="center_vertical"
-	             android:layout_marginLeft="5dp" />
-	        <TextView
-	            android:id="@+id/explorer_filelist_local_progress_msg"
-	            android:layout_width="0dp"
-	            android:layout_weight="1"
-	            android:layout_gravity="center_vertical"
-	            android:layout_height="wrap_content"
-	            android:textAppearance="?android:attr/textAppearanceMedium"/>
-	        <Button
-	            android:id="@+id/explorer_filelist_local_progress_cancel"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:text="Cancel"
-	            android:layout_gravity="center_vertical"
-	            android:textAppearance="?android:attr/textAppearanceMedium"/>
-		 </LinearLayout>                
-         <ListView
-             android:id="@+id/explorer_filelist_local_tab_listview"
-             android:layout_width="fill_parent"
-             android:layout_height="0dp"
-             android:layout_weight="1"
-             android:fadeScrollbars="false" />
-	</LinearLayout>
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/explorer_filelist_local_progress"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone" >
+
+            <ProgressBar
+                android:id="@+id/explorer_filelist_local_progress_spin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="5dp" />
+
+            <TextView
+                android:id="@+id/explorer_filelist_local_progress_msg"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:lines="4"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <Button
+                android:id="@+id/explorer_filelist_local_progress_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="Cancel"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/explorer_filelist_local_tab_listview"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:fadeScrollbars="false" />
+    </RelativeLayout>
 
     <include layout="@layout/divider_line1" />
 
@@ -68,6 +76,6 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:text=""
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
-    
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
 </LinearLayout>
