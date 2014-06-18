@@ -9,6 +9,8 @@ import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
+
 import com.sentaroh.android.Utilities.MiscUtil;
 import com.sentaroh.android.Utilities.TreeFilelist.TreeFilelistItem;
 
@@ -42,7 +44,7 @@ public class TreeFileListUtil {
 			String url,
 			ArrayList<TreeFilelistItem> ref_list,
 			ArrayList<TreeFilelistItem> file_list) {
-//		Log.v("","url="+url+", ref_list="+ref_list.size()+", flsize="+file_list.size());
+		Log.v("","url="+url+", ref_list="+ref_list.size()+", flsize="+file_list.size());
 		for (int i=0;i<ref_list.size();i++) {
 			TreeFilelistItem si=ref_list.get(i);
 			int pos=findTreeListItem(si, file_list);
@@ -96,16 +98,16 @@ public class TreeFileListUtil {
 		tfli.setSubDirItemCount(ufli.getSubDirItemCount());
 	};
 
-	static public void insertTreeFileListItem(TreeFilelistItem ufli, int cnt, 
+	static public void insertTreeFileListItem(TreeFilelistItem ufli, int sub_dir_cnt, 
 			ArrayList<TreeFilelistItem> file_list) {
 		String u_key=ufli.getPath();//+"/"+ufli.getName();
-//		ufli.dump();
+//		ufli.dump("0");
 		for (int i=file_list.size()-1;i>=0;i--) {
 			TreeFilelistItem tfli=file_list.get(i);
 			String t_key=tfli.getPath();//+"/"+tfli.getName();
 //			Log.v("","u_key="+u_key+", t_key="+t_key);
 			if (u_key.equals(t_key)) {
-				tfli.setSubDirItemCount(cnt);
+				tfli.setSubDirItemCount(sub_dir_cnt);
 				tfli.setChildListExpanded(false);
 				
 				String u_path=ufli.getPath()+"/"+ufli.getName();
@@ -115,16 +117,16 @@ public class TreeFileListUtil {
 					if (ufli.isDir()) {
 						if (file_list.get(j).isDir() &&
 								u_path.compareToIgnoreCase(t_path)>0) {
-//							file_list.get(j).dump();
+//							file_list.get(j).dump("1");
 							TreeFilelistItem nfli=createNewTreeFilelistItem(ufli);
-							nfli.setListLevel(file_list.get(j).getListLevel());
-							file_list.add(j, nfli);
+							nfli.setListLevel(tfli.getListLevel());//.file_list.get(j).getListLevel()+1);
+							file_list.add(j+1, nfli);
 							break;
 						}
 					} else {
 						if (!file_list.get(j).isDir()) {
 							if (u_path.compareToIgnoreCase(t_path)>0) {
-//								file_list.get(j).dump();
+//								file_list.get(j).dump("2");
 								TreeFilelistItem nfli=createNewTreeFilelistItem(ufli);
 								nfli.setListLevel(file_list.get(j).getListLevel());
 								nfli.setChildListExpanded(file_list.get(j).isChildListExpanded());
@@ -132,7 +134,7 @@ public class TreeFileListUtil {
 							break;
 							}
 						} else {
-//							file_list.get(j-1).dump();
+//							file_list.get(j-1).dump("3");
 							TreeFilelistItem nfli=createNewTreeFilelistItem(ufli);
 							nfli.setListLevel(file_list.get(j).getListLevel());
 							nfli.setChildListExpanded(file_list.get(j).isChildListExpanded());
