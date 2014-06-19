@@ -1737,6 +1737,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		// カスタムダイアログの生成
 		final Dialog dialog = new Dialog(this);
 		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		dialog.setCanceledOnTouchOutside(false);
 		dialog.setContentView(R.layout.file_rename_create_dlg);
 		final EditText newName = 
 				(EditText) dialog.findViewById(R.id.file_rename_create_dlg_newname);
@@ -1854,6 +1855,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		// カスタムダイアログの生成
 		final Dialog dialog = new Dialog(this);
 		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		dialog.setCanceledOnTouchOutside(false);
 		dialog.setContentView(R.layout.file_rename_create_dlg);
 		final EditText newName = 
 				(EditText) dialog.findViewById(R.id.file_rename_create_dlg_newname);
@@ -2574,6 +2576,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		    	//カスタムダイアログの生成
 		        final Dialog dialog=new Dialog(c);
 		        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		        dialog.setCanceledOnTouchOutside(false);
 		    	dialog.setContentView(R.layout.item_select_list_dlg);
 		        ((TextView)dialog.findViewById(R.id.item_select_list_dlg_title))
 		        	.setText("Select remote share");
@@ -2633,7 +2636,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 		// カスタムダイアログの生成
 		final Dialog dialog = new Dialog(this);
-
+		dialog.setCanceledOnTouchOutside(false);
 		dialog.setContentView(R.layout.edit_remote_profile);
 		final TextView dlg_msg = (TextView) dialog
 				.findViewById(R.id.remote_profile_dlg_msg);
@@ -2786,7 +2789,7 @@ public class SMBExplorerMain extends FragmentActivity {
 
 		// カスタムダイアログの生成
 		final Dialog dialog = new Dialog(this);
-
+		dialog.setCanceledOnTouchOutside(false);
 		dialog.setContentView(R.layout.edit_remote_profile);
 		final TextView dlg_msg = (TextView) dialog
 				.findViewById(R.id.remote_profile_dlg_msg);
@@ -3261,6 +3264,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		//カスタムダイアログの生成
 	    final Dialog dialog=new Dialog(mContext);
 	    dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+	    dialog.setCanceledOnTouchOutside(false);
 	    dialog.setContentView(R.layout.scan_remote_ntwk_dlg);
 	    final Button btn_scan=(Button)dialog.findViewById(R.id.scan_remote_ntwk_btn_ok);
 	    final Button btn_cancel=(Button)dialog.findViewById(R.id.scan_remote_ntwk_btn_cancel);
