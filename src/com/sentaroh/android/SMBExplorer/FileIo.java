@@ -285,30 +285,30 @@ public class FileIo implements Runnable {
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=copyRemoteToLocal(
 							file_tgt_url1+"/"+file_tgt_name, 
-							file_tgt_url2+"/"+file_tgt_name);
+							file_tgt_url2+"/"+file_tgt_newname);
 					break;
 				case FILEIO_PARM_COPY_REMOTE_TO_REMOTE:
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=copyRemoteToRemote(
 							file_tgt_url1+"/"+file_tgt_name+"/", 
-							file_tgt_url2+"/"+file_tgt_name+"/");
+							file_tgt_url2+"/"+file_tgt_newname+"/");
 					break;
 				case FILEIO_PARM_COPY_LOCAL_TO_LOCAL:
 					fileioTaskResultOk=copyLocalToLocal(
 							file_tgt_url1+"/"+file_tgt_name, 
-							file_tgt_url2+"/"+file_tgt_name);
+							file_tgt_url2+"/"+file_tgt_newname);
 					break;
 				case FILEIO_PARM_COPY_LOCAL_TO_REMOTE:
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=copyLocalToRemote(
 							file_tgt_url1+"/"+file_tgt_name, 
-							file_tgt_url2+"/"+file_tgt_name+"/");
+							file_tgt_url2+"/"+file_tgt_newname+"/");
 					break;
 				case FILEIO_PARM_MOVE_REMOTE_TO_LOCAL:
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=copyRemoteToLocal(
 							file_tgt_url1+"/"+file_tgt_name+"/", 
-							file_tgt_url2+"/"+file_tgt_name);
+							file_tgt_url2+"/"+file_tgt_newname);
 					if (fileioTaskResultOk)
 						fileioTaskResultOk=deleteRemoteItem(
 								file_tgt_url1+"/"+file_tgt_name+"/");
@@ -318,11 +318,11 @@ public class FileIo implements Runnable {
 					if (file_tgt_url1.equals(file_tgt_url2)) {
 						fileioTaskResultOk=moveRemoteToRemote(
 								file_tgt_url1+"/"+file_tgt_name+"/", 
-								file_tgt_url2+"/"+file_tgt_name+"/");
+								file_tgt_url2+"/"+file_tgt_newname+"/");
 					} else {
 						fileioTaskResultOk=copyRemoteToRemote(
 								file_tgt_url1+"/"+file_tgt_name+"/", 
-								file_tgt_url2+"/"+file_tgt_name);
+								file_tgt_url2+"/"+file_tgt_newname);
 						if (fileioTaskResultOk)
 							fileioTaskResultOk=deleteRemoteItem(
 									file_tgt_url1+"/"+file_tgt_name+"/");
@@ -331,13 +331,13 @@ public class FileIo implements Runnable {
 				case FILEIO_PARM_MOVE_LOCAL_TO_LOCAL:
 					fileioTaskResultOk=moveLocalToLocal(
 							file_tgt_url1+"/"+file_tgt_name, 
-							file_tgt_url2+"/"+file_tgt_name);
+							file_tgt_url2+"/"+file_tgt_newname);
 					break;
 				case FILEIO_PARM_MOVE_LOCAL_TO_REMOTE:
 					if (!wl.isHeld()) wl.acquire();
 					fileioTaskResultOk=copyLocalToRemote(
 							file_tgt_url1+"/"+file_tgt_name, 
-							file_tgt_url2+"/"+file_tgt_name+"/");
+							file_tgt_url2+"/"+file_tgt_newname+"/");
 					if (fileioTaskResultOk)
 						fileioTaskResultOk=deleteLocalItem(
 								file_tgt_url1+"/"+file_tgt_name);

@@ -35,7 +35,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 import com.sentaroh.android.Utilities.*;
-import com.sentaroh.android.Utilities.TreeFilelist.TreeFilelistItem;
 
 public class RetrieveFileList implements Runnable  {
 	private final static String DEBUG_TAG = "SMBExplorer";
@@ -44,7 +43,7 @@ public class RetrieveFileList implements Runnable  {
 
 	private ThreadCtrl getFLCtrl=null;
 	
-	private ArrayList<TreeFilelistItem> remoteFileList=null;
+	private ArrayList<FileListItem> remoteFileList=null;
 	private String remoteUrl;//, currDir;
 	private List<String> dir_list;
 	
@@ -79,12 +78,11 @@ public class RetrieveFileList implements Runnable  {
 	}
 
 	public final static String OPCD_FILE_LIST="FL"; 
-	public final static String OPCD_REFRESH_FILE_LIST="RF";
 	public final static String OPCD_EXISTS_CHECK="EC";
 	
 	public RetrieveFileList(Context c, 
 			ThreadCtrl ac, int dl, String opcd, String ru, 
-			ArrayList<TreeFilelistItem> fl,
+			ArrayList<FileListItem> fl,
 			String user, String pass, NotifyEvent ne) {
 //		currContext=c;
 		debugLevel=dl;
@@ -140,12 +138,10 @@ public class RetrieveFileList implements Runnable  {
 		} else {
 			if (opCode.equals(OPCD_FILE_LIST)) {
 				remoteFileList.clear();
-				ArrayList<TreeFilelistItem> tl=readFileList(remoteUrl);
+				ArrayList<FileListItem> tl=readFileList(remoteUrl);
 				for (int i=0;i<tl.size();i++) remoteFileList.add(tl.get(i));
 			} else if (opCode.equals(OPCD_EXISTS_CHECK)) {
 				checkItemExists(remoteUrl);
-			} else if (opCode.equals(OPCD_REFRESH_FILE_LIST)) {
-				refreshFileList();
 			}
 			
 		}
@@ -194,17 +190,8 @@ public class RetrieveFileList implements Runnable  {
             }
     };
     
-    private void refreshFileList() {
-    	ArrayList<String>ref_dir_list=TreeFileListUtil.createRefDirList(remoteFileList);
-    	for (int i=0;i<ref_dir_list.size();i++) {
-//    		Log.v("","i="+i);
-    		ArrayList<TreeFilelistItem> tl=readFileList(ref_dir_list.get(i)+"/");
-    		TreeFileListUtil.updateTreeFileListArray(ref_dir_list.get(i),tl,remoteFileList);
-    	}
-    };
-
-	private ArrayList<TreeFilelistItem> readFileList(String url) {
-		ArrayList<TreeFilelistItem> rem_list=new ArrayList<TreeFilelistItem>();
+	private ArrayList<FileListItem> readFileList(String url) {
+		ArrayList<FileListItem> rem_list=new ArrayList<FileListItem>();
 		sendDebugLogMsg(2,"I","Filelist directory: "+url);
 		try {		
 			SmbFile remoteFile = new SmbFile(url,ntlmPaswordAuth);
@@ -242,7 +229,7 @@ public class RetrieveFileList implements Runnable  {
 									"Path="+fl[i].getPath()+", "+
 									"CanonicalPath="+fl[i].getCanonicalPath());
 						}					
-						TreeFilelistItem fi=new TreeFilelistItem(
+						FileListItem fi=new FileListItem(
 								fn,
 								"",
 								fl[i].isDirectory(),

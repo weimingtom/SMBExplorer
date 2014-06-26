@@ -1,8 +1,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_top_refresh"
-          android:title="Refresh file list" 
-          android:icon="@drawable/ic_32_menu_refresh"
-          android:showAsAction="always"/>
     <item android:id="@+id/menu_top_export"
           android:title="Export profile" 
           android:icon="@+android:drawable/ic_menu_save"
