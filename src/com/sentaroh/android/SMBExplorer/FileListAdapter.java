@@ -141,14 +141,14 @@ public class FileListAdapter extends BaseAdapter {
             View v = convertView;
             if (v == null) {
                 LayoutInflater vi = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                v = vi.inflate(R.layout.file_list_item, null);
+//                v = vi.inflate(R.layout.file_list_item, null);
+                v = vi.inflate(R.layout.file_list_item, parent, false);
                 holder=new ViewHolder();
 
             	holder.cb_cb1=(CheckBox)v.findViewById(R.id.file_list_checkbox);
             	holder.rb_rb1=(RadioButton)v.findViewById(R.id.file_list_radiobtn);
             	holder.iv_image1=(ImageView)v.findViewById(R.id.file_list_icon);
             	holder.tv_name=(TextView)v.findViewById(R.id.file_list_name);
-            	holder.tv_item_count=(TextView)v.findViewById(R.id.file_list_item_count);
             	holder.tv_size=(TextView)v.findViewById(R.id.file_list_size);
             	holder.tv_moddate=(TextView)v.findViewById(R.id.file_list_date);
             	holder.tv_modtime=(TextView)v.findViewById(R.id.file_list_time);
@@ -208,14 +208,10 @@ public class FileListAdapter extends BaseAdapter {
                 	}
                    	if(o.isDir()) {
                    		holder.iv_image1.setImageResource(mIconImage[2]); //folder
-                   		holder.tv_item_count.setText(o.getSubDirItemCount()+" Item");
-//                   		holder.tv_item_count.setVisibility(TextView.GONE);
-		            	holder.tv_size.setVisibility(TextView.GONE);
+                   		String ic=""+o.getSubDirItemCount()+" Item";
+                   		holder.tv_size.setText(ic);
                    	} else {
                    		holder.iv_image1.setImageResource(mIconImage[3]); //sheet
-//                   		holder.tv_item_count.setVisibility(TextView.GONE);
-                   		holder.tv_item_count.setText("");
-		            	holder.tv_size.setVisibility(TextView.VISIBLE);
                    	}
             	}
                	final int p = position;
@@ -269,7 +265,6 @@ public class FileListAdapter extends BaseAdapter {
     
 	static class ViewHolder {
 		 TextView tv_name, tv_moddate, tv_modtime, tv_size;
-		 TextView tv_item_count;
 		 ImageView iv_image1;
 		 CheckBox cb_cb1;
 		 RadioButton rb_rb1;

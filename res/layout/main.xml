@@ -25,11 +25,49 @@
             android:layout_weight="1"
             android:padding="5dp" >
 
-			<include layout="@layout/main_profile_tab" />
-			<include layout="@layout/main_local_tab" />
-            <include layout="@layout/main_remote_tab" />
-            
+			<include 
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content"
+			    layout="@layout/main_profile_tab" />
+			<include 
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content"
+			    layout="@layout/main_local_tab" />
+            <include 
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content"
+                layout="@layout/main_remote_tab" />
+        
         </FrameLayout>
+        
+	    <LinearLayout
+	        android:id="@+id/explorer_filelist_copy_paste"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:visibility="gone"
+	        android:orientation="horizontal">
+
+		    <TextView
+		        android:id="@+id/explorer_filelist_paste_copycut"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text=""
+		        android:layout_marginLeft="5dp"
+		        android:layout_marginRight="5dp"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+	        	        
+		    <TextView
+		        android:id="@+id/explorer_filelist_paste_list"
+		        android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:ellipsize="end"
+		        android:singleLine="true"
+		        android:text=""
+		        android:layout_marginRight="5dp"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+	        	        
+        </LinearLayout>
+        
     </LinearLayout>
 
 </TabHost>

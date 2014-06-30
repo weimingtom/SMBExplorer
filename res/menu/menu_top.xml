@@ -7,7 +7,11 @@
           android:title="Import profile" 
           android:icon="@+android:drawable/ic_menu_set_as"
           android:showAsAction="always"/>
-    <item android:id="@+id/menu_top_settings"
+	<item android:id="@+id/menu_top_show_log"
+          android:title="Show log" 
+          android:icon="@drawable/ic_32_bw_browse_text"
+          android:showAsAction="always"/>
+	<item android:id="@+id/menu_top_settings"
           android:title="Settings"
           android:icon="@+android:drawable/ic_menu_preferences"
           android:showAsAction="always"/>

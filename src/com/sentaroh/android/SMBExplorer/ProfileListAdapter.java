@@ -74,14 +74,18 @@ public class ProfileListAdapter extends ArrayAdapter<ProfileListItem> {
         final ProfileListItem o = items.get(position);
         
         if (o != null) {
-              if(holder.iv_image1!=null) 
-            	  if (o.getType().equals("L")) 
-            		  holder.iv_image1.setImageResource(R.drawable.ic_32_mobile);
-            	  	else holder.iv_image1.setImageResource(R.drawable.ic_32_server);
-              if(holder.tv_name!=null)
-            	  holder.tv_name.setText(o.getName());
-              if(holder.tv_active!=null)
-            	  holder.tv_active.setText(o.getActive());
+        	  if (o.getType().equals("L")) 
+        		  holder.iv_image1.setImageResource(R.drawable.ic_32_mobile);
+        	  	else holder.iv_image1.setImageResource(R.drawable.ic_32_server);
+        	  holder.tv_name.setText(o.getName());
+        	  holder.tv_active.setText(o.getActive());
+        	  if (o.getActive().equals("I")) {
+            	  holder.tv_name.setEnabled(false);
+            	  holder.tv_active.setEnabled(false);
+        	  } else {
+            	  holder.tv_name.setEnabled(true);
+            	  holder.tv_active.setEnabled(true);
+        	  }
               if (o.getName().equals("Local")) {
             	  holder.cb_cb1.setEnabled(false);
               } else {

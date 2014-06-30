@@ -31,6 +31,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class SMBExpolorerSettings extends PreferenceActivity {
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -56,6 +57,7 @@ public class SMBExpolorerSettings extends PreferenceActivity {
     	initSettingParms(prefs,getString(R.string.settings_io_buffers));
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override  
 	protected void onResume() {  
 	    super.onResume();  
@@ -63,6 +65,7 @@ public class SMBExpolorerSettings extends PreferenceActivity {
 	    	.registerOnSharedPreferenceChangeListener(listener);  
 	}  
 	   
+	@SuppressWarnings("deprecation")
 	@Override  
 	protected void onPause() {  
 	    super.onPause();  
@@ -88,6 +91,7 @@ public class SMBExpolorerSettings extends PreferenceActivity {
 		    }
 	};
 
+	@SuppressWarnings("deprecation")
 	private boolean checkBasicSettings(SharedPreferences prefs, String key) {
 		boolean isChecked = false;
 		if (key.equals(getString(R.string.settings_msl_scan))) {
@@ -112,6 +116,7 @@ public class SMBExpolorerSettings extends PreferenceActivity {
 
 		return isChecked;
 	};
+	@SuppressWarnings("deprecation")
 	private boolean checkLogSettings(SharedPreferences prefs, String key) {
 		boolean isChecked = false;
     	if (key.equals(getString(R.string.settings_debug_level))) {
@@ -122,6 +127,7 @@ public class SMBExpolorerSettings extends PreferenceActivity {
     	}
     	return isChecked;
 	};
+	@SuppressWarnings("deprecation")
 	private boolean checkMediaScannerSettings(SharedPreferences prefs, String key) {
 		boolean isChecked = false;
     	if (key.equals(getString(R.string.settings_msl_scan))) {
@@ -134,7 +140,7 @@ public class SMBExpolorerSettings extends PreferenceActivity {
     	}
     	return isChecked;
 	};
-
+	@SuppressWarnings("deprecation")
 	private boolean checkSmbSettings(SharedPreferences prefs, String key) {
 		boolean isChecked = false;
 		if (key.equals(getString(R.string.settings_default_user))) {
@@ -233,6 +239,7 @@ public class SMBExpolorerSettings extends PreferenceActivity {
 
     	return isChecked;
 	};
+	@SuppressWarnings("deprecation")
 	private boolean checkOtherSettings(SharedPreferences prefs, String key) {
 		boolean isChecked = true;
     	Preference fpf=findPreference(key);

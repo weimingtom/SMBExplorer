@@ -23,16 +23,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
@@ -68,46 +69,47 @@ public class FileIo implements Runnable {
 	private final static String DEBUG_TAG = "SMBExplorer";
 	
 	private static final boolean setLastModified=true;
-	
-	private int debugLevel = 0;
-	
-	private int SMB_BUFF_SIZE =65536*4;
-	
-	private NotifyEvent notifyEvent ;
 
-	private boolean fileioTaskResultOk = true;
+	private static PrintWriter mLogWriter=null;
 	
-	private ThreadCtrl fileioThreadCtrl;
+	private static int debugLevel = 0;
 	
-	private ArrayList<FileIoLinkParm> fileioLinkParm;
+	private static int SMB_BUFF_SIZE =65536*4;
 	
-	private int file_op_cd;
-	private String file_tgt_url1, file_tgt_url2, file_tgt_name;
-	private String file_tgt_newname;
-	private String file_userid, file_password;
-	private boolean allcopy=true;
-	
-	private Context currContext=null;
-	
-	private String jcifs_option_iobuff="";
+	private static NotifyEvent notifyEvent ;
 
-	private boolean settingsMslScan = false;
+	private static boolean fileioTaskResultOk = true;
 	
-	private MediaScannerConnection mediaScanner ;
+	private static ThreadCtrl fileioThreadCtrl;
 	
-	private Handler uiHandler = new Handler() ;
+	private static ArrayList<FileIoLinkParm> fileioLinkParm;
+	
+	private static int file_op_cd;
+	private static String file_tgt_url1, file_tgt_url2, file_tgt_name;
+	private static String file_tgt_newname;
+	private static String file_userid, file_password;
+	private static boolean allcopy=true;
+	
+	private static Context currContext=null;
+	
+	private static String jcifs_option_iobuff="";
+
+	private static boolean settingsMslScan = false;
+	
+	private static MediaScannerConnection mediaScanner ;
+	
+	private static Handler uiHandler = new Handler() ;
 
     private static byte[] fileIoArea = null;
-    private static ByteBuffer mFileChBuffer = null;
 
-	private NtlmPasswordAuthentication ntlmPaswordAuth;
+	private static NtlmPasswordAuthentication ntlmPaswordAuth;
 	
-	private TextView mProgressDlgMsg=null;
+	private static TextView mProgressDlgMsg=null;
 	
 	// @Override
 	public FileIo(TextView tv_msg, int op_cd,
 			ArrayList<FileIoLinkParm> alp, ThreadCtrl tc, int dl,NotifyEvent ne, 
-			Context cc) {
+			Context cc, PrintWriter lw) {
 		
 		mProgressDlgMsg=tv_msg;
 		fileioThreadCtrl=tc;
@@ -117,6 +119,8 @@ public class FileIo implements Runnable {
 		notifyEvent=ne;
 		
 		currContext=cc;
+		
+		mLogWriter=lw;
 		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(cc);
 		settingsMslScan=prefs.getBoolean("settings_msl_scan", false);
@@ -173,6 +177,7 @@ public class FileIo implements Runnable {
 	
     private long taskBeginTime=0;
     
+	@SuppressWarnings("deprecation")
 	@Override
 	public void run() {
 		final WakeLock wake_lock=((PowerManager)currContext.getSystemService(Context.POWER_SERVICE))
@@ -183,8 +188,7 @@ public class FileIo implements Runnable {
 		try {
 			if (fileIoArea==null) {
 //				Log.v("","allocated");
-			    fileIoArea = new byte[SMB_BUFF_SIZE];
-			    mFileChBuffer = ByteBuffer.allocateDirect(SMB_BUFF_SIZE);
+			    fileIoArea = new byte[4096*32];
 			}
 
 			wake_lock.acquire();
@@ -357,8 +361,8 @@ public class FileIo implements Runnable {
 		}
 	};
 	
-	private String mPrevProgMsg="";
-	private void sendMsgToProgDlg(final String log_msg) {
+	private static String mPrevProgMsg="";
+	private static void sendMsgToProgDlg(final String log_msg) {
 //		if (debugLevel>0) Log.v(DEBUG_TAG,"P "+msg);
 		if (!mPrevProgMsg.equals(log_msg)) {
 			mPrevProgMsg=log_msg;
@@ -372,16 +376,20 @@ public class FileIo implements Runnable {
 		}
 	};
 
-	private void sendLogMsg(final String log_cat, final String log_msg) {
-		Log.v(DEBUG_TAG,log_msg);
+	static private void sendLogMsg(final String log_cat, final String log_msg) {
+		String m_txt=log_cat+" "+"FileIO  "+" "+log_msg;
+		Log.v(DEBUG_TAG,m_txt);
+		synchronized(mLogWriter) {
+			mLogWriter.println(DateUtil.convDateTimeTo_YearMonthDayHourMinSec(System.currentTimeMillis())+" "+m_txt);
+		}
 	};
 
-	private void sendDebugLogMsg(int lvl, final String log_cat, final String log_msg) {
+	static private void sendDebugLogMsg(int lvl, final String log_cat, final String log_msg) {
 
 		if (debugLevel>0) Log.v(DEBUG_TAG,log_msg);
 	};
 	
-	private boolean createLocalDir(String newUrl) {
+	private static boolean createLocalDir(String newUrl) {
     	File sf;
     	boolean result = false;
     	
@@ -396,7 +404,7 @@ public class FileIo implements Runnable {
     		if (sf.exists()) return false;
     		
     		sf.mkdir();
-			sendDebugLogMsg(1,"I",newUrl+" was created");
+			sendLogMsg("I",newUrl+" was created");
 		} catch (Exception e) {
 			e.printStackTrace();
 			sendLogMsg("E","Create error:"+e.toString());
@@ -407,7 +415,7 @@ public class FileIo implements Runnable {
     	return result;
     };
 	
-    private boolean createRemoteDir(String newUrl) {
+    private static boolean createRemoteDir(String newUrl) {
     	SmbFile sf;
     	boolean result = false;
     	
@@ -422,7 +430,7 @@ public class FileIo implements Runnable {
     		if (sf.exists()) return false;
     		
     		sf.mkdir();
-    		sendDebugLogMsg(1,"I",newUrl+" was created");
+    		sendLogMsg("I",newUrl+" was created");
 		} catch (Exception e) {
 			e.printStackTrace();
 			sendLogMsg("E","Create error:"+e.toString());
@@ -433,7 +441,7 @@ public class FileIo implements Runnable {
     	return result;
     };
 	
-    private boolean renameRemoteItem(String oldUrl, String newUrl) {
+    private static boolean renameRemoteItem(String oldUrl, String newUrl) {
     	SmbFile sf,sfd;
     	boolean result = false;
     	
@@ -458,7 +466,7 @@ public class FileIo implements Runnable {
     	return result;
     };
     
-    private boolean renameLocalItem(String oldUrl, String newUrl) {
+    private static boolean renameLocalItem(String oldUrl, String newUrl) {
     	File sf,sfd;
     	boolean result = false;
     	
@@ -472,7 +480,7 @@ public class FileIo implements Runnable {
     		else sfd = new File( newUrl );
 			if (sf.renameTo(sfd)) {
 				result=true;
-				sendDebugLogMsg(1,"I",oldUrl+" was renamed to "+newUrl);
+				sendLogMsg("I",oldUrl+" was renamed to "+newUrl);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -484,7 +492,7 @@ public class FileIo implements Runnable {
     	return result;
     };
 
-    private boolean deleteLocalItem(String url) {
+    private static boolean deleteLocalItem(String url) {
     	File sf;
     	boolean result = false;
     	
@@ -506,7 +514,7 @@ public class FileIo implements Runnable {
     	return result;
     };
 
-    private boolean deleteLocalFile(File lf) {
+    private static boolean deleteLocalFile(File lf) {
         //ファイルやフォルダを削除  
         //フォルダの場合、中にあるすべてのファイルやサブフォルダも削除されます  
         if (lf.isDirectory()) {//ディレクトリの場合  
@@ -524,12 +532,12 @@ public class FileIo implements Runnable {
 	    boolean result=lf.delete();
 	    if (settingsMslScan) deleteMediaStoreItem(lf.getPath());
 	    sendMsgToProgDlg(lf.getName()+" was deleted");
-	    sendDebugLogMsg(1,"I","File was Deleted. File="+lf.getPath());
+	    sendLogMsg("I","File was Deleted. File="+lf.getPath());
 	    return result;
         
     };
     
-    private boolean deleteRemoteItem(String url) {
+    private static boolean deleteRemoteItem(String url) {
     	SmbFile sf;
     	boolean result = false;
     	
@@ -551,7 +559,7 @@ public class FileIo implements Runnable {
     	return result;
     };
  
-    private boolean deleteRemoteFile(SmbFile rf) {
+    private static boolean deleteRemoteFile(SmbFile rf) {
         //ファイルやフォルダを削除  
         //フォルダの場合、中にあるすべてのファイルやサブフォルダも削除されます  
     	try {
@@ -570,7 +578,7 @@ public class FileIo implements Runnable {
 	        if (!fileioThreadCtrl.isEnable()) return false;
 		    rf.delete();
 		    sendMsgToProgDlg(rf.getName().replace("/", "")+" was deleted");
-		    sendDebugLogMsg(1,"I","File was Deleted. File="+rf.getPath());
+		    sendLogMsg("I","File was Deleted. File="+rf.getPath());
 		} catch (SmbException e) {
 			e.printStackTrace();
 			sendLogMsg("E","Remote file delete error:"+e.toString());
@@ -591,7 +599,7 @@ public class FileIo implements Runnable {
         
     };
     
-    private boolean copyLocalToLocal(String fromUrl, String toUrl)  {
+    private static boolean copyLocalToLocal(String fromUrl, String toUrl)  {
         File iLf ;
         boolean result = true;
         
@@ -638,7 +646,7 @@ public class FileIo implements Runnable {
     };
     
 	@SuppressWarnings("unused")
-	private String makeRemoteTempFilePath(String  targetUrl) {
+	private static String makeRemoteTempFilePath(String  targetUrl) {
 		String tmp_wu="";
 		String last_sep="";
 		if (targetUrl.endsWith("/")) {
@@ -654,7 +662,7 @@ public class FileIo implements Runnable {
 	}
 
 
-    private boolean copyRemoteToRemote(String fromUrl, String toUrl)  {
+    private static boolean copyRemoteToRemote(String fromUrl, String toUrl)  {
         SmbFile ihf, ohf = null;
         boolean result = false;
         
@@ -697,7 +705,7 @@ public class FileIo implements Runnable {
 
 				} else {
 					result=false;
-					sendLogMsg("E","EA founded, copy canceled");
+					sendLogMsg("E","EA founded, copy canceled. path="+fromUrl);
 					fileioThreadCtrl.setThreadMessage("Copy error:"+"EA founded, copy canceled");
 				}
 			}
@@ -735,7 +743,7 @@ public class FileIo implements Runnable {
 		return result;
     };
 
-    private boolean copyRemoteToLocal(String fromUrl, String toUrl)  {
+    private static boolean copyRemoteToLocal(String fromUrl, String toUrl)  {
         SmbFile hf,hfd;
         File lf ;
         boolean result = false;
@@ -763,7 +771,7 @@ public class FileIo implements Runnable {
 					result=copyFileRemoteToLocal(hf, lf,toUrl, fromUrl,"Copying");
 				} else {
 					result=false;
-					sendLogMsg("E","EA founded, copy canceled");
+					sendLogMsg("E","EA founded, copy canceled. path="+fromUrl);
 					fileioThreadCtrl.setThreadMessage("Copy error:"+"EA founded, copy canceled");
 				}
 			}
@@ -801,7 +809,7 @@ public class FileIo implements Runnable {
 		return result;
     };
     
-    private boolean copyLocalToRemote(String fromUrl, String toUrl)  {
+    private static boolean copyLocalToRemote(String fromUrl, String toUrl)  {
         SmbFile ohf=null ;
         File ilf,lfd ;
         boolean result = false;
@@ -878,7 +886,7 @@ public class FileIo implements Runnable {
 		return result;
     };
 
-    private boolean moveLocalToLocal(String fromUrl, String toUrl)  {
+    private static boolean moveLocalToLocal(String fromUrl, String toUrl)  {
         File iLf,iLfd, oLf ;
         boolean result = false;
         
@@ -929,7 +937,7 @@ public class FileIo implements Runnable {
 		return result;
     };
 
-    private boolean isSameMountPoint(String f_fp, String t_fp) {
+    private static boolean isSameMountPoint(String f_fp, String t_fp) {
     	boolean result=false;
     	ArrayList<String> ml=LocalMountPoint.buildLocalMountPointList();
 //    	for (int i=0;i<ml.size();i++) Log.v("","ml="+ml.get(i));
@@ -952,7 +960,7 @@ public class FileIo implements Runnable {
     	return result;
     };
     
-    private boolean moveRemoteToRemote(String fromUrl, String toUrl)  {
+    private static boolean moveRemoteToRemote(String fromUrl, String toUrl)  {
         SmbFile ihf,hfd, ohf = null;
         boolean result = false;
         
@@ -1026,7 +1034,7 @@ public class FileIo implements Runnable {
 		return result;
     };
     
-    private boolean downloadRemoteFile(String fromUrl, String toUrl)  {
+    private static boolean downloadRemoteFile(String fromUrl, String toUrl)  {
         SmbFile hf,hfd;
         File lf ;
         boolean result = false;
@@ -1061,7 +1069,7 @@ public class FileIo implements Runnable {
 					}
 				} else {
 					result=false;
-					sendLogMsg("E","EA founded, copy canceled");
+					sendLogMsg("E","EA founded, copy canceled. path="+fromUrl);
 					fileioThreadCtrl.setThreadMessage("Download error:"+"EA founded, copy canceled");
 				}
 			}
@@ -1099,58 +1107,57 @@ public class FileIo implements Runnable {
 		return result;
     };
 
-	@SuppressWarnings("unused")
-	private boolean copyFileLocalToLocalByChannel(File iLf, String fromUrl, String toUrl,
-    		String title_header) 
-			throws IOException {
-    	
-        File oLf;
-		long t0 = System.currentTimeMillis();
-	    FileInputStream fin = new FileInputStream( iLf );
-	    FileChannel inCh = fin.getChannel();
-	    FileOutputStream fout = new FileOutputStream(toUrl);
-	    FileChannel outCh = fout.getChannel();
-	    long n=0;
-	    long tot = 0;
-	    long fileBytes=iLf.length();
-	    String fn=iLf.getName();
-	
-    	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,0));
+//	private boolean copyFileLocalToLocalByChannel(File iLf, String fromUrl, String toUrl,
+//    		String title_header) 
+//			throws IOException {
+//    	
+//        File oLf;
+//		long t0 = System.currentTimeMillis();
+//	    FileInputStream fin = new FileInputStream( iLf );
+//	    FileChannel inCh = fin.getChannel();
+//	    FileOutputStream fout = new FileOutputStream(toUrl);
+//	    FileChannel outCh = fout.getChannel();
+//	    int n=0;
+//	    long tot = 0;
+//	    long fileBytes=iLf.length();
+//	    String fn=iLf.getName();
+//	
+//    	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,0));
+//
+//	    mFileChBuffer.clear();
+//	    while (( n = inCh.read( mFileChBuffer )) > 0) {
+//            n=mFileChBuffer.position();
+//            mFileChBuffer.flip();
+//            outCh.write(mFileChBuffer);
+//            tot += n;
+//	        if (n<fileBytes) 
+//	        	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,
+//	        					(tot*100)/fileBytes));
+//	        mFileChBuffer.clear();
+//        }
+//	    
+//	    inCh.close();
+//	    outCh.close();
+//	    
+//	    oLf = new File(toUrl);
+//	    boolean slm=false;
+//	    if (setLastModified) slm=oLf.setLastModified(iLf.lastModified());
+//	    long t = System.currentTimeMillis() - t0;
+//	    if (settingsMslScan) scanMediaStoreLibraryFile(toUrl);
+//	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+
+//	    		tot + " bytes transfered in " + 
+//	    		t  + " mili seconds at " + calTransferRate(tot,t));
+//	    return true;
+//	};
 
-	    mFileChBuffer.clear();
-	    while (( n = inCh.read( mFileChBuffer )) > 0) {
-            n=mFileChBuffer.position();
-            mFileChBuffer.flip();
-            outCh.write(mFileChBuffer);
-            tot += n;
-	        if (n<fileBytes) 
-	        	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,
-	        					(tot*100)/fileBytes));
-	        mFileChBuffer.clear();
-        }
-	    
-	    inCh.close();
-	    outCh.close();
-	    
-	    oLf = new File(toUrl);
-	    boolean slm=false;
-	    if (setLastModified) slm=oLf.setLastModified(iLf.lastModified());
-	    long t = System.currentTimeMillis() - t0;
-	    if (settingsMslScan) scanMediaStoreLibraryFile(toUrl);
-	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+
-	    		tot + " bytes transfered in " + 
-	    		t  + " mili seconds at " + calTransferRate(tot,t));
-	    return true;
-	}
-
-    private boolean copyFileLocalToLocal(File iLf, String fromUrl, String toUrl,
+    private static boolean copyFileLocalToLocal(File iLf, String fromUrl, String toUrl,
     		String title_header) 
 			throws IOException {
 //    	return copyFileLocalToLocalByChannel(iLf, fromUrl, toUrl, title_header);
     	return copyFileLocalToLocalByStream(iLf, fromUrl, toUrl, title_header);
     }
     
-    private boolean copyFileLocalToLocalByStream(File iLf, String fromUrl, String toUrl,
+	static private boolean copyFileLocalToLocalByStream(File iLf, String fromUrl, String toUrl,
     		String title_header) 
 			throws IOException {
     	
@@ -1158,69 +1165,75 @@ public class FileIo implements Runnable {
 		long t0 = System.currentTimeMillis();
 	    FileInputStream fin = new FileInputStream( iLf );
 	    FileOutputStream fout = new FileOutputStream(toUrl);
-	    long n=0;
+	    BufferedInputStream bis=new BufferedInputStream(fin,SMB_BUFF_SIZE);
+	    BufferedOutputStream bos=new BufferedOutputStream(fout,SMB_BUFF_SIZE);
+	    int n=0;
 	    long tot = 0;
 	    long fileBytes=iLf.length();
 	    String fn=iLf.getName();
 	
     	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,0));
 
-	    while(( n = fin.read( fileIoArea )) > 0 ) {
+	    while(( n = bis.read( fileIoArea )) > 0 ) {
 	    	if (!fileioThreadCtrl.isEnable()) {
-				fin.close();
-			    fout.close();
+				bis.close();
+			    bos.close();
 			    File t_lf=new File(toUrl);
 			    t_lf.delete();
 	    		return false;
 	    	} 
-	        fout.write(fileIoArea, 0, (int) n );
+	        bos.write(fileIoArea, 0, n );
 	        tot += n;
 	        if (n<fileBytes) 
 	        	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,
 	        					(tot*100)/fileBytes));
 	    }
-	    fin.close();
-	    fout.close();
+	    bis.close();
+	    bos.flush();
+	    bos.close();
 	    
 	    oLf = new File(toUrl);
 	    if (setLastModified) oLf.setLastModified(iLf.lastModified());
 	    long t = System.currentTimeMillis() - t0;
 	    if (settingsMslScan) scanMediaStoreLibraryFile(toUrl);
-	    sendDebugLogMsg(1,"I",fromUrl+" was copied to "+toUrl+", "+
+	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+
 	    		tot + " bytes transfered in " + 
 	    		t  + " mili seconds at " + calTransferRate(tot,t));
 //	    Log.v("","copy success");
 	    return true;
 	}
 
-	private boolean copyFileRemoteToRemote(SmbFile ihf, SmbFile ohf,String fromUrl,
+	private static boolean copyFileRemoteToRemote(SmbFile ihf, SmbFile ohf,String fromUrl,
 			String toUrl, String title_header) throws IOException {
 		long t0 = System.currentTimeMillis();
 	    SmbFileInputStream in = new SmbFileInputStream( ihf );
 	    SmbFileOutputStream out = new SmbFileOutputStream( ohf ); 
+	    BufferedInputStream bis=new BufferedInputStream(in,SMB_BUFF_SIZE);
+	    BufferedOutputStream bos=new BufferedOutputStream(out,SMB_BUFF_SIZE);
 	    int n=0;
 	    long tot = 0;
 	    long fileBytes=ihf.length();
-	    String fn=ihf.getName();
+	    String fn=ihf.getName().replaceAll("/", "");
     	sendMsgToProgDlg(
     			String.format(title_header+" %s %s%% completed.",fn,0));
 	
-	    while(( n = in.read( fileIoArea )) > 0 ) {
+	    while(( n = bis.read( fileIoArea )) > 0 ) {
 	    	if (!fileioThreadCtrl.isEnable()) {
-				in.close();
-			    out.close();
+				bis.close();
+			    bos.close();
 			    if (ohf.exists()) ohf.delete();
 	    		return false;
 	    	} 
-	        out.write( fileIoArea, 0, n );
+	        bos.write( fileIoArea, 0, n );
 	        tot += n;
 	        if (n<fileBytes) 
 	        	sendMsgToProgDlg(
 	        			String.format(title_header+" %s %s%% completed.",fn,
 	        					(tot*100)/fileBytes));
 	    }
-		in.close();
-	    out.close();
+		bis.close();
+		bos.flush();
+	    bos.close();
 	
 	    long t = System.currentTimeMillis() - t0;
 	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+
@@ -1236,12 +1249,14 @@ public class FileIo implements Runnable {
 		return true;
 	}
 
-	private boolean copyFileLocalToRemote(SmbFile hf, File lf,
+	private static boolean copyFileLocalToRemote(SmbFile hf, File lf,
 			String fromUrl, String toUrl, String title_header) throws IOException {
 		
 		long t0 = System.currentTimeMillis();
 	    SmbFileOutputStream out = new SmbFileOutputStream( hf );
 	    FileInputStream in = new FileInputStream(fromUrl);
+	    BufferedInputStream bis=new BufferedInputStream(in,SMB_BUFF_SIZE);
+	    BufferedOutputStream bos=new BufferedOutputStream(out,SMB_BUFF_SIZE);
 	    int n=0;
 	    long tot = 0;
 	    long fileBytes=lf.length();
@@ -1250,22 +1265,23 @@ public class FileIo implements Runnable {
     	sendMsgToProgDlg(
     			String.format(title_header+" %s %s%% completed.",fn,0));
 	    
-	    while(( n = in.read( fileIoArea )) > 0 ) {
+	    while(( n = bis.read( fileIoArea )) > 0 ) {
 	    	if (!fileioThreadCtrl.isEnable()) {
-				in.close();
-			    out.close();
+				bis.close();
+			    bos.close();
 			    if (hf.exists()) hf.delete();
 	    		return false;
 	    	}
-	        out.write( fileIoArea, 0, n );
+	        bos.write( fileIoArea, 0, n );
 	        tot += n;
 	        if (n<fileBytes) 
 	        	sendMsgToProgDlg(
 	        			String.format(title_header+" %s %s%% completed.",fn,
 	        					(tot*100)/fileBytes));
 	    }
-		in.close();
-	    out.close();
+		bis.close();
+		bos.flush();
+	    bos.close();
 
 	    long t = System.currentTimeMillis() - t0;
 	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+
@@ -1281,37 +1297,40 @@ public class FileIo implements Runnable {
 		return true;
 	}
 
-	private boolean copyFileRemoteToLocal(SmbFile hf, File lf, 
+	private static boolean copyFileRemoteToLocal(SmbFile hf, File lf, 
     		String toUrl, String fromUrl, String title_header) 
     		throws IOException {
 		long t0 = System.currentTimeMillis();
 	    SmbFileInputStream in = new SmbFileInputStream( hf );
 	    FileOutputStream out = new FileOutputStream(toUrl);
+	    BufferedInputStream bis=new BufferedInputStream(in,SMB_BUFF_SIZE);
+	    BufferedOutputStream bos=new BufferedOutputStream(out,SMB_BUFF_SIZE);
 	    int n;
 		long tot = 0;
 	    long fileBytes=hf.length();
-	    String fn=hf.getName();
+	    String fn=hf.getName().replaceAll("/", "");
 	    
     	sendMsgToProgDlg(
     			String.format(title_header+" %s,  %s%% completed.",fn,0));
 	    
-	    while(( n = in.read( fileIoArea )) > 0 ) {
+	    while(( n = bis.read( fileIoArea )) > 0 ) {
 	    	if (!fileioThreadCtrl.isEnable()) {
-				in.close();
-			    out.close();
+				bis.close();
+			    bos.close();
 			    File t_file=new File(toUrl);
 			    t_file.delete();
 	    		return false;
 	    	}
-	        out.write( fileIoArea, 0, n );
+	        bos.write( fileIoArea, 0, n );
 	        tot += n;
 	        if (tot<fileBytes) 
 	        	sendMsgToProgDlg(
 	        			String.format(title_header+" %s,  %s%% completed.",fn,
 	        					(tot*100)/fileBytes));
 	    }
-		in.close();
-	    out.close();
+		bis.close();
+		bos.flush();
+	    bos.close();
 	    
 	    if (setLastModified) lf.setLastModified(hf.lastModified());
 	    long t = System.currentTimeMillis() - t0;
@@ -1324,7 +1343,7 @@ public class FileIo implements Runnable {
 	    return true;
     }
     
-	private void scanMediaStoreLibraryFile(String fp) {
+	private static void scanMediaStoreLibraryFile(String fp) {
 		String mt=isMediaFile(fp);
 		if (!isNoMediaPath(fp) 
 			&& (mt.startsWith("audio") || mt.startsWith("video") || mt.startsWith("image") )) { 
@@ -1343,7 +1362,7 @@ public class FileIo implements Runnable {
 		}
 	};
 
-	private String isMediaFile(String fp) {
+	private static String isMediaFile(String fp) {
 		String mt=null;
 		String fid="";
 		if (fp.lastIndexOf(".")>0) {
@@ -1355,7 +1374,7 @@ public class FileIo implements Runnable {
 		else return mt;
 	};
 	
-    private boolean isNoMediaPath(String path) {
+    private static boolean isNoMediaPath(String path) {
         if (path == null) return false;
 
         if (path.indexOf("/.") >= 0) return true;
@@ -1376,7 +1395,7 @@ public class FileIo implements Runnable {
         return false;
     }
 	@SuppressLint("InlinedApi")
-	private int deleteMediaStoreItem(String fp) {
+	private static int deleteMediaStoreItem(String fp) {
 		int dc_image=0, dc_audio=0, dc_video=0, dc_files=0;
 		String mt=isMediaFile(fp);
 		if (mt!=null && 
@@ -1397,7 +1416,7 @@ public class FileIo implements Runnable {
 	        	dc_files=crf.delete(MediaStore.Files.getContentUri("external"), 
 	          		MediaStore.Files.FileColumns.DATA + "=?", new String[]{fp} );
 	        }
-       		sendDebugLogMsg(1,"I","deleMediaStoreItem fn="+fp+
+       		sendLogMsg("I","deleMediaStoreItem fn="+fp+
 	       				", delete count image="+dc_image+
 	       				", audio="+dc_audio+", video="+dc_video+", files="+dc_files);
 		} else {
@@ -1409,7 +1428,7 @@ public class FileIo implements Runnable {
 	};
     
     
-    private boolean isFileDifferent(long f1_lm, long f1_fl,long f2_lm, long f2_fl) {
+    private static boolean isFileDifferent(long f1_lm, long f1_fl,long f2_lm, long f2_fl) {
     	boolean result=false;
     	if (f1_fl==f2_fl) {
     		long td=Math.abs(f1_lm-f2_lm)/1000;
@@ -1418,7 +1437,7 @@ public class FileIo implements Runnable {
     	return result;
     };
     
-	private boolean makeRemoteDirs(String targetPath) 
+	private static boolean makeRemoteDirs(String targetPath) 
 					throws MalformedURLException, SmbException {
 		boolean result=false;
 		String target_dir1="";
@@ -1441,7 +1460,7 @@ public class FileIo implements Runnable {
 		return result;
 	};
 	
-	private boolean makeLocalDirs(String targetPath) {
+	private static boolean makeLocalDirs(String targetPath) {
 		boolean result=false;
 		String target_dir="";
 		if (targetPath.lastIndexOf("/")<=0) return false;
@@ -1454,7 +1473,7 @@ public class FileIo implements Runnable {
 		return result;
 	};
 
-	private String calTransferRate(long tb, long tt) {
+	private static String calTransferRate(long tb, long tt) {
 	    String tfs = null;
 	    BigDecimal bd_tr;
 	    if (tb>(1024)) {//KB

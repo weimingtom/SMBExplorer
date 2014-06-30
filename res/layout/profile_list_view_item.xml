@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal" >
-
+    android:orientation="horizontal"
+    tools:ignore="SpUsage" >
+
     <CheckBox
-        style="@style/check_box_style"
         android:id="@+id/profile_list_cb1"
+        style="@style/check_box_style"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
-        android:focusable="false"
         android:layout_gravity="center_vertical"
+        android:focusable="false"
         android:focusableInTouchMode="false"
         android:text="" />
 
@@ -18,12 +20,12 @@
         android:id="@+id/profile_list_image1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
-        android:gravity="center"
         android:layout_gravity="center_vertical"
+        android:layout_marginTop="0dp"
         android:contentDescription="@string/icon_string"
+        android:gravity="center"
         android:src="@drawable/ic_32_server" />
-    
+
     <TextView
         android:id="@+id/profile_list_name"
         android:layout_width="0dp"
