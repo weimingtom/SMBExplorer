@@ -76,7 +76,7 @@
 	                android:layout_height="wrap_content"
 	                android:text="Top" />
 
-	            <TextView
+	            <Button
 	                android:id="@+id/explorer_filelist_local_filepath"
 	                android:layout_width="0dp"
 	                android:layout_height="wrap_content"
