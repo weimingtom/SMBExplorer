@@ -99,10 +99,10 @@ public class ProfileListAdapter extends ArrayAdapter<ProfileListItem> {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView,
 				boolean isChecked) {
-				o.setChk(isChecked);
+				o.setChecked(isChecked);
 				}
 			});
-        holder.cb_cb1.setChecked(items.get(position).isChk());
+        holder.cb_cb1.setChecked(items.get(position).isChecked());
        
        return v;
 	}
@@ -122,7 +122,7 @@ class ProfileListItem implements Comparable<ProfileListItem>{
 	private String profileAddr;
 	private String profilePort="";
 	private String profileShare;
-	private boolean profileIschk;
+	private boolean profileIsChecked;
 	
 	public ProfileListItem(String pft,String pfn, String pfa, 
 			String pf_user, String pf_pass, String pf_addr, String pf_port, 
@@ -135,7 +135,7 @@ class ProfileListItem implements Comparable<ProfileListItem>{
 		profileAddr = pf_addr;
 		profilePort = pf_port;
 		profileShare = pf_share;
-		profileIschk = ic;
+		profileIsChecked = ic;
 		
 	}
 
@@ -148,8 +148,8 @@ class ProfileListItem implements Comparable<ProfileListItem>{
 	public String getPort(){return profilePort;}
 	public String getShare(){return profileShare;}
 	public void setActive(String p){profileActive=p;}
-	public boolean isChk(){return profileIschk;}
-	public void setChk(boolean p){profileIschk=p;}
+	public boolean isChecked(){return profileIsChecked;}
+	public void setChecked(boolean p){profileIsChecked=p;}
 	
 	@Override
 	public int compareTo(ProfileListItem o) {

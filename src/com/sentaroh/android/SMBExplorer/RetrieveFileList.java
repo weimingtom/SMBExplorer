@@ -133,7 +133,7 @@ public class RetrieveFileList implements Runnable  {
 		}
 		if (error) {
 			getFLCtrl.setThreadResultError();
-			getFLCtrl.setDisable();
+			getFLCtrl.setDisabled();
 			getFLCtrl.setThreadMessage(err_msg);
 		} else {
 			if (opCode.equals(OPCD_FILE_LIST)) {
@@ -152,7 +152,7 @@ public class RetrieveFileList implements Runnable  {
 				notifyEvent.notifyToListener(true, null);
 			}
 		});
-		getFLCtrl.setDisable();
+		getFLCtrl.setDisabled();
 		
 	};
 	
@@ -183,7 +183,7 @@ public class RetrieveFileList implements Runnable  {
             	getFLCtrl.setThreadResultError();
     			String end_msg=ex.toString()+st_msg;
     			getFLCtrl.setThreadMessage(end_msg);
-    			getFLCtrl.setDisable();
+    			getFLCtrl.setDisabled();
     			notifyEvent.notifyToListener(true, null);
                 // re-throw critical exception further to the os (important)
 //                defaultUEH.uncaughtException(thread, ex);
@@ -198,7 +198,7 @@ public class RetrieveFileList implements Runnable  {
 			SmbFile[] fl = remoteFile.listFiles();
 
 			for (int i=0;i<fl.length;i++){
-				if (getFLCtrl.isEnable()) {
+				if (getFLCtrl.isEnabled()) {
 //					String fn,String cp,boolean d,
 //					long fl,long lm, boolean ic, boolean cr,boolean cw,boolean hd);
 					String fn=fl[i].getName();
@@ -264,13 +264,13 @@ public class RetrieveFileList implements Runnable  {
 			e.printStackTrace();
 			sendDebugLogMsg(0,"E",e.toString());
 			getFLCtrl.setThreadResultError();
-			getFLCtrl.setDisable();
+			getFLCtrl.setDisabled();
 			getFLCtrl.setThreadMessage(e.toString());
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			sendDebugLogMsg(0,"E",e.toString());
 			getFLCtrl.setThreadResultError();
-			getFLCtrl.setDisable();
+			getFLCtrl.setDisabled();
 			getFLCtrl.setThreadMessage(e.toString());
 		}
 		return rem_list;
@@ -286,13 +286,13 @@ public class RetrieveFileList implements Runnable  {
 				e.printStackTrace();
 				sendDebugLogMsg(0,"E",e.toString());
 				getFLCtrl.setThreadResultError();
-				getFLCtrl.setDisable();
+				getFLCtrl.setDisabled();
 				getFLCtrl.setThreadMessage(e.toString());
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 				sendDebugLogMsg(0,"E",e.toString());
 				getFLCtrl.setThreadResultError();
-				getFLCtrl.setDisable();
+				getFLCtrl.setDisabled();
 				getFLCtrl.setThreadMessage(e.toString());
 			}
 		}

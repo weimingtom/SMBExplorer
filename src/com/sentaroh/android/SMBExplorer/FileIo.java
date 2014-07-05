@@ -228,14 +228,14 @@ public class FileIo implements Runnable {
 			if (fileioTaskResultOk) {
 				fileioThreadCtrl.setThreadResultSuccess();
 				sendDebugLogMsg(1,"I","Task was endeded without error.");			
-			} else if (fileioThreadCtrl.isEnable()) {
+			} else if (fileioThreadCtrl.isEnabled()) {
 				fileioThreadCtrl.setThreadResultError();
 				sendLogMsg("W","Task was ended with error.");
 			} else {
 				fileioThreadCtrl.setThreadResultCancelled();
 				sendLogMsg("W","Task was cancelled.");
 			}
-			fileioThreadCtrl.setDisable();
+			fileioThreadCtrl.setDisabled();
 			mediaScanner.disconnect();
 			waitMediaScanner(false);
 
@@ -393,7 +393,7 @@ public class FileIo implements Runnable {
     	File sf;
     	boolean result = false;
     	
-    	if (!fileioThreadCtrl.isEnable()) return false;
+    	if (!fileioThreadCtrl.isEnabled()) return false;
     	
     	sendDebugLogMsg(1,"I","Create local dir item="+newUrl);
     	
@@ -419,7 +419,7 @@ public class FileIo implements Runnable {
     	SmbFile sf;
     	boolean result = false;
     	
-    	if (!fileioThreadCtrl.isEnable()) return false;
+    	if (!fileioThreadCtrl.isEnabled()) return false;
     	
     	sendDebugLogMsg(1,"I","Create remote dir item="+newUrl);
     	
@@ -445,7 +445,7 @@ public class FileIo implements Runnable {
     	SmbFile sf,sfd;
     	boolean result = false;
     	
-    	if (!fileioThreadCtrl.isEnable()) return false;
+    	if (!fileioThreadCtrl.isEnabled()) return false;
     	
     	sendDebugLogMsg(1,"I","Rename remote item="+oldUrl);
     	
@@ -470,7 +470,7 @@ public class FileIo implements Runnable {
     	File sf,sfd;
     	boolean result = false;
     	
-    	if (!fileioThreadCtrl.isEnable()) return false;
+    	if (!fileioThreadCtrl.isEnabled()) return false;
     	
     	sendDebugLogMsg(1,"I","Rename local item="+oldUrl);
     	
@@ -496,7 +496,7 @@ public class FileIo implements Runnable {
     	File sf;
     	boolean result = false;
     	
-    	if (!fileioThreadCtrl.isEnable()) return false;
+    	if (!fileioThreadCtrl.isEnabled()) return false;
     	
     	//url="/sdcard/NEW";
     	sendDebugLogMsg(1,"I","Delete local file entered, File="+url);
@@ -520,7 +520,7 @@ public class FileIo implements Runnable {
         if (lf.isDirectory()) {//ディレクトリの場合  
             String[] children = lf.list();//ディレクトリにあるすべてのファイルを処理する  
             for (int i=0; i<children.length; i++) {  
-            	if (!fileioThreadCtrl.isEnable()) return false;
+            	if (!fileioThreadCtrl.isEnabled()) return false;
             	boolean success = deleteLocalFile(new File(lf, children[i]));
                 if (!success) {  
                     return false;  
@@ -528,7 +528,7 @@ public class FileIo implements Runnable {
             }
         }  
 	    // 削除  
-        if (!fileioThreadCtrl.isEnable()) return false;
+        if (!fileioThreadCtrl.isEnabled()) return false;
 	    boolean result=lf.delete();
 	    if (settingsMslScan) deleteMediaStoreItem(lf.getPath());
 	    sendMsgToProgDlg(lf.getName()+" was deleted");
@@ -541,7 +541,7 @@ public class FileIo implements Runnable {
     	SmbFile sf;
     	boolean result = false;
     	
-    	if (!fileioThreadCtrl.isEnable()) return false;
+    	if (!fileioThreadCtrl.isEnabled()) return false;
     	
     	sendDebugLogMsg(1,"I","Delete remote file entered, File="+url);
     	
@@ -566,7 +566,7 @@ public class FileIo implements Runnable {
 			if (rf.isDirectory()) {//ディレクトリの場合  
 	            String[] children = rf.list();//ディレクトリにあるすべてのファイルを処理する  
 	            for (int i=0; i<children.length; i++) {  
-	            	if (!fileioThreadCtrl.isEnable()) return false;
+	            	if (!fileioThreadCtrl.isEnabled()) return false;
 	            	
 	            	boolean success = deleteRemoteFile(new SmbFile(rf, children[i]+"/"));
 	                if (!success) {  
@@ -575,7 +575,7 @@ public class FileIo implements Runnable {
 	            }
 	        }  
 		    // 削除  
-	        if (!fileioThreadCtrl.isEnable()) return false;
+	        if (!fileioThreadCtrl.isEnabled()) return false;
 		    rf.delete();
 		    sendMsgToProgDlg(rf.getName().replace("/", "")+" was deleted");
 		    sendLogMsg("I","File was Deleted. File="+rf.getPath());
@@ -603,7 +603,7 @@ public class FileIo implements Runnable {
         File iLf ;
         boolean result = true;
         
-        if (!fileioThreadCtrl.isEnable()) return false;
+        if (!fileioThreadCtrl.isEnabled()) return false;
         
         sendDebugLogMsg(1,"I","Copy Local to Local from="+fromUrl+", to="+toUrl);
                 
@@ -614,7 +614,7 @@ public class FileIo implements Runnable {
 				
 				String[] children = iLf.list();
 				for (String element : children) {
-					if (!fileioThreadCtrl.isEnable()) return false;
+					if (!fileioThreadCtrl.isEnabled()) return false;
 	            	if (!copyLocalToLocal(fromUrl+"/"+element, toUrl+"/"+element )) 
 	            		return false;
 	            }
@@ -666,7 +666,7 @@ public class FileIo implements Runnable {
         SmbFile ihf, ohf = null;
         boolean result = false;
         
-        if (!fileioThreadCtrl.isEnable()) return false;
+        if (!fileioThreadCtrl.isEnabled()) return false;
         
         sendDebugLogMsg(1,"I","copy Remote to Remote from item="+fromUrl+", to item="+toUrl);
                 
@@ -681,7 +681,7 @@ public class FileIo implements Runnable {
 				
 				String[] children = ihf.list();
 				for (String element : children) {
-					if (!fileioThreadCtrl.isEnable()) return false;
+					if (!fileioThreadCtrl.isEnabled()) return false;
 	            	boolean success=copyRemoteToRemote(
 	            			fromUrl+"/"+element, toUrl+"/"+element );
 	            	if (!success) return false;
@@ -694,7 +694,7 @@ public class FileIo implements Runnable {
 				ohf = new SmbFile(tmp_toUrl,ntlmPaswordAuth);
 				if (ohf.exists()) ohf.delete();
 				result=true;
-				if (!fileioThreadCtrl.isEnable()) return false;
+				if (!fileioThreadCtrl.isEnabled()) return false;
 				if (ihf.getAttributes()<16384) { //no EA, copy was done
 					result=copyFileRemoteToRemote(ihf,ohf,fromUrl,toUrl,"Copying");
 					if (result) {
@@ -748,7 +748,7 @@ public class FileIo implements Runnable {
         File lf ;
         boolean result = false;
         
-        if (!fileioThreadCtrl.isEnable()) return false;
+        if (!fileioThreadCtrl.isEnabled()) return false;
         
         sendDebugLogMsg(1,"I","Copy Remote to Local from item="+fromUrl+", to item="+toUrl);
                 
@@ -759,7 +759,7 @@ public class FileIo implements Runnable {
 				hfd = new SmbFile(fromUrl+"/",ntlmPaswordAuth);
 				String[] children = hfd.list();
 				for (String element : children) {
-					if (!fileioThreadCtrl.isEnable()) return false;
+					if (!fileioThreadCtrl.isEnabled()) return false;
 	            	result=copyRemoteToLocal(fromUrl+"/"+element, toUrl+"/"+element );
 	            	if (!result) return false;
 	            }
@@ -814,7 +814,7 @@ public class FileIo implements Runnable {
         File ilf,lfd ;
         boolean result = false;
         
-        if (!fileioThreadCtrl.isEnable()) return false;
+        if (!fileioThreadCtrl.isEnabled()) return false;
         
         sendDebugLogMsg(1,"I","Copy Local to Remote from item="+fromUrl+", to item="+toUrl);
 
@@ -829,7 +829,7 @@ public class FileIo implements Runnable {
 				
 				String[] children = lfd.list();
 				for (String element : children) {
-					if (!fileioThreadCtrl.isEnable()) return false;
+					if (!fileioThreadCtrl.isEnabled()) return false;
 	            	result=copyLocalToRemote(fromUrl+"/"+element, toUrl+element+"/" );
 	            	if (!result) return false;
 	            }
@@ -890,7 +890,7 @@ public class FileIo implements Runnable {
         File iLf,iLfd, oLf ;
         boolean result = false;
         
-        if (!fileioThreadCtrl.isEnable()) return false;
+        if (!fileioThreadCtrl.isEnabled()) return false;
         
         sendDebugLogMsg(1,"I","Move Local to Local from item="+fromUrl+",to item="+toUrl);
                 
@@ -902,7 +902,7 @@ public class FileIo implements Runnable {
 			
 			String[] children = iLfd.list();
 			for (String element : children) {
-				if (!fileioThreadCtrl.isEnable()) return false;
+				if (!fileioThreadCtrl.isEnabled()) return false;
 		    	result=moveLocalToLocal(fromUrl+"/"+element, toUrl+"/"+element );
 		    	if (!result) return false;
 		    }
@@ -910,7 +910,7 @@ public class FileIo implements Runnable {
 			iLf.delete();
 			sendLogMsg("I",fromUrl+" was deleted.");
 		} else { // file rename
-			if (!fileioThreadCtrl.isEnable()) return false;
+			if (!fileioThreadCtrl.isEnabled()) return false;
 			makeLocalDirs(toUrl);
 			
 			if (isSameMountPoint(fromUrl,toUrl)) { // renameでMoveする
@@ -964,7 +964,7 @@ public class FileIo implements Runnable {
         SmbFile ihf,hfd, ohf = null;
         boolean result = false;
         
-        if (!fileioThreadCtrl.isEnable()) return false;
+        if (!fileioThreadCtrl.isEnabled()) return false;
         
         sendDebugLogMsg(1,"I","Move Remote to Remote from item="+fromUrl+", to item="+toUrl);
                 
@@ -977,7 +977,7 @@ public class FileIo implements Runnable {
 				
 				String[] children = hfd.list();
 				for (String element : children) {
-					if (!fileioThreadCtrl.isEnable()) return false;
+					if (!fileioThreadCtrl.isEnabled()) return false;
 	            	boolean success=moveRemoteToRemote(
 	            			fromUrl+"/"+element, toUrl+"/"+element );
 	            	if (!success) return false;
@@ -987,7 +987,7 @@ public class FileIo implements Runnable {
 				ihf.delete();
 				sendLogMsg("I",fromUrl+" was deleted.");
 			} else { // file move
-				if (!fileioThreadCtrl.isEnable()) return false;
+				if (!fileioThreadCtrl.isEnabled()) return false;
 				makeRemoteDirs(toUrl);
 				
 				String f_f1=fromUrl.replace("smb://","");
@@ -1039,7 +1039,7 @@ public class FileIo implements Runnable {
         File lf ;
         boolean result = false;
         
-        if (!fileioThreadCtrl.isEnable()) return false;
+        if (!fileioThreadCtrl.isEnabled()) return false;
         
         sendDebugLogMsg(1,"I","Download Remote file, from item="+fromUrl+", to item="+toUrl);
                 
@@ -1050,7 +1050,7 @@ public class FileIo implements Runnable {
 				hfd = new SmbFile(fromUrl+"/",ntlmPaswordAuth);
 				String[] children = hfd.list();
 				for (String element : children) {
-					if (!fileioThreadCtrl.isEnable()) return false;
+					if (!fileioThreadCtrl.isEnabled()) return false;
 	            	result=copyRemoteToLocal(fromUrl+"/"+element, toUrl+"/"+element );
 	            	if (!result) return false;
 	            }
@@ -1175,7 +1175,7 @@ public class FileIo implements Runnable {
     	sendMsgToProgDlg(String.format(title_header+" %s %s%% completed.",fn,0));
 
 	    while(( n = bis.read( fileIoArea )) > 0 ) {
-	    	if (!fileioThreadCtrl.isEnable()) {
+	    	if (!fileioThreadCtrl.isEnabled()) {
 				bis.close();
 			    bos.close();
 			    File t_lf=new File(toUrl);
@@ -1218,7 +1218,7 @@ public class FileIo implements Runnable {
     			String.format(title_header+" %s %s%% completed.",fn,0));
 	
 	    while(( n = bis.read( fileIoArea )) > 0 ) {
-	    	if (!fileioThreadCtrl.isEnable()) {
+	    	if (!fileioThreadCtrl.isEnabled()) {
 				bis.close();
 			    bos.close();
 			    if (ohf.exists()) ohf.delete();
@@ -1266,7 +1266,7 @@ public class FileIo implements Runnable {
     			String.format(title_header+" %s %s%% completed.",fn,0));
 	    
 	    while(( n = bis.read( fileIoArea )) > 0 ) {
-	    	if (!fileioThreadCtrl.isEnable()) {
+	    	if (!fileioThreadCtrl.isEnabled()) {
 				bis.close();
 			    bos.close();
 			    if (hf.exists()) hf.delete();
@@ -1314,7 +1314,7 @@ public class FileIo implements Runnable {
     			String.format(title_header+" %s,  %s%% completed.",fn,0));
 	    
 	    while(( n = bis.read( fileIoArea )) > 0 ) {
-	    	if (!fileioThreadCtrl.isEnable()) {
+	    	if (!fileioThreadCtrl.isEnabled()) {
 				bis.close();
 			    bos.close();
 			    File t_file=new File(toUrl);

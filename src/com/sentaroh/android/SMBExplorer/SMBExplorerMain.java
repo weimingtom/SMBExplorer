@@ -1094,7 +1094,8 @@ public class SMBExplorerMain extends FragmentActivity {
 	private void processLocalTopButton() {
 		if (localDirHist.size()>0) {
 			localCurrFLI.pos_fv=localFileListView.getFirstVisiblePosition();
-			localCurrFLI.pos_top=localFileListView.getChildAt(0).getTop();
+			if (localFileListView.getChildAt(0)!=null)
+				localCurrFLI.pos_top=localFileListView.getChildAt(0).getTop();
 
 			String t_dir=getTopDirHist(localDirHist);
 			FileListCacheItem dhi=getFileListCache(t_dir,localFileListCache);
@@ -1388,7 +1389,8 @@ public class SMBExplorerMain extends FragmentActivity {
 						if (tfl==null) return;
 						String t_dir=item.getPath()+"/"+item.getName();
 						localCurrFLI.pos_fv=localFileListView.getFirstVisiblePosition();
-						localCurrFLI.pos_top=localFileListView.getChildAt(0).getTop();
+						if (localFileListView.getChildAt(0)!=null)
+							localCurrFLI.pos_top=localFileListView.getChildAt(0).getTop();
 						localDir=t_dir.replace(localBase+"/", "");
 						localFileListAdapter.setDataList(tfl);
 						localFileListAdapter.notifyDataSetChanged();
@@ -1477,7 +1479,8 @@ public class SMBExplorerMain extends FragmentActivity {
 							String t_dir=item.getPath()+"/"+item.getName();
 							
 							remoteCurrFLI.pos_fv=remoteFileListView.getFirstVisiblePosition();
-							remoteCurrFLI.pos_top=remoteFileListView.getChildAt(0).getTop();
+							if (remoteFileListView.getChildAt(0)!=null)
+								remoteCurrFLI.pos_top=remoteFileListView.getChildAt(0).getTop();
 							remoteDir=t_dir.replace(remoteBase+"/", "");
 							
 							remoteFileListAdapter=(FileListAdapter)o[0];
@@ -1565,7 +1568,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		ProfileListItem item;
 		int scn=0;
 		for (int i=0;i<profileAdapter.getCount();i++) {
-			if (profileAdapter.getItem(i).isChk()) {
+			if (profileAdapter.getItem(i).isChecked()) {
 				scn++; 
 			}
 		}
@@ -1574,11 +1577,11 @@ public class SMBExplorerMain extends FragmentActivity {
 			for (int i=0;i<profileAdapter.getCount();i++) {
 				item = profileAdapter.getItem(i);
 				if (idx==i) {// set checked
-					item.setChk(true);
+					item.setChecked(true);
 					scn=i;//set new index no
 				} else {
-					if (item.isChk()) {//reset unchecked
-						item.setChk(false);
+					if (item.isChecked()) {//reset unchecked
+						item.setChecked(false);
 					}
 				}
 			}
@@ -1681,7 +1684,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
 				for (int i=0;i<profileAdapter.getCount();i++) {
-					if (profileAdapter.getItem(i).isChk()) {
+					if (profileAdapter.getItem(i).isChecked()) {
 						ProfileListItem item = profileAdapter.getItem(i);
 						deleteRemoteProfile(item.getName(), i);
 					}
@@ -1945,7 +1948,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		for (int i=0;i<profileAdapter.getCount();i++) {
 			item=profileAdapter.getItem(i);
 			profileAdapter.remove(item);
-			item.setChk(false);
+			item.setChecked(false);
 			profileAdapter.insert(item,i);
 		}
 	};
@@ -1955,7 +1958,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		for (int i=0;i<profileAdapter.getCount();i++) {
 			item=profileAdapter.getItem(i);
 			profileAdapter.remove(item);
-			item.setChk(true);
+			item.setChecked(true);
 			profileAdapter.insert(item,i);
 		}
 	};
@@ -2109,7 +2112,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		}
 		
 		final ThreadCtrl tc=new ThreadCtrl();
-		tc.setEnable();
+		tc.setEnabled();
 
 		TextView tv_msgx=null;
 		Button btn_prog_cancelx=null;
@@ -2131,7 +2134,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		btn_prog_cancel.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
-				tc.setDisable();
+				tc.setDisabled();
 				btn_prog_cancel.setEnabled(false);
 				btn_prog_cancel.setText("Cancelling");
 			}
@@ -2184,7 +2187,7 @@ public class SMBExplorerMain extends FragmentActivity {
 //		final Button btn_prog_can=(Button)findViewById(R.id.explorer_filelist_local_progress_cancel);
 //		
 //		final ThreadCtrl tc = new ThreadCtrl();
-//		tc.setEnable();
+//		tc.setEnabled();
 //	
 //		showLocalProgressView();
 //		
@@ -2196,7 +2199,7 @@ public class SMBExplorerMain extends FragmentActivity {
 //			@Override
 //			public void onClick(View v) {
 //				sendDebugLogMsg(1,"W","Filelist is cancelled.");
-//				tc.setDisable();
+//				tc.setDisabled();
 //				btn_prog_can.setEnabled(false);
 //				btn_prog_can.setText("Cancelling");
 //			}
@@ -2213,7 +2216,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		final Button btn_prog_can=(Button)findViewById(R.id.explorer_filelist_remote_progress_cancel);
 		
 		final ThreadCtrl tc = new ThreadCtrl();
-		tc.setEnable();
+		tc.setEnabled();
 	
 		showRemoteProgressView();
 		
@@ -2225,7 +2228,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			@Override
 			public void onClick(View v) {
 				sendDebugLogMsg(1,"W","Filelist is cancelled.");
-				tc.setDisable();
+				tc.setDisabled();
 				btn_prog_can.setEnabled(false);
 				btn_prog_can.setText("Cancelling");
 			}
@@ -3083,7 +3086,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		final ThreadCtrl tc = new ThreadCtrl();
 		remoteFileList.clear();
-		tc.setEnable();
+		tc.setEnabled();
 
 		final TextView tv_remote_prog_msg=(TextView)findViewById(R.id.explorer_filelist_remote_progress_msg);
 		final Button btn_remote_prog_can=(Button)findViewById(R.id.explorer_filelist_remote_progress_cancel);
@@ -3094,7 +3097,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		btn_remote_prog_can.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				tc.setDisable();//disableAsyncTask();
+				tc.setDisabled();//disableAsyncTask();
 				sendDebugLogMsg(1,"W","Filelist is cancelled.");
 			}
 		});
@@ -3160,7 +3163,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		final ThreadCtrl tc = new ThreadCtrl();
 		remoteFileList.clear();
-		tc.setEnable();
+		tc.setEnabled();
 
 		showRemoteProgressView();
 		
@@ -3168,7 +3171,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		
 		btn_remote_prog_can.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				tc.setDisable();//disableAsyncTask();
+				tc.setDisabled();//disableAsyncTask();
 				sendDebugLogMsg(1,"W","Filelist is cancelled.");
 			}
 		});
@@ -3397,7 +3400,8 @@ public class SMBExplorerMain extends FragmentActivity {
 					dialog.dismiss();
 //					setFixedOrientation(false);
 					int pos = profileListView.getFirstVisiblePosition();
-					int topPos = profileListView.getChildAt(0).getTop();
+					int topPos =0;
+					if (profileListView.getChildAt(0)!=null) profileListView.getChildAt(0).getTop();
 					String prof_user=edituser.getText().toString();
 					String prof_pass=editpass.getText().toString();
 					String prof_addr=editaddr.getText().toString();
@@ -3551,7 +3555,8 @@ public class SMBExplorerMain extends FragmentActivity {
 				else new_act = "I";
 
 				int pos = profileListView.getFirstVisiblePosition();
-				int topPos = profileListView.getChildAt(0).getTop();
+				int topPos =0;
+				if (profileListView.getChildAt(0)!=null) profileListView.getChildAt(0).getTop();
 				ProfileListItem item=profileAdapter.getItem(item_num);
 
 				profileAdapter.remove(item);
@@ -3588,7 +3593,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		for (int i=0;i<profileAdapter.getCount();i++) {
 			item = profileAdapter.getItem(i);
 
-			if (item.isChk()) {
+			if (item.isChecked()) {
 				item.setActive("A");
 			} 
 		}
@@ -3605,7 +3610,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		for (int i=0;i<profileAdapter.getCount();i++) {
 			item = profileAdapter.getItem(i);
 
-			if (item.isChk()) {
+			if (item.isChecked()) {
 				item.setActive("I");
 			} 
 		}
@@ -4084,7 +4089,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				scan_cancel.setText(mContext.getString(R.string.msgs_progress_dlg_canceling));
 				scan_cancel.setEnabled(false);
 				sendDebugLogMsg(1,"W","IP Address list creation was cancelled");
-				tc.setDisable();
+				tc.setDisabled();
 			}
 		});
 		dialog.show();
@@ -4104,7 +4109,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				String scan_port="";
 				if (cb_use_port_number.isChecked()) scan_port=et_port_number.getText().toString();
 				for (int i=begin_addr; i<=end_addr;i+=scan_thread) {
-					if (!tc.isEnable()) break;
+					if (!tc.isEnabled()) break;
 					boolean scan_end=false;
 					for (int j=i;j<(i+scan_thread);j++) {
 						if (j<=end_addr) {
@@ -4116,12 +4121,12 @@ public class SMBExplorerMain extends FragmentActivity {
 					}
 					if (!scan_end) {
 						for (int wc=0;wc<210;wc++) {
-							if (!tc.isEnable()) break;
+							if (!tc.isEnabled()) break;
 							SystemClock.sleep(30);
 						}
 					}
 				}
-				if (!tc.isEnable()) {
+				if (!tc.isEnabled()) {
 					handler.post(new Runnable() {// UI thread
 						@Override
 						public void run() {
