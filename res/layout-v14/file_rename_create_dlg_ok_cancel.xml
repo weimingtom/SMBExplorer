@@ -10,12 +10,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="0.50"
-        android:text="@string/msgs_dlg_cancel_btn" />
+        android:text="@string/msgs_dlg_cancel_btn" 
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
     <Button
         android:id="@+id/file_rename_create_dlg_ok_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="0.46"
-        android:text="@string/msgs_dlg_ok_btn" />
+        android:text="@string/msgs_dlg_ok_btn" 
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
     
 </LinearLayout>

@@ -3,24 +3,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="5dp"
-    tools:ignore="ButtonStyle" >
+    android:orientation="horizontal"
+    tools:ignore="HardcodedText,ButtonStyle" >
 
     <Button
-        android:id="@+id/item_select_list_dlg_cancel_btn"
+        android:id="@+id/select_file_cache_dlg_ok"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
         android:layout_weight="1"
-        android:text="@string/msgs_dlg_cancel_btn"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:visibility="gone"
+        android:text="OK" 
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <Button
-        android:id="@+id/item_select_list_dlg_ok_btn"
+        android:id="@+id/select_file_cache_dlg_cancel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginRight="5dp"
         android:layout_weight="1"
-        android:text="@string/msgs_dlg_ok_btn"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:visibility="gone" />
+        android:text="Cancel" 
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 
 </LinearLayout>

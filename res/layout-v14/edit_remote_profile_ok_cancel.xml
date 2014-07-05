@@ -11,13 +11,15 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="5dp"
         android:layout_weight="0.05"
-        android:text="Cancel" />
+        android:text="Cancel" 
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
     <Button
         android:id="@+id/remote_profile_ok"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"
         android:layout_weight="0.05"
-        android:text="OK" />
+        android:text="OK" 
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
     
 </LinearLayout>

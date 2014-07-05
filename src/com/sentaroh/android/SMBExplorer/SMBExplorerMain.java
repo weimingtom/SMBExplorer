@@ -152,13 +152,13 @@ public class SMBExplorerMain extends FragmentActivity {
 	private Spinner localFileListDirSpinner=null;
 	private Spinner remoteFileListDirSpinner=null;
 
-	private Button localFileListDirName=null;
+	private Button localFileListPathBtn=null;
 	private TextView localFileListEmptyView=null;
 	private Button localFileListUpBtn=null, localFileListTopBtn=null, 
 			localFileListPasteBtn=null, localFileListCreateBtn=null,
 			localFileListReloadBtn=null;
 
-	private Button remoteFileListDirName=null;
+	private Button remoteFileListPathBtn=null;
 	private TextView remoteFileListEmptyView=null;
 	private Button remoteFileListUpBtn=null;
 	private Button remoteFileListTopBtn=null,
@@ -450,14 +450,14 @@ public class SMBExplorerMain extends FragmentActivity {
 		remoteFileListView=(ListView)findViewById(R.id.explorer_filelist_remote_tab_listview);
 		localFileListEmptyView=(TextView)findViewById(R.id.explorer_filelist_local_empty_view);
 		remoteFileListEmptyView=(TextView)findViewById(R.id.explorer_filelist_remote_empty_view);
-		localFileListDirName=(Button)findViewById(R.id.explorer_filelist_local_filepath);
+		localFileListPathBtn=(Button)findViewById(R.id.explorer_filelist_local_filepath);
 		localFileListUpBtn=(Button)findViewById(R.id.explorer_filelist_local_up_btn);
 		localFileListTopBtn=(Button)findViewById(R.id.explorer_filelist_local_top_btn);
 		localFileListPasteBtn=(Button)findViewById(R.id.explorer_filelist_local_paste_btn);
 		localFileListCreateBtn=(Button)findViewById(R.id.explorer_filelist_local_create_btn);
 		localFileListReloadBtn=(Button)findViewById(R.id.explorer_filelist_local_reload_btn);
 
-		remoteFileListDirName=(Button)findViewById(R.id.explorer_filelist_remote_filepath);
+		remoteFileListPathBtn=(Button)findViewById(R.id.explorer_filelist_remote_filepath);
 		remoteFileListUpBtn=(Button)findViewById(R.id.explorer_filelist_remote_up_btn);
 		remoteFileListTopBtn=(Button)findViewById(R.id.explorer_filelist_remote_top_btn);
 		remoteFileListPasteBtn=(Button)findViewById(R.id.explorer_filelist_remote_paste_btn);
@@ -472,8 +472,8 @@ public class SMBExplorerMain extends FragmentActivity {
 		public void onTabChanged(String tabId){
 			sendDebugLogMsg(1, "I","onTabchanged entered. tab="+tabId);
 			currentTabName=tabId;
-			setLocalFileListDirName(localBase,localDir);
-			setRemoteFileListDirName(remoteBase,remoteDir);
+			setFileListPathName(localFileListPathBtn,localFileListCache,localBase,localDir);
+			setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 			setPasteButtonEnabled();
 		};
 	};
@@ -629,7 +629,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		if(defaultSettingAddr.equals("")) defaultSettingAddr=getLocalIpAddress();
 		
 		defaultSettingExitClean=
-				prefs.getBoolean(getString(R.string.settings_exit_clean), false);
+				prefs.getBoolean(getString(R.string.settings_exit_clean), true);
 		
 		initJcifsOption();
 	};
@@ -693,7 +693,8 @@ public class SMBExplorerMain extends FragmentActivity {
 				loadLocalFilelist(localBase,localDir);
 				localFileListView.setSelectionFromTop(fv, top);
 				setEmptyFolderView();
-				updateFileListByMove();
+				updateFileListCacheByMove();
+				removeDeletedFileListCache(localCurrFLI, localFileListCache);
 			}
 		} else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) {
 			if (!remoteBase.equals("")) {
@@ -702,7 +703,36 @@ public class SMBExplorerMain extends FragmentActivity {
 		} else return; //file list not selected
 	};
 
-	private void updateFileListByMove() {
+	private void removeDeletedFileListCache(FileListCacheItem c_fci, ArrayList<FileListCacheItem>u_fcl) {
+		ArrayList<FileListItem>c_fl=c_fci.file_list;
+		for (int i=u_fcl.size()-1;i>=0;i--) {
+			FileListCacheItem u_fci=u_fcl.get(i);
+			String u_path="";
+			u_path=u_fci.directory;
+			if (!u_path.equals(u_fci.base)) {
+//				Log.v("","c_fci_d="+c_fci.directory+", u_fci_d="+u_fci.directory);
+				if (c_fci.directory.compareToIgnoreCase(u_fci.directory)<0) {
+					boolean found=false;
+					for (int j=0;j<c_fl.size();j++) {
+						FileListItem c_fli=c_fl.get(j);
+						String c_path="";
+						c_path=c_fli.getPath()+"/"+c_fli.getName();
+//						Log.v("","u_path="+u_path+", c_path="+c_path);
+						if (c_path.equals(u_path)) {
+							found=true;
+							break;
+						}
+					}
+					if (!found) {
+						u_fcl.remove(i);
+//						Log.v("","deleted="+u_path);
+					}
+				}
+			}
+		}
+	};
+	
+	private void updateFileListCacheByMove() {
 		if (mIsMovedListAvailable) {
 			mIsMovedListAvailable=false;
 			if (movedFileListForRefresh.get(0).getPath().startsWith("smb:")) {
@@ -756,7 +786,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			setEmptyFolderView();
 		} else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) {
 			if (!remoteBase.equals("")) {
-				removeFileListCache(formatRemoteSmbUrl(remoteBase+"/"+remoteDir), remoteFileListCache);
+				removeFileListCache(buildFullPath(remoteBase,remoteDir), remoteFileListCache);
 				loadRemoteFilelist(remoteBase, remoteDir);
 			}
 		} else return; //file list not selected
@@ -775,7 +805,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			dhi.base=localBase;
 			dhi.directory=t_dir;
 			dhi.file_list=tfl;
-			dhi.directory_history=localDirHist;
+			dhi.directory_history.addAll(localDirHist);
 			putFileListCache(dhi,localFileListCache);
 			localCurrFLI=dhi;
 		} else {
@@ -791,7 +821,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		tabHost.getTabWidget().getChildTabViewAt(1).setEnabled(true);
 		
 		setFilelistCurrDir(localFileListDirSpinner,base,dir);
-		setLocalFileListDirName(localBase, localDir);
+		setFileListPathName(localFileListPathBtn,localFileListCache,localBase,localDir);
 		setLocalFilelistItemClickListener();
 		setLocalFilelistLongClickListener();
 	};
@@ -806,7 +836,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				remoteFileListView.setAdapter(remoteFileListAdapter);
 				setRemoteFilelistItemClickListener();
 				setRemoteFilelistLongClickListener();
-				setRemoteFileListDirName(remoteBase,remoteDir);
+				setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 				setEmptyFolderView();
 
 				FileListCacheItem dhi=new FileListCacheItem();
@@ -814,7 +844,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				dhi.base=remoteBase;
 				dhi.directory=t_dir;
 				dhi.file_list=remoteFileListAdapter.getDataList();
-				dhi.directory_history=remoteDirHist;
+				dhi.directory_history.addAll(remoteDirHist);
 				putFileListCache(dhi,remoteFileListCache);
 				remoteCurrFLI=dhi;
 			}
@@ -825,7 +855,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				remoteFileListView.setAdapter(remoteFileListAdapter);
 				setRemoteFilelistItemClickListener();
 				setRemoteFilelistLongClickListener();
-				setRemoteFileListDirName(remoteBase,remoteDir);
+				setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 				setEmptyFolderView();
 			}
 		});
@@ -837,7 +867,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			remoteFileListAdapter.notifyDataSetChanged();
 			setRemoteFilelistItemClickListener();
 			setRemoteFilelistLongClickListener();
-			setRemoteFileListDirName(remoteBase,remoteDir);
+			setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 			setEmptyFolderView();
 			remoteCurrFLI=dhi;
 		}
@@ -877,7 +907,8 @@ public class SMBExplorerMain extends FragmentActivity {
 					putDirHist(localBase, localDir, localDirHist);
 					
 					localCurrFLI.pos_fv=localFileListView.getFirstVisiblePosition();
-					localCurrFLI.pos_top=localFileListView.getChildAt(0).getTop();
+					if (localFileListView.getChildAt(0)!=null)
+						localCurrFLI.pos_top=localFileListView.getChildAt(0).getTop();
 					
 					loadLocalFilelist(localBase, localDir);
 					localFileListView.setSelection(0);
@@ -889,10 +920,11 @@ public class SMBExplorerMain extends FragmentActivity {
             }
         });
         
-        localFileListDirName.setOnClickListener(new OnClickListener(){
+        localFileListPathBtn.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View arg0) {
-				selectFileListCache(localFileListCache, localFileListAdapter,localFileListView,localFileListDirSpinner);
+				if (localFileListCache.size()>0)
+					showFileListCache(localFileListCache, localFileListAdapter,localFileListView,localFileListDirSpinner);
 			}
         });
         
@@ -938,7 +970,7 @@ public class SMBExplorerMain extends FragmentActivity {
         
 	};
 
-	private void selectFileListCache(
+	private void showFileListCache(
 			final ArrayList<FileListCacheItem>fcl, 
 			final FileListAdapter fla, final ListView flv, final Spinner spinner) {
 		// カスタムダイアログの生成
@@ -992,20 +1024,23 @@ public class SMBExplorerMain extends FragmentActivity {
 						localBase=dhi.base;
 						if (dhi.base.equals(dhi.directory)) localDir="";
 						else localDir=dhi.directory.replace(localBase+"/", "");
-						localDirHist=dhi.directory_history;
+						localDirHist.clear();
+						localDirHist.addAll(dhi.directory_history);
 						setFilelistCurrDir(localFileListDirSpinner,localBase, localDir);
-						setLocalFileListDirName(localBase, localDir);
+						setFileListPathName(localFileListPathBtn,localFileListCache,localBase,localDir);
 						setEmptyFolderView();
 						flv.setSelection(0);
 					} else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) {
 						remoteBase=dhi.base;
 						if (dhi.base.equals(dhi.directory)) remoteDir="";
 						else remoteDir=dhi.directory.replace(remoteBase+"/", "");
-						remoteDirHist=dhi.directory_history;
+						remoteDirHist.clear();
+						remoteDirHist.addAll(dhi.directory_history);
 						setFilelistCurrDir(remoteFileListDirSpinner,remoteBase, remoteDir);
-						setRemoteFileListDirName(remoteBase, remoteDir);
+						setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 						setEmptyFolderView();
 						flv.setSelection(0);
+						Log.v("","base="+remoteBase+", dir="+remoteDir+", histsz="+remoteDirHist.size());
 					}
 						
 					if (s_no!=-1) spinner.setSelection(s_no);
@@ -1035,7 +1070,8 @@ public class SMBExplorerMain extends FragmentActivity {
 	private void processLocalUpButton() {
 		if (localDirHist.size()>0) {
 			localCurrFLI.pos_fv=localFileListView.getFirstVisiblePosition();
-			localCurrFLI.pos_top=localFileListView.getChildAt(0).getTop();
+			if (localFileListView.getChildAt(0)!=null)
+				localCurrFLI.pos_top=localFileListView.getChildAt(0).getTop();
 			if (localDirHist.size()<=2) {
 				processLocalTopButton();
 			} else {
@@ -1047,7 +1083,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				localDir=dhi.directory.replace(dhi.base+"/", "");
 				localFileListAdapter.setDataList(dhi.file_list);
 				localFileListAdapter.notifyDataSetChanged();
-				setLocalFileListDirName(localBase, localDir);
+				setFileListPathName(localFileListPathBtn,localFileListCache,localBase,localDir);
 				localFileListView.setSelectionFromTop(dhi.pos_fv, dhi.pos_top);
 				setEmptyFolderView();
 				localCurrFLI=dhi;
@@ -1068,7 +1104,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			clearDirHist(localDirHist);
 			putDirHist(t_dir,"",localDirHist);
 			localFileListAdapter.notifyDataSetChanged();
-			setLocalFileListDirName(localBase, localDir);
+			setFileListPathName(localFileListPathBtn,localFileListCache,localBase,localDir);
 			localFileListView.setSelectionFromTop(dhi.pos_fv, dhi.pos_top);
 			setEmptyFolderView();
 			localCurrFLI=dhi;
@@ -1161,7 +1197,8 @@ public class SMBExplorerMain extends FragmentActivity {
 					
 					if (remoteCurrFLI!=null) {
 						remoteCurrFLI.pos_fv=remoteFileListView.getFirstVisiblePosition();
-						remoteCurrFLI.pos_top=remoteFileListView.getChildAt(0).getTop();
+						if (remoteFileListView.getChildAt(0)!=null)
+							remoteCurrFLI.pos_top=remoteFileListView.getChildAt(0).getTop();
 					}
 					
 					loadRemoteFilelist(remoteBase, remoteDir);
@@ -1179,10 +1216,11 @@ public class SMBExplorerMain extends FragmentActivity {
 				processRemoteUpButton();
 			}
         });
-        remoteFileListDirName.setOnClickListener(new OnClickListener(){
+        remoteFileListPathBtn.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View arg0) {
-				selectFileListCache(remoteFileListCache, remoteFileListAdapter, remoteFileListView,remoteFileListDirSpinner);
+				if (remoteFileListCache.size()>0)
+					showFileListCache(remoteFileListCache, remoteFileListAdapter, remoteFileListView,remoteFileListDirSpinner);
 			}
         });
         
@@ -1238,7 +1276,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				remoteDir=dhi.directory.replace(dhi.base+"/", "");
 				remoteFileListAdapter.setDataList(dhi.file_list);
 				remoteFileListAdapter.notifyDataSetChanged();
-				setRemoteFileListDirName(remoteBase, remoteDir);
+				setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 				remoteFileListView.setSelectionFromTop(dhi.pos_fv, dhi.pos_top);
 				setEmptyFolderView();
 				remoteCurrFLI=dhi;
@@ -1260,7 +1298,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			clearDirHist(remoteDirHist);
 			putDirHist(t_dir,"",remoteDirHist);
 			remoteFileListAdapter.notifyDataSetChanged();
-			setRemoteFileListDirName(remoteBase, remoteDir);
+			setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 			remoteFileListView.setSelectionFromTop(dhi.pos_fv, dhi.pos_top);
 			setEmptyFolderView();
 			remoteCurrFLI=dhi;
@@ -1355,9 +1393,10 @@ public class SMBExplorerMain extends FragmentActivity {
 						localFileListAdapter.setDataList(tfl);
 						localFileListAdapter.notifyDataSetChanged();
 						setFilelistCurrDir(localFileListDirSpinner,localBase, localDir);
-						setLocalFileListDirName(localBase, localDir);
+						setFileListPathName(localFileListPathBtn,localFileListCache,localBase,localDir);
 						setEmptyFolderView();
 						localFileListView.setSelection(0);
+						putDirHist(localBase, localDir, localDirHist);
 						
 						if (dhi_c==null) {
 							FileListCacheItem dhi=new FileListCacheItem();
@@ -1367,14 +1406,13 @@ public class SMBExplorerMain extends FragmentActivity {
 							dhi.base=localBase;
 							dhi.directory=item.getPath()+"/"+item.getName();
 							dhi.file_list=tfl;
-							dhi.directory_history=localDirHist;
+							dhi.directory_history.addAll(localDirHist);
 							putFileListCache(dhi,localFileListCache);
 							localCurrFLI=dhi;
 						} else {
 							localCurrFLI=dhi_c;
 						}
 						
-						putDirHist(localBase, localDir, localDirHist);
 					} else {
 						if (isFileListItemSelected(localFileListAdapter)) {
 							item.setChecked(!item.isChecked());
@@ -1390,30 +1428,22 @@ public class SMBExplorerMain extends FragmentActivity {
 		});
 	};
 	
-	private void setLocalFileListDirName(String base, String dir) {
-		localFileListDirName.setText("/"+dir);
-		if (localDir.equals("")) {
-			localFileListUpBtn.setEnabled(false);
-			localFileListTopBtn.setEnabled(false);
+	private void setFileListPathName(Button btn, ArrayList<FileListCacheItem> cfl, String base, String dir) {
+		btn.setText("/"+dir);
+		if (cfl!=null && cfl.size()>0) {
+			btn.setEnabled(true);
 		} else {
-			localFileListUpBtn.setEnabled(true);
-			localFileListTopBtn.setEnabled(true);
+			btn.setEnabled(false);
 		}
+//		if (dir.equals("")) {
+//			btn.setEnabled(false);
+//			btn.setEnabled(false);
+//		} else {
+//			btn.setEnabled(true);
+//			btn.setEnabled(true);
+//		}
 		setPasteButtonEnabled();
 	};
-
-	private void setRemoteFileListDirName(String base, String dir) {
-		remoteFileListDirName.setText("/"+dir);
-		if (remoteDir.equals("")) {
-			remoteFileListUpBtn.setEnabled(false);
-			remoteFileListTopBtn.setEnabled(false);
-		} else {
-			remoteFileListUpBtn.setEnabled(true);
-			remoteFileListTopBtn.setEnabled(true);
-		}
-		setPasteButtonEnabled();
-	};
-
 	private void setLocalFilelistLongClickListener() {
 		if (localFileListView==null) return;
 		localFileListView
@@ -1454,20 +1484,19 @@ public class SMBExplorerMain extends FragmentActivity {
 							remoteFileListView.setAdapter(remoteFileListAdapter);
 							remoteFileListAdapter.notifyDataSetChanged();
 							setFilelistCurrDir(remoteFileListDirSpinner,remoteBase, remoteDir);
-							setRemoteFileListDirName(remoteBase, remoteDir);
+							setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 							setEmptyFolderView();
 							remoteFileListView.setSelection(0);
+							putDirHist(remoteBase,remoteDir,remoteDirHist);
 
 							FileListCacheItem dhi=new FileListCacheItem();
 							dhi.profile_name=remoteFileListDirSpinner.getSelectedItem().toString();
 							dhi.base=remoteBase;
 							dhi.directory=t_dir;
 							dhi.file_list=remoteFileListAdapter.getDataList();
-							dhi.directory_history=remoteDirHist;
+							dhi.directory_history.addAll(remoteDirHist);
 							putFileListCache(dhi,remoteFileListCache);
 							remoteCurrFLI=dhi;
-							
-							putDirHist(remoteBase,remoteDir,remoteDirHist);
 							
 							setUiEnabled(true);
 						}
@@ -1486,7 +1515,7 @@ public class SMBExplorerMain extends FragmentActivity {
 						remoteFileListAdapter.setDataList(dhi.file_list);
 						remoteFileListAdapter.notifyDataSetChanged();
 						setFilelistCurrDir(remoteFileListDirSpinner,remoteBase, remoteDir);
-						setRemoteFileListDirName(remoteBase, remoteDir);
+						setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 						setEmptyFolderView();
 						remoteFileListView.setSelection(0);
 						
@@ -2209,14 +2238,26 @@ public class SMBExplorerMain extends FragmentActivity {
 				hideRemoteProgressView();
 				if (tc.isThreadResultSuccess()) {
 					int fv=remoteFileListView.getFirstVisiblePosition();
-					int top=remoteFileListView.getChildAt(0).getTop();
+					int top=0;
+					if (remoteFileListView.getChildAt(0)!=null) top=remoteFileListView.getChildAt(0).getTop();
 					remoteFileListAdapter.setDataList(remoteFileList);
 					remoteFileListAdapter.sort();
 					remoteFileListAdapter.notifyDataSetChanged();
 					remoteFileListView.setSelectionFromTop(fv, top);
-					removeFileListCache(formatRemoteSmbUrl(remoteBase+"/"+remoteDir+"/"), remoteFileListCache);
+					removeFileListCache(buildFullPath(remoteBase,remoteDir), remoteFileListCache);
+					
+					FileListCacheItem dhi=new FileListCacheItem();
+					dhi.profile_name=remoteFileListDirSpinner.getSelectedItem().toString();
+					dhi.base=remoteBase;
+					dhi.directory=buildFullPath(remoteBase,remoteDir);
+					dhi.file_list=remoteFileList;
+					dhi.directory_history.addAll(remoteDirHist);
+					putFileListCache(dhi,remoteFileListCache);
+					remoteCurrFLI=dhi;
+
 					setEmptyFolderView();
-					updateFileListByMove();
+					updateFileListCacheByMove();
+					removeDeletedFileListCache(remoteCurrFLI, remoteFileListCache);
 				} else {
 					String err="";
 					if (tc.isThreadResultCancelled()) err="Filelist was cancelled";
@@ -4835,6 +4876,6 @@ class FileListCacheItem implements Serializable{
 	public String base="";
 	public String directory="";
 	public int pos_fv=0, pos_top=0;
-	public ArrayList<String> directory_history=null;
+	public ArrayList<String> directory_history=new ArrayList<String>();
 	public ArrayList<FileListItem> file_list=null;
 }

@@ -105,7 +105,7 @@ public class SMBExpolorerSettings extends PreferenceActivity {
     		}
     	} else if (key.equals(getString(R.string.settings_exit_clean))) {
     		isChecked=true;
-    		if (prefs.getBoolean(key, false)) {
+    		if (prefs.getBoolean(key, true)) {
     			findPreference(key)
     				.setSummary(getString(R.string.settings_exit_clean_summary_ena));
     		} else {
