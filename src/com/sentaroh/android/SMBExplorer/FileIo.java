@@ -53,6 +53,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -157,19 +158,14 @@ public class FileIo implements Runnable {
     private void waitMediaScanner(boolean ds) {
     	boolean time_out=false;
     	int timeout_val=0;
-    	try {
-    		while(true) {
-    			if (mediaScanner.isConnected()==ds) break;
-    			Thread.sleep(10);
-    			timeout_val++;
-    			if (timeout_val>=501) {
-    				time_out=true;
-    				break;
-    			}
-    		}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			sendLogMsg("E","MediaScannerConnection wait error:"+e.toString());
+		while(true) {
+			if (mediaScanner.isConnected()==ds) break;
+			SystemClock.sleep(10);
+			timeout_val++;
+			if (timeout_val>=501) {
+				time_out=true;
+				break;
+			}
 		}
     	if (time_out) 
     		sendLogMsg("E","MediaScannerConnection timeout occured.");

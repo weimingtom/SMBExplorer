@@ -44,6 +44,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -238,6 +239,8 @@ public class SMBExplorerMain extends FragmentActivity {
 
 		commonDlg=new CommonDialog(mContext, getSupportFragmentManager());
 
+		myUncaughtExceptionHandler.init();
+		
 //		localUrl = SMBEXPLORER_ROOT_DIR;
 		createTabAndView() ;
 
@@ -278,7 +281,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			profileAdapter = createProfileList(false,"");
 			localFileListView=(ListView)findViewById(R.id.explorer_filelist_local_tab_listview);
 			loadLocalFilelist(localBase,localDir);
-			putDirHist(localBase, localDir, localDirHist);
+//			putDirHist(localBase, localDir, localDirHist);
 			setEmptyFolderView();
 			remoteFileListView=(ListView)findViewById(R.id.explorer_filelist_remote_tab_listview);
 			remoteFileListDirSpinner=(Spinner)findViewById(R.id.explorer_filelist_remote_tab_dir);
@@ -800,6 +803,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		if (dhi==null) {
 			tfl = createLocalFileList(false,t_dir);
 			if (tfl==null) return;
+			putDirHist(localBase, localDir, localDirHist);
 			dhi=new FileListCacheItem();
 			dhi.profile_name=base;
 			dhi.base=localBase;
@@ -838,6 +842,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				setRemoteFilelistLongClickListener();
 				setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 				setEmptyFolderView();
+				putDirHist(remoteBase, remoteDir, remoteDirHist);
 
 				FileListCacheItem dhi=new FileListCacheItem();
 				dhi.profile_name=remoteFileListDirSpinner.getSelectedItem().toString();
@@ -904,7 +909,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					localBase=turl;
 					
 					clearDirHist(localDirHist);
-					putDirHist(localBase, localDir, localDirHist);
+//					putDirHist(localBase, localDir, localDirHist);
 					
 					localCurrFLI.pos_fv=localFileListView.getFirstVisiblePosition();
 					if (localFileListView.getChildAt(0)!=null)
@@ -912,6 +917,8 @@ public class SMBExplorerMain extends FragmentActivity {
 					
 					loadLocalFilelist(localBase, localDir);
 					localFileListView.setSelection(0);
+					for (int j = 0; j < localFileListView.getChildCount(); j++)
+						localFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 					setEmptyFolderView();
 				}
             }
@@ -1024,23 +1031,25 @@ public class SMBExplorerMain extends FragmentActivity {
 						localBase=dhi.base;
 						if (dhi.base.equals(dhi.directory)) localDir="";
 						else localDir=dhi.directory.replace(localBase+"/", "");
-						localDirHist.clear();
-						localDirHist.addAll(dhi.directory_history);
+						replaceDirHist(localDirHist,dhi.directory_history);
 						setFilelistCurrDir(localFileListDirSpinner,localBase, localDir);
 						setFileListPathName(localFileListPathBtn,localFileListCache,localBase,localDir);
 						setEmptyFolderView();
 						flv.setSelection(0);
+						for (int j = 0; j < localFileListView.getChildCount(); j++)
+							localFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 					} else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) {
 						remoteBase=dhi.base;
 						if (dhi.base.equals(dhi.directory)) remoteDir="";
 						else remoteDir=dhi.directory.replace(remoteBase+"/", "");
-						remoteDirHist.clear();
-						remoteDirHist.addAll(dhi.directory_history);
+						replaceDirHist(remoteDirHist,dhi.directory_history);
 						setFilelistCurrDir(remoteFileListDirSpinner,remoteBase, remoteDir);
 						setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 						setEmptyFolderView();
 						flv.setSelection(0);
-						Log.v("","base="+remoteBase+", dir="+remoteDir+", histsz="+remoteDirHist.size());
+//						Log.v("","base="+remoteBase+", dir="+remoteDir+", histsz="+remoteDirHist.size());
+						for (int j = 0; j < remoteFileListView.getChildCount(); j++)
+							remoteFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 					}
 						
 					if (s_no!=-1) spinner.setSelection(s_no);
@@ -1068,6 +1077,8 @@ public class SMBExplorerMain extends FragmentActivity {
 	}
 	
 	private void processLocalUpButton() {
+//		Log.v("","size1="+localDirHist.size());
+//		for(int i=0;i<localDirHist.size();i++) Log.v("","hist="+localDirHist.get(i));
 		if (localDirHist.size()>0) {
 			localCurrFLI.pos_fv=localFileListView.getFirstVisiblePosition();
 			if (localFileListView.getChildAt(0)!=null)
@@ -1077,6 +1088,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			} else {
 //				String c_dir=remoteDirHist.get(remoteDirHist.size()-1);
 				removeDirHist(localBase,localDir,localDirHist);
+//				Log.v("","size2="+localDirHist.size());
 				String t_dir=getLastDirHist(localDirHist);
 				FileListCacheItem dhi=getFileListCache(t_dir,localFileListCache);
 				localBase=dhi.base;
@@ -1087,6 +1099,8 @@ public class SMBExplorerMain extends FragmentActivity {
 				localFileListView.setSelectionFromTop(dhi.pos_fv, dhi.pos_top);
 				setEmptyFolderView();
 				localCurrFLI=dhi;
+				for (int j = 0; j < localFileListView.getChildCount(); j++)
+					localFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 			}
 		}
 	};
@@ -1109,7 +1123,9 @@ public class SMBExplorerMain extends FragmentActivity {
 			localFileListView.setSelectionFromTop(dhi.pos_fv, dhi.pos_top);
 			setEmptyFolderView();
 			localCurrFLI=dhi;
-		}
+			for (int j = 0; j < localFileListView.getChildCount(); j++)
+				localFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
+	}
 	};
 
 	private void setEmptyFolderView() {
@@ -1194,7 +1210,7 @@ public class SMBExplorerMain extends FragmentActivity {
 					remoteDir="";
 					
 					clearDirHist(remoteDirHist);
-					putDirHist(remoteBase, remoteDir, remoteDirHist);
+//					putDirHist(remoteBase, remoteDir, remoteDirHist);
 					
 					if (remoteCurrFLI!=null) {
 						remoteCurrFLI.pos_fv=remoteFileListView.getFirstVisiblePosition();
@@ -1204,6 +1220,8 @@ public class SMBExplorerMain extends FragmentActivity {
 					
 					loadRemoteFilelist(remoteBase, remoteDir);
 					remoteFileListView.setSelection(0);
+					for (int j = 0; j < remoteFileListView.getChildCount(); j++)
+						remoteFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 				}
             }
             @Override
@@ -1281,6 +1299,8 @@ public class SMBExplorerMain extends FragmentActivity {
 				remoteFileListView.setSelectionFromTop(dhi.pos_fv, dhi.pos_top);
 				setEmptyFolderView();
 				remoteCurrFLI=dhi;
+				for (int j = 0; j < remoteFileListView.getChildCount(); j++)
+					remoteFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 			}
 		}
 	};
@@ -1303,6 +1323,8 @@ public class SMBExplorerMain extends FragmentActivity {
 			remoteFileListView.setSelectionFromTop(dhi.pos_fv, dhi.pos_top);
 			setEmptyFolderView();
 			remoteCurrFLI=dhi;
+			for (int j = 0; j < remoteFileListView.getChildCount(); j++)
+				remoteFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 		}
 	};
 	
@@ -1372,6 +1394,8 @@ public class SMBExplorerMain extends FragmentActivity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
+				for (int j = 0; j < parent.getChildCount(); j++)
+	                parent.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 				if (!isUiEnabled()) return;
 				try {
 					setUiEnabled(false);
@@ -1394,6 +1418,8 @@ public class SMBExplorerMain extends FragmentActivity {
 						localDir=t_dir.replace(localBase+"/", "");
 						localFileListAdapter.setDataList(tfl);
 						localFileListAdapter.notifyDataSetChanged();
+						for (int j = 0; j < localFileListView.getChildCount(); j++)
+							localFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 						setFilelistCurrDir(localFileListDirSpinner,localBase, localDir);
 						setFileListPathName(localFileListPathBtn,localFileListCache,localBase,localDir);
 						setEmptyFolderView();
@@ -1420,6 +1446,7 @@ public class SMBExplorerMain extends FragmentActivity {
 							item.setChecked(!item.isChecked());
 							localFileListAdapter.notifyDataSetChanged();
 						} else {
+//				            view.setBackgroundColor(Color.DKGRAY);
 							startLocalFileViewerIntent(item);
 						}
 					}
@@ -1467,6 +1494,8 @@ public class SMBExplorerMain extends FragmentActivity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					final int position, long id) {
+				for (int j = 0; j < parent.getChildCount(); j++)
+	                parent.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 				if (!isUiEnabled()) return;
 				setUiEnabled(false);
 				final FileListItem item = remoteFileListAdapter.getItem(position);
@@ -1486,6 +1515,8 @@ public class SMBExplorerMain extends FragmentActivity {
 							remoteFileListAdapter=(FileListAdapter)o[0];
 							remoteFileListView.setAdapter(remoteFileListAdapter);
 							remoteFileListAdapter.notifyDataSetChanged();
+							for (int j = 0; j < remoteFileListView.getChildCount(); j++)
+								remoteFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 							setFilelistCurrDir(remoteFileListDirSpinner,remoteBase, remoteDir);
 							setFileListPathName(remoteFileListPathBtn,remoteFileListCache,remoteBase,remoteDir);
 							setEmptyFolderView();
@@ -1530,6 +1561,7 @@ public class SMBExplorerMain extends FragmentActivity {
 						item.setChecked(!item.isChecked());
 						remoteFileListAdapter.notifyDataSetChanged();
 					} else {
+//			            view.setBackgroundColor(Color.DKGRAY);
 						startRemoteFileViewerIntent(remoteFileListAdapter, item);
 						//commonDlg.showCommonDialog(false,false,"E","","Remote file was not viewd.",null);
 					}
@@ -1933,6 +1965,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				item.setChecked(false);
 			}
 		}
+		fla.notifyDataSetChanged();
 	};
 
 	private void setAllFilelistItemChecked(FileListAdapter fla) {
@@ -1941,26 +1974,21 @@ public class SMBExplorerMain extends FragmentActivity {
 			item=fla.getItem(i);
 			item.setChecked(true);
 		}
+		fla.notifyDataSetChanged();
 	};
 
 	private void setAllProfileItemUnChecked() {
-		ProfileListItem item;
 		for (int i=0;i<profileAdapter.getCount();i++) {
-			item=profileAdapter.getItem(i);
-			profileAdapter.remove(item);
-			item.setChecked(false);
-			profileAdapter.insert(item,i);
+			profileAdapter.getItem(i).setChecked(false);
 		}
+		profileAdapter.notifyDataSetChanged();
 	};
 
 	private void setAllProfileItemChecked() {
-		ProfileListItem item;
 		for (int i=0;i<profileAdapter.getCount();i++) {
-			item=profileAdapter.getItem(i);
-			profileAdapter.remove(item);
-			item.setChecked(true);
-			profileAdapter.insert(item,i);
+			profileAdapter.getItem(i).setChecked(true);
 		}
+		profileAdapter.notifyDataSetChanged();
 	};
 
 	private void invokeTextFileBrowser(FileListAdapter fla,
@@ -2530,7 +2558,7 @@ public class SMBExplorerMain extends FragmentActivity {
 			FileListItem item = fla.getItem(i);
 			if (item.isChecked()) di=di+item.getName()+"\n";
 		}
-
+		
 		final String item_name=di;
 		NotifyEvent ne=new NotifyEvent(this);
 		// set commonDialog response 
@@ -2561,7 +2589,7 @@ public class SMBExplorerMain extends FragmentActivity {
 				sendDebugLogMsg(1,"W","deleteItem canceled");
 			}
 		});
-		commonDlg.showCommonDialog(true,"W",getString(R.string.msgs_delete_file_dirs_confirm),di,ne);
+		commonDlg.showCommonDialog(true,"W",getString(R.string.msgs_delete_file_dirs_confirm),item_name,ne);
 	};
 	
 	private ArrayList<FileListItem> pasteFromList=new ArrayList<FileListItem>();
@@ -3015,34 +3043,52 @@ public class SMBExplorerMain extends FragmentActivity {
 	private void putDirHist(String base, String dir, ArrayList<String> hl) {
 		String t_dir=buildFullPath(base,dir);
 //		Log.v("","history added "+t_dir);
-		hl.add(t_dir);
+		if (getLastDirHist(hl).equals(t_dir)) sendDebugLogMsg(1,"I","putDirHist history ignored "+t_dir);
+		else {
+			hl.add(t_dir);
+			sendDebugLogMsg(1,"I","putDirHist history added "+t_dir);
+		}
+//		Thread.dumpStack();
+	};
+
+	private void replaceDirHist(ArrayList<String> to, ArrayList<String> from) {
+//		Log.v("","history replaced ");
+		sendDebugLogMsg(1,"I","replaceDirHist history replaced");
+		to.clear();
+		to.addAll(from);
 	};
 
 	@SuppressWarnings("unused")
 	private void removeDirHist(String base, String dir, ArrayList<String> hl) {
 		String t_dir=buildFullPath(base,dir);
 		boolean result=hl.remove(t_dir);
+		sendDebugLogMsg(1,"I","removeDirHist history removed "+t_dir);
 //		Log.v("","history removed "+t_dir+", result="+result);
 	};
 
 	private String getLastDirHist(ArrayList<String> hl) {
-		String result=hl.get(hl.size()-1);
+		String result="";
+		if (hl.size()>0) result=hl.get(hl.size()-1);
+		sendDebugLogMsg(1,"I","getLastDirHist get last "+result);
 //		Log.v("","history get last "+result);
 		return result;
 	};
 
 	private String getTopDirHist(ArrayList<String> hl) {
 		String result=hl.get(0);
+		sendDebugLogMsg(1,"I","getTopDirHist get top "+result);
 //		Log.v("","history get top "+result);
 		return result;
 	};
 
 	private void clearDirHist(ArrayList<String> hl) {
+		sendDebugLogMsg(1,"I","clearDirHist history cleared");
 //		Log.v("","history cleared");
 		hl.clear();
 	};
 
 	private void putFileListCache(FileListCacheItem dhi, ArrayList<FileListCacheItem> fl) {
+		sendDebugLogMsg(1,"I","putFileListCache put file cache base="+dhi.base+", dir="+dhi.directory);
 //		Log.v("","added "+dhi.directory);
 		fl.add(dhi);
 	};
@@ -3050,6 +3096,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	private void removeFileListCache(String url, ArrayList<FileListCacheItem> fl) {
 		FileListCacheItem dhi=getFileListCache(url, fl);
 		if (dhi!=null) fl.remove(dhi);
+		sendDebugLogMsg(1,"I","removeFileListCache file cache removed, key="+url);
 //		if (dhi!=null) {
 //			Log.v("","removed "+dhi.directory);
 //		}
@@ -3068,7 +3115,9 @@ public class SMBExplorerMain extends FragmentActivity {
 				break;
 			}
 		}
-//		Log.v("","surl="+url+", result="+result);
+		sendDebugLogMsg(1,"I","getFileListCache get file cache,  key="+url+", result="+result);
+//		Log.v("","find url="+url+", result="+result);
+//		Thread.dumpStack();
 		return result;
 	};
 	
@@ -4784,6 +4833,72 @@ public class SMBExplorerMain extends FragmentActivity {
             addView(childview1);  
        }  
     }
+	
+	private MyUncaughtExceptionHandler myUncaughtExceptionHandler = new MyUncaughtExceptionHandler();
+	class MyUncaughtExceptionHandler implements UncaughtExceptionHandler{
+		private boolean mCrashing=false;
+	    private UncaughtExceptionHandler defaultUEH;
+		public void init() {
+			defaultUEH = Thread.currentThread().getUncaughtExceptionHandler();
+	        Thread.currentThread().setUncaughtExceptionHandler(myUncaughtExceptionHandler);
+		}
+        @Override
+        public void uncaughtException(Thread thread, Throwable ex) {
+        	try {
+                if (!mCrashing) {
+                    mCrashing = true;
+                    
+                	StackTraceElement[] st=ex.getStackTrace();
+                	String st_msg="";
+                	for (int i=0;i<st.length;i++) {
+                		st_msg+="\n at "+st[i].getClassName()+"."+
+                				st[i].getMethodName()+"("+st[i].getFileName()+
+                				":"+st[i].getLineNumber()+")";
+                	}
+        			String end_msg=ex.toString()+st_msg;
+        			
+        			String end_msg2="";
+        			st_msg="";
+        			Throwable cause=ex.getCause();
+        			if (cause!=null) {
+            			st=cause.getStackTrace();
+            			if (st!=null) {
+                        	for (int i=0;i<st.length;i++) {
+                        		st_msg+="\n at "+st[i].getClassName()+"."+
+                        				st[i].getMethodName()+"("+st[i].getFileName()+
+                        				":"+st[i].getLineNumber()+")";
+                        	}
+                			end_msg2="Caused by:"+cause.toString()+st_msg;
+            			}
+        			}
+
+        			sendLogMsg("E", end_msg);
+        			if (!end_msg2.equals("")) sendLogMsg("E", end_msg2);
+        			
+//        			File ldir=new File(mGp.settingsLogFileDir);
+//        			if (!ldir.exists()) ldir.mkdirs();
+//        			
+//            		File lf=new File(mGp.settingsLogFileDir+"exception.txt");
+//            		try {
+//            			FileWriter fw=new FileWriter(lf,true);
+//    					PrintWriter pw=new PrintWriter(fw);
+//    					pw.println(end_msg);
+//    					pw.println(end_msg2);
+//    					pw.flush();
+//    					pw.close();
+//    				} catch (FileNotFoundException e) {
+//    					e.printStackTrace();
+//    				} catch (IOException e) {
+//    					e.printStackTrace();
+//    				}
+
+                }
+            } finally {
+                defaultUEH.uncaughtException(thread, ex);
+            }
+        }
+};
+
 }
 class ActivityDataHolder implements Externalizable  {
 

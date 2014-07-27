@@ -131,6 +131,9 @@ public class RetrieveFileList implements Runnable  {
 				err_msg="Specified hostname is not found, Name="+host_t3;
 			}
 		}
+		
+        Thread.currentThread().setUncaughtExceptionHandler(defaultUEH);
+
 		if (error) {
 			getFLCtrl.setThreadResultError();
 			getFLCtrl.setDisabled();
