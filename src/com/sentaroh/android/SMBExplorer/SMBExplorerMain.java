@@ -2951,7 +2951,8 @@ public class SMBExplorerMain extends FragmentActivity {
 							"canonicalPath: " + ff.getCanonicalPath());
 					} else {
 						tfi=createNewFilelistItem(ff, 0, 0);
-						fls.add(tfi);
+						if (tfi.isDir()) dir.add(tfi);
+						else fls.add(tfi);
 					}
 				}
 			} catch (Exception e) {
@@ -4758,13 +4759,30 @@ public class SMBExplorerMain extends FragmentActivity {
 					ll);
 			}
 		} else {
-			fi=new FileListItem(tfli.getName(), 
-					sdf.format(tfli.lastModified())+","+0, false,
-					tfli.length(),tfli.lastModified(),false,
+			if (tfli.isDirectory()) {
+				fi= new FileListItem(tfli.getName(), 
+						sdf.format(tfli.lastModified())+", ",
+						true, 
+						0,
+						0,
+						false,
+						tfli.canRead(),tfli.canWrite(),
+						tfli.isHidden(),tfli.getParent(),
+						ll);
+				fi.setSubDirItemCount(0);
+			} else {
+			    String tfs = MiscUtil.convertFileSize(tfli.length());
+
+				fi=new FileListItem(tfli.getName(), 
+					sdf.format(tfli.lastModified())+","+tfs, 
+					false, 
+					tfli.length(),
+					tfli.lastModified(),
+					false,
 					tfli.canRead(),tfli.canWrite(),
 					tfli.isHidden(),tfli.getParent(),
 					ll);
-			fi.setEnableItem(false);
+			}
 		}
 		return fi;
 	};

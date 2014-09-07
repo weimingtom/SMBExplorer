@@ -605,6 +605,7 @@ public class FileIo implements Runnable {
                 
 		try {
 			iLf = new File(fromUrl );
+			Log.v("","name="+iLf.getName()+", d="+iLf.isDirectory()+", r="+iLf.canRead());
 			if (iLf.isDirectory()) { // Directory copy
 				iLf = new File(fromUrl+"/");
 				
