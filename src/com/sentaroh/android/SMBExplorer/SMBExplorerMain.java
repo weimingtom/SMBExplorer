@@ -227,6 +227,8 @@ public class SMBExplorerMain extends FragmentActivity {
 		setContentView(R.layout.main);
 		SMBExplorerRootDir=localBase=LocalMountPoint.getExternalStorageDir();
 		mLogFilePath=SMBExplorerRootDir+"/SMBExplorer/log.txt";
+		File lf=new File(SMBExplorerRootDir+"/SMBExplorer");
+		if (!lf.exists()) lf.mkdirs();
 		try {
 			FileOutputStream fos=new FileOutputStream(mLogFilePath,false);
 			BufferedOutputStream bos=new BufferedOutputStream(fos,4096*64);
@@ -335,8 +337,10 @@ public class SMBExplorerMain extends FragmentActivity {
 		super.onDestroy();
 		sendDebugLogMsg(1, "I","onDestroy entered");
 		deleteTaskData();
-		mLogWriter.flush();
-		mLogWriter.close();
+		if (mLogWriter!=null) {
+			mLogWriter.flush();
+			mLogWriter.close();
+		}
 		remoteFileListCache=null;
 		if (enableKill) {
 			if (defaultSettingExitClean) {
