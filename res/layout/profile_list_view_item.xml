@@ -4,19 +4,11 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
     tools:ignore="SpUsage" >
 
-    <CheckBox
-        android:id="@+id/profile_list_cb1"
-        style="@style/check_box_style"
-        android:layout_width="40dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:text="" />
-
-    <ImageView
+   <ImageView
         android:id="@+id/profile_list_image1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -45,4 +37,15 @@
         android:text="@string/profile_list_active_string"
         android:textSize="18dp" />
 
+    <CheckBox
+        android:id="@+id/profile_list_cb1"
+        style="@style/check_box_style"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:text="" />
+
+     
 </LinearLayout>

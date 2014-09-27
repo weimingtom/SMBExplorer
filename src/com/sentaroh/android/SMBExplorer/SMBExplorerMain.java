@@ -107,7 +107,6 @@ import android.widget.TabWidget;
 import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TextView;
 import static com.sentaroh.android.SMBExplorer.Constants.*;
-
 import com.sentaroh.android.Utilities.*;
 import com.sentaroh.android.Utilities.NotifyEvent.NotifyEventListener;
 import com.sentaroh.android.Utilities.ContextMenu.CustomContextMenu;
@@ -300,8 +299,10 @@ public class SMBExplorerMain extends FragmentActivity {
 		}
 		restartStatus=1;
 		
-		localFileListView.setFastScrollEnabled(true);
-		remoteFileListView.setFastScrollEnabled(true);
+//		localFileListView.setFastScrollEnabled(true);
+//		localFileListView.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_INSET);
+//		remoteFileListView.setFastScrollEnabled(true);
+//		remoteFileListView.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_INSET);
 		
 		setLocalDirBtnListener();
 		setRemoteDirBtnListener();
@@ -378,12 +379,14 @@ public class SMBExplorerMain extends FragmentActivity {
 				
 				localFileListView.setAdapter(localFileListAdapter);
 				localFileListView.setSelectionFromTop(lclPos,lclPosTop);
-				localFileListView.setFastScrollEnabled(true);
+//				localFileListView.setFastScrollEnabled(true);
+//				localFileListView.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_INSET);
 
 				remoteFileListView=(ListView)findViewById(R.id.explorer_filelist_remote_tab_listview);
 				remoteFileListDirSpinner=(Spinner)findViewById(R.id.explorer_filelist_remote_tab_dir);
-				remoteFileListView.setFastScrollEnabled(true);
 				remoteFileListView.setAdapter(remoteFileListAdapter);
+//				remoteFileListView.setFastScrollEnabled(true);
+//				remoteFileListView.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_INSET);
 //				if (!remoteUrl.equals("")) {
 //					remoteFileListView.setAdapter(remoteFileListAdapter);
 //				}
@@ -1042,6 +1045,7 @@ public class SMBExplorerMain extends FragmentActivity {
 						flv.setSelection(0);
 						for (int j = 0; j < localFileListView.getChildCount(); j++)
 							localFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
+						localFileListReloadBtn.performClick();
 					} else if (currentTabName.equals(SMBEXPLORER_TAB_REMOTE)) {
 						remoteBase=dhi.base;
 						if (dhi.base.equals(dhi.directory)) remoteDir="";
@@ -1600,36 +1604,55 @@ public class SMBExplorerMain extends FragmentActivity {
 		});
 	};
 
+	private void setProfileToChecked(int pos, boolean p) {
+		profileAdapter.getItem(pos).setChecked(p);
+	};
+
 	private void createProfileContextMenu(View view, int idx) {
-		ProfileListItem item;
-		int scn=0;
+		int prev_selected_cnt=0;
 		for (int i=0;i<profileAdapter.getCount();i++) {
 			if (profileAdapter.getItem(i).isChecked()) {
-				scn++; 
+				prev_selected_cnt++;
 			}
 		}
-//		if (scn==0 && adapterMenuInfo.position==0) return ;//local is not select
-		if (scn<=1) {//single selection 
+		if (prev_selected_cnt==0) {//Not selected
+			setProfileToChecked(idx, true);
+			profileAdapter.notifyDataSetChanged();
+			createProfileContextMenu_Single(idx);
+		} else if (prev_selected_cnt==1) {//Previous selected was single
 			for (int i=0;i<profileAdapter.getCount();i++) {
-				item = profileAdapter.getItem(i);
-				if (idx==i) {// set checked
-					item.setChecked(true);
-					scn=i;//set new index no
-				} else {
-					if (item.isChecked()) {//reset unchecked
-						item.setChecked(false);
+				if (profileAdapter.getItem(i).isChecked()) {
+					if (i!=idx) {
+						setProfileToChecked(i, false);
+						setProfileToChecked(idx, true);
+						profileAdapter.notifyDataSetChanged();
 					}
 				}
 			}
-			createProfileContextMenu_Single(view, idx, scn);
-		} else createProfileContextMenu_Multiple(view, idx);
+			createProfileContextMenu_Single(idx);
+		} else {
+			boolean already_selected=false;
+			for (int i=0;i<profileAdapter.getCount();i++) {
+				if (profileAdapter.getItem(i).isChecked()) {
+					if (i==idx) {
+						already_selected=true;
+						break;
+					}
+				}
+			}
+			if (already_selected) {
+				createProfileContextMenu_Multiple(idx);
+			} else {
+				setAllProfileItemUnChecked();
+				setProfileToChecked(idx, true);
+				profileAdapter.notifyDataSetChanged();
+				createProfileContextMenu_Single(idx);
+			}
+		}
 	};
 	
-	private void createProfileContextMenu_Single(View view, int idx, int cin) {
-		final int itemno ;
-		if (idx>0) itemno = cin;
-			else itemno=idx;
-		ProfileListItem item = profileAdapter.getItem(itemno);
+	private void createProfileContextMenu_Single(final int idx) {
+		final ProfileListItem item = profileAdapter.getItem(idx);
 
 		if (item.getActive().equals("I")) {
 			ccMenu.addMenuItem("Set to active",R.drawable.menu_active)
@@ -1664,10 +1687,9 @@ public class SMBExplorerMain extends FragmentActivity {
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
-				ProfileListItem item = profileAdapter.getItem(itemno);
 				editRemoteProfile(item.getActive(), item.getName(), item.getUser(),
 						item.getPass(), item.getAddr(), item.getPort(), 
-						item.getShare(), "",itemno);
+						item.getShare(), "",idx);
 				setAllProfileItemUnChecked();
 		  	}
 	  	});
@@ -1675,8 +1697,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
-				ProfileListItem item = profileAdapter.getItem(itemno);
-				deleteRemoteProfile(item.getName(), itemno);
+				deleteRemoteProfile(item.getName(), idx);
 				setAllProfileItemUnChecked();
 		  	}
 	  	});
@@ -1697,7 +1718,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		ccMenu.createMenu();
 	};
 	
-	private void createProfileContextMenu_Multiple(View view, int idx) {
+	private void createProfileContextMenu_Multiple(int idx) {
 		
 		ccMenu.addMenuItem("Set to active",R.drawable.menu_active)
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
@@ -1747,36 +1768,52 @@ public class SMBExplorerMain extends FragmentActivity {
 	
 	
 	private void createFilelistContextMenu(View view, int idx, FileListAdapter fla) {
-		FileListItem item ;
-		
 		fileioLinkParm.clear();
-		
-		int j=0;
+
+		int prev_selected_cnt=0;
 		for (int i=0;i<fla.getCount();i++) {
-			item = fla.getItem(i);
-			if (item.isChecked()) {
-				j++; 
+			if (fla.getItem(i).isChecked()) {
+				prev_selected_cnt++;
 			}
 		}
-		if (j<=1) {
+		if (prev_selected_cnt==0) {//Not selected
+			setFilelistItemToChecked(fla, idx, true);
+			fla.notifyDataSetChanged();
+			createFilelistContextMenu_Single(fla,idx);
+		} else if (prev_selected_cnt==1) {//Previous selected was single
 			for (int i=0;i<fla.getCount();i++) {
-				item = fla.getItem(i);
-				if (idx==i) {
-					item.setChecked(true);
-					j=i;//set new index no
-				} else {
-					if (item.isChecked()) {
-						item.setChecked(false);
+				if (fla.getItem(i).isChecked()) {
+					if (i!=idx) {
+						setFilelistItemToChecked(fla, i, false);
+						setFilelistItemToChecked(fla, idx, true);
+						fla.notifyDataSetChanged();
 					}
 				}
 			}
-			fla.notifyDataSetChanged();
-			createFilelistContextMenu_Single(view,idx,j,fla) ;
-		} else createFilelistContextMenu_Multiple(view, idx,fla) ;
-		
+			createFilelistContextMenu_Single(fla,idx);
+		} else {
+			boolean already_selected=false;
+			for (int i=0;i<fla.getCount();i++) {
+				if (fla.getItem(i).isChecked()) {
+					if (i==idx) {
+						already_selected=true;
+						break;
+					}
+				}
+			}
+			if (already_selected) {
+				createFilelistContextMenu_Multiple(fla,idx);
+			} else {
+				setAllFilelistItemUnChecked(fla);
+				setFilelistItemToChecked(fla, idx, true);
+				fla.notifyDataSetChanged();
+				createFilelistContextMenu_Single(fla,idx);
+			}
+		}
+
 	};
 
-	private void createFilelistContextMenu_Multiple(View view, int idx,final FileListAdapter fla) {
+	private void createFilelistContextMenu_Multiple(final FileListAdapter fla, int idx) {
 
 		ccMenu.addMenuItem("Copy ",R.drawable.menu_copying)
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
@@ -1835,18 +1872,14 @@ public class SMBExplorerMain extends FragmentActivity {
 		ccMenu.createMenu();
 	};
 	
-	private void createFilelistContextMenu_Single(View view, int idx, int cin,final FileListAdapter fla) {
+	private void createFilelistContextMenu_Single(final FileListAdapter fla, final int idx) {
 		final FileListItem item = fla.getItem(idx);
-		
-		final int itemno ;
-		if (cin>0) itemno = cin;
-			else itemno=idx;
 		
 		ccMenu.addMenuItem("Property",R.drawable.menu_properties)
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
-			  showProperty(fla,"C", item.getName(), item.isDir(),itemno);
+			  showProperty(fla,"C", item.getName(), item.isDir(),idx);
 			  setAllFilelistItemUnChecked(fla);
 		  	}
 	  	});
@@ -1855,7 +1888,7 @@ public class SMBExplorerMain extends FragmentActivity {
 		  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 			  @Override
 			  public void onClick(CharSequence menuTitle) {
-				  invokeTextFileBrowser(fla,"C", item.getName(), item.isDir(),itemno);
+				  invokeTextFileBrowser(fla,"C", item.getName(), item.isDir(),idx);
 				  setAllFilelistItemUnChecked(fla);
 			  	}
 		  	});
@@ -1876,7 +1909,7 @@ public class SMBExplorerMain extends FragmentActivity {
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
-			  renameItem(fla,"C", item.getName(), item.isDir(),itemno);
+			  renameItem(fla,"C", item.getName(), item.isDir(),idx);
 			  setAllFilelistItemUnChecked(fla);
 		  	}
 	  	});
@@ -1979,6 +2012,10 @@ public class SMBExplorerMain extends FragmentActivity {
 			item.setChecked(true);
 		}
 		fla.notifyDataSetChanged();
+	};
+
+	private void setFilelistItemToChecked(FileListAdapter fla, int pos, boolean p) {
+		fla.getItem(pos).setChecked(p);
 	};
 
 	private void setAllProfileItemUnChecked() {

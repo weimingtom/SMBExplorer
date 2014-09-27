@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -133,6 +134,7 @@ public class FileListAdapter extends BaseAdapter {
 	}
 
 	private boolean enableListener=true;
+	private int text_color=-1;
 	
 	@Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -144,7 +146,7 @@ public class FileListAdapter extends BaseAdapter {
 //                v = vi.inflate(R.layout.file_list_item, null);
                 v = vi.inflate(R.layout.file_list_item, parent, false);
                 holder=new ViewHolder();
-
+                
             	holder.cb_cb1=(CheckBox)v.findViewById(R.id.file_list_checkbox);
             	holder.rb_rb1=(RadioButton)v.findViewById(R.id.file_list_radiobtn);
             	holder.iv_image1=(ImageView)v.findViewById(R.id.file_list_icon);
@@ -152,7 +154,8 @@ public class FileListAdapter extends BaseAdapter {
             	holder.tv_size=(TextView)v.findViewById(R.id.file_list_size);
             	holder.tv_moddate=(TextView)v.findViewById(R.id.file_list_date);
             	holder.tv_modtime=(TextView)v.findViewById(R.id.file_list_time);
-
+            	if (text_color==-1) text_color=holder.tv_name.getCurrentTextColor();
+            	
             	v.setTag(holder); 
             } else {
          	   holder= (ViewHolder)v.getTag();
@@ -212,6 +215,17 @@ public class FileListAdapter extends BaseAdapter {
                    		holder.tv_size.setText(ic);
                    	} else {
                    		holder.iv_image1.setImageResource(mIconImage[3]); //sheet
+                   	}
+                   	if (!o.isHidden()) {
+                   		holder.tv_name.setTextColor(text_color);
+		            	holder.tv_size.setTextColor(text_color);
+		            	holder.tv_moddate.setTextColor(text_color);
+		            	holder.tv_modtime.setTextColor(text_color);
+                   	} else {
+                   		holder.tv_name.setTextColor(Color.GRAY);
+		            	holder.tv_size.setTextColor(Color.GRAY);
+		            	holder.tv_moddate.setTextColor(Color.GRAY);
+		            	holder.tv_modtime.setTextColor(Color.GRAY);
                    	}
             	}
                	final int p = position;
