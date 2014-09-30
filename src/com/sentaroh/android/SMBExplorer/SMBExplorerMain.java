@@ -107,6 +107,7 @@ import android.widget.TabWidget;
 import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TextView;
 import static com.sentaroh.android.SMBExplorer.Constants.*;
+
 import com.sentaroh.android.Utilities.*;
 import com.sentaroh.android.Utilities.NotifyEvent.NotifyEventListener;
 import com.sentaroh.android.Utilities.ContextMenu.CustomContextMenu;
@@ -1855,14 +1856,14 @@ public class SMBExplorerMain extends FragmentActivity {
 //			  }
 //		  	});
 //		};
-		ccMenu.addMenuItem("Select all item",R.drawable.blank)
+		ccMenu.addMenuItem("Select all item", R.drawable.select_all)
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
 			  setAllFilelistItemChecked(fla);
 		  	}
 	  	});
-		ccMenu.addMenuItem("Unselect all item",R.drawable.blank)
+		ccMenu.addMenuItem("Unselect all item", R.drawable.select_all)
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
@@ -1977,14 +1978,14 @@ public class SMBExplorerMain extends FragmentActivity {
 //		  	});
 //    	}		
 //		
-		ccMenu.addMenuItem("Select all item",R.drawable.blank)
+		ccMenu.addMenuItem("Select all item", R.drawable.select_all)
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
 			  setAllFilelistItemChecked(fla);
 		  	}
 	  	});
-		ccMenu.addMenuItem("Unselect all item",R.drawable.blank)
+		ccMenu.addMenuItem("Unselect all item", R.drawable.select_all)
 	  	.setOnClickListener(new CustomContextMenuOnClickListener() {
 		  @Override
 		  public void onClick(CharSequence menuTitle) {
