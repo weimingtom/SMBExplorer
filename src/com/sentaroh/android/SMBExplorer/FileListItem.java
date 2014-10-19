@@ -24,14 +24,15 @@ public class FileListItem implements Serializable, Comparable<FileListItem>{
 	private int subDirItemCount=0;
 	private boolean triState=false;
 	private boolean enableItem=true;
+	private boolean hasExtendedAttr=false;
 	
 	public void dump(String id) {
 		String did=(id+"            ").substring(0,12);
-		Log.v("TreeFileListItem",did+"FileName="+fileName+", Caption="+fileCap+", filePath="+filePath);
-		Log.v("TreeFileListItem",did+"isDir="+isDir+", Length="+fileLength+
+		Log.v("FileListItem",did+"FileName="+fileName+", Caption="+fileCap+", filePath="+filePath);
+		Log.v("FileListItem",did+"isDir="+isDir+", Length="+fileLength+
 				", lastModdate="+lastModdate+", isChecked="+isChecked+
-				", canRead="+canRead+",canWrite="+canWrite+", isHidden="+isHidden);
-		Log.v("TreeFileListItem",did+"childListExpanded="+childListExpanded+
+				", canRead="+canRead+",canWrite="+canWrite+", isHidden="+isHidden+", hasExtendedAttr="+hasExtendedAttr);
+		Log.v("FileListItem",did+"childListExpanded="+childListExpanded+
 				", listLevel=="+listLevel+", hideListItem="+hideListItem+
 				", subDirLoaded="+subDirLoaded+", subDirItemCount="+subDirItemCount+
 				", triState="+triState+", enableItem="+enableItem);
@@ -85,6 +86,8 @@ public class FileListItem implements Serializable, Comparable<FileListItem>{
 	public boolean isTriState() {return triState;}
 	public void setEnableItem(boolean p) {enableItem=p;}
 	public boolean isEnableItem() {return enableItem;}
+	public void setHasExtendedAttr(boolean p) {hasExtendedAttr=p;};
+	public boolean hasExtendedAttr() {return hasExtendedAttr;}
 	
 	@Override
 	public int compareTo(FileListItem o) {

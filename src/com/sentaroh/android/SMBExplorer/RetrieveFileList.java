@@ -210,6 +210,7 @@ public class RetrieveFileList implements Runnable  {
 //							fl[i].isDirectory() && 
 							!fn.equals("IPC$") &&
 							!fn.equals("System Volume Information")) {
+						boolean has_ea=fl[i].getAttributes()<16384?false:true;
 						String fp=fl[i].getParent();
 						if (fp.endsWith("/")) fp=fp.substring(0,fp.lastIndexOf("/"));
 						int dirct=0;
@@ -228,6 +229,7 @@ public class RetrieveFileList implements Runnable  {
 									"CanRead="+fl[i].canRead()+", "+
 									"CanWrite="+fl[i].canWrite()+", "+
 									"isHidden="+fl[i].isHidden()+", "+
+									"hasExtendedAttr="+has_ea+", "+
 									"Parent="+fp+", " +
 									"Path="+fl[i].getPath()+", "+
 									"CanonicalPath="+fl[i].getCanonicalPath());
@@ -244,6 +246,7 @@ public class RetrieveFileList implements Runnable  {
 								fl[i].isHidden(),
 								fp,0);
 						fi.setSubDirItemCount(dirct);
+						fi.setHasExtendedAttr(has_ea);
 						rem_list.add(fi);
 						sendDebugLogMsg(2,"I","Filelist added: "+
 							"Name="+fn+", "+
@@ -253,6 +256,7 @@ public class RetrieveFileList implements Runnable  {
 							"CanRead="+fl[i].canRead()+", "+
 							"CanWrite="+fl[i].canWrite()+", "+
 							"isHidden="+fl[i].isHidden()+", "+
+							"hasExtendedAttr="+has_ea+", "+
 							"Parent="+fp+", " +
 							"Path="+fl[i].getPath()+", "+
 							"CanonicalPath="+fl[i].getCanonicalPath());

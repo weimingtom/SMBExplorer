@@ -216,16 +216,23 @@ public class FileListAdapter extends BaseAdapter {
                    	} else {
                    		holder.iv_image1.setImageResource(mIconImage[3]); //sheet
                    	}
-                   	if (!o.isHidden()) {
+                   	if (o.isHidden() || o.hasExtendedAttr()) {
+                   		if (o.hasExtendedAttr()) {
+                       		holder.tv_name.setTextColor(Color.GREEN);
+    		            	holder.tv_size.setTextColor(Color.GREEN);
+    		            	holder.tv_moddate.setTextColor(Color.GREEN);
+    		            	holder.tv_modtime.setTextColor(Color.GREEN);
+                   		} else {
+                       		holder.tv_name.setTextColor(Color.GRAY);
+    		            	holder.tv_size.setTextColor(Color.GRAY);
+    		            	holder.tv_moddate.setTextColor(Color.GRAY);
+    		            	holder.tv_modtime.setTextColor(Color.GRAY);
+                   		}
+                   	} else {
                    		holder.tv_name.setTextColor(text_color);
 		            	holder.tv_size.setTextColor(text_color);
 		            	holder.tv_moddate.setTextColor(text_color);
 		            	holder.tv_modtime.setTextColor(text_color);
-                   	} else {
-                   		holder.tv_name.setTextColor(Color.GRAY);
-		            	holder.tv_size.setTextColor(Color.GRAY);
-		            	holder.tv_moddate.setTextColor(Color.GRAY);
-		            	holder.tv_modtime.setTextColor(Color.GRAY);
                    	}
             	}
                	final int p = position;
