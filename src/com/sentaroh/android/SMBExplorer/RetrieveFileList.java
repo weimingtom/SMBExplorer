@@ -31,7 +31,6 @@ import java.util.List;
 import jcifs.smb.NtlmPasswordAuthentication;
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
-import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 import com.sentaroh.android.Utilities.*;
@@ -39,8 +38,6 @@ import com.sentaroh.android.Utilities.*;
 public class RetrieveFileList implements Runnable  {
 	private final static String DEBUG_TAG = "SMBExplorer";
 	
-	private int debugLevel = 0;
-
 	private ThreadCtrl getFLCtrl=null;
 	
 	private ArrayList<FileListItem> remoteFileList=null;
@@ -54,12 +51,14 @@ public class RetrieveFileList implements Runnable  {
 	private Handler uiHandler=null;
 	
 	private NtlmPasswordAuthentication ntlmPaswordAuth;
+	
+	private GlobalParameters mGp=null;
 
-	public RetrieveFileList(Context c, 
-			ThreadCtrl ac, int dl, String ru, List<String> d_list,
+	public RetrieveFileList(GlobalParameters gp,  
+			ThreadCtrl ac, String ru, List<String> d_list,
 			String user, String pass, NotifyEvent ne) {
 //		currContext=c;
-		debugLevel=dl;
+		mGp=gp;
 		
 		getFLCtrl=ac; //new SMBExplorerThreadCtrl();
 		notifyEvent=ne;
@@ -80,12 +79,11 @@ public class RetrieveFileList implements Runnable  {
 	public final static String OPCD_FILE_LIST="FL"; 
 	public final static String OPCD_EXISTS_CHECK="EC";
 	
-	public RetrieveFileList(Context c, 
-			ThreadCtrl ac, int dl, String opcd, String ru, 
+	public RetrieveFileList(GlobalParameters gp, 
+			ThreadCtrl ac, String opcd, String ru, 
 			ArrayList<FileListItem> fl,
 			String user, String pass, NotifyEvent ne) {
-//		currContext=c;
-		debugLevel=dl;
+		mGp=gp;
 		remoteFileList=fl;
 		
 		uiHandler=new Handler();
@@ -307,7 +305,7 @@ public class RetrieveFileList implements Runnable  {
 	
 	
 	private void sendDebugLogMsg(int lvl, final String cat, final String msg) {
-		if (debugLevel>=lvl) {
+		if (mGp.debugLevel>=lvl) {
 			Log.v(DEBUG_TAG,"FILELIST"+" "+msg);
 		}
 	};

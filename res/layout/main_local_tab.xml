@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:ignore="HardcodedText" >
+    tools:ignore="HardcodedText,RtlHardcoded,RtlSymmetry,ButtonOrder" >
 
     <Spinner
         android:id="@+id/explorer_filelist_local_tab_dir"
@@ -59,7 +59,28 @@
                 android:text="Cancel"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
-
+		<LinearLayout
+		        android:id="@+id/explorer_filelist_local_dialog"
+		        android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:orientation="vertical"
+		        android:visibility="gone" >
+		
+		        <TextView
+		            android:id="@+id/explorer_filelist_local_dialog_msg"
+		            android:layout_width="fill_parent"
+		            android:layout_height="wrap_content"
+		            android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		        <Button
+		            android:id="@+id/explorer_filelist_local_dialog_close"
+		            android:layout_width="fill_parent"
+		            android:layout_height="wrap_content"
+		            android:layout_gravity="center_vertical"
+		            android:text="Close"
+		            android:textAppearance="?android:attr/textAppearanceMedium" />
+		</LinearLayout>
+        
         <LinearLayout
             android:id="@+id/explorer_filelist_local_filelist"
             android:layout_width="fill_parent"
@@ -147,5 +168,7 @@
             android:textAppearance="?android:attr/textAppearanceSmall"/>
         
     </LinearLayout>
+
+    <include layout="@layout/main_copy_cut_view"/>
     
 </LinearLayout>

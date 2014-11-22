@@ -4,6 +4,11 @@
     <string name="settings_msl_scan_summary_ena">Scaned</string>
     <string name="settings_msl_scan_summary_dis">Not Scan</string>
     <string name="settings_msl_scan">settings_msl_scan</string>
+
+    <string name="settings_use_root_privilege_title">root pivilege</string>
+    <string name="settings_use_root_privilege_summary_ena">Use root pivilege</string>
+    <string name="settings_use_root_privilege_summary_not_granted">root privilege not granted</string>
+    <string name="settings_use_root_privilege">settings_use_root_privilege</string>
     
     <string name="settings_debug_title">Debug level</string>
 	<string name="settings_debug_summary">Current debug level=0</string>
@@ -31,16 +36,6 @@
     <string name="settings_exit_clean_summary_dis">Do not kill application process.</string>
     <string name="settings_exit_clean_summary_ena">Kill application process after application cleanup.</string>
 	<string name="settings_exit_clean">settings_exit_clean</string>
-    
-    <string name="settings_default_user">settings_default_user</string>
-	<string name="settings_default_user_title">Default SMB user name</string>        
-    <string name="settings_default_user_summary">Current setting=</string>
-	<string name="settings_default_pass">settings_default_pass</string>
-	<string name="settings_default_pass_title">Default SMB password</string>        
-    <string name="settings_default_pass_summary"></string>
-	<string name="settings_default_addr">settings_default_addr</string>
-	<string name="settings_default_addr_title">Default SMB IP address</string>        
-    <string name="settings_default_addr_summary">Current setting=</string>
     
     <string name="settings_smb_tuning_title">SMB tuning parameters</string>
     <string name="settings_smb_tuning_summary"></string>

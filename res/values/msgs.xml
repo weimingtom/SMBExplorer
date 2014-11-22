@@ -68,5 +68,9 @@
    	<string name="msgs_ip_address_range_dlg_begin_addr_gt_end_addr">Begin address is greater than end address.</string>
    	<string name="msgs_ip_address_range_dlg_end_range_error">End address range is must be 1 to 254.</string>
    	<string name="msgs_ip_address_range_dlg_not_private">Global address was can not be scan.</string>
+   	
+   	<string name="msgs_tab_title_prof">Profile</string>
+   	<string name="msgs_tab_title_local">Local</string>
+   	<string name="msgs_tab_title_remote">Remote</string>
    		
 </resources>

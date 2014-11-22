@@ -52,6 +52,7 @@ public class ProfileListAdapter extends ArrayAdapter<ProfileListItem> {
 	public ProfileListItem getItem(int i) {
 		 return items.get(i);
 	}
+	
 	@SuppressWarnings("unused")
 	@Override
     public View getView(int position, View convertView, ViewGroup parent) {

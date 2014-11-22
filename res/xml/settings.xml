@@ -6,7 +6,11 @@
 			android:key="settings_msl_scan"
 			android:title="@string/settings_msl_scan_title"
 			android:summary="@string/settings_msl_scan_summary_dis" />
-	    	    
+	    <CheckBoxPreference
+			android:key="settings_use_root_privilege"
+			android:title="@string/settings_use_root_privilege_title"
+			android:summary="@string/settings_use_root_privilege_summary_ena" />
+	    	    	    
 	    <ListPreference
 			android:key="settings_debug_level"
 			android:title="@string/settings_debug_title"
@@ -19,27 +23,6 @@
 		android:key="settings_exit_clean"
 		android:title="@string/settings_exit_clean_title"
 		android:summary="@string/settings_exit_clean_summary_ena" />
-	
-	<PreferenceScreen 
-	    android:title="Default SMB settings"
-	    android:summary="for add remote profile"
-	    >
-		<EditTextPreference
-			android:key="@string/settings_default_user"
-			android:title="@string/settings_default_user_title"
-			android:summary="@string/settings_default_user_summary"
-			android:inputType="text"/>
-		<EditTextPreference
-			android:key="@string/settings_default_pass"
-			android:title="@string/settings_default_pass_title"
-			android:summary="@string/settings_default_pass_summary"
-			android:inputType="textPassword"/>
-		<EditTextPreference
-			android:key="@string/settings_default_addr"
-			android:title="@string/settings_default_addr_title"
-			android:summary="@string/settings_default_addr_summary"
-			android:inputType="text"/>
-	</PreferenceScreen>
     <ListPreference
 		android:key="settings_smb_perform_class"
 		android:title="@string/settings_smb_perform_class_title"

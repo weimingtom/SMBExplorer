@@ -23,28 +23,40 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.util.Log;
+import android.widget.Toast;
 
 public class SMBExpolorerSettings extends PreferenceActivity {
+	private Context mContext=null;
 	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.settings);
 		
+		mContext=getApplicationContext();
+		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
+		PreferenceManager pm=getPreferenceManager();
+		setRootPrivelegeCBListener(pm, mContext);
+		
 		initSettingParms(prefs,getString(R.string.settings_exit_clean));
 		initSettingParms(prefs,getString(R.string.settings_debug_level));
 		initSettingParms(prefs,getString(R.string.settings_msl_scan));
-		initSettingParms(prefs,getString(R.string.settings_default_user));
-		initSettingParms(prefs,getString(R.string.settings_default_pass));
-		initSettingParms(prefs,getString(R.string.settings_default_addr));
+		initSettingParms(prefs,getString(R.string.settings_use_root_privilege));
 		
     	initSettingParms(prefs,getString(R.string.settings_smb_perform_class));
     	//Debug only
@@ -103,6 +115,8 @@ public class SMBExpolorerSettings extends PreferenceActivity {
     			findPreference(key)
     				.setSummary(getString(R.string.settings_msl_scan_summary_dis));
     		}
+    	} else if (key.equals(getString(R.string.settings_use_root_privilege))) {
+    		isChecked=true;
     	} else if (key.equals(getString(R.string.settings_exit_clean))) {
     		isChecked=true;
     		if (prefs.getBoolean(key, true)) {
@@ -113,9 +127,69 @@ public class SMBExpolorerSettings extends PreferenceActivity {
     				.setSummary(getString(R.string.settings_exit_clean_summary_dis));
     		}
     	}
-
 		return isChecked;
 	};
+	
+	private void setRootPrivelegeCBListener(PreferenceManager pm, Context c) {
+		CheckBoxPreference cbp=(CheckBoxPreference) pm.findPreference(c.getString(R.string.settings_use_root_privilege));
+		cbp.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {  
+	          @Override  
+	          public boolean onPreferenceChange( Preference preference, Object newValue) {
+	        	  boolean n_v=(Boolean)newValue;
+	        	  boolean result=false;
+	        	  if (n_v) {
+	        		  result=isSuperUserAvailable();
+	        		  if (!result)
+	        			  Toast.makeText(mContext, 
+        					  mContext.getString(R.string.settings_use_root_privilege_summary_not_granted), Toast.LENGTH_LONG).show();
+		          } else {
+		        	  result=true;
+		          }
+		          return result;  
+	          }      
+		});
+	};
+	
+	public static boolean isSuperUserAvailable() {
+		  Process p=null;
+		  String out_msg="";
+		  boolean result=false;
+		  try {
+			  p = Runtime.getRuntime().exec("su");//command);
+			  DataOutputStream cmd_in=new DataOutputStream(p.getOutputStream());
+			  cmd_in.writeBytes("id"+"\n");
+			  cmd_in.flush();
+			  cmd_in.writeBytes("exit\n");
+			  cmd_in.flush();
+			  BufferedReader std_out = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			  BufferedReader std_err = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+			  String line;
+			  while ((line = std_out.readLine()) != null) {
+		            out_msg += line + "\n";
+			  }
+//			  Log.v("","ret="+out_msg);
+			  cmd_in.close();
+			  std_out.close();
+			  std_err.close();
+			  p.waitFor();
+			  p.destroy();
+			  p=null;
+			  if (out_msg.equals("")) {
+				  //SU not granted
+				  result=false;
+			  } else {
+				  result=true;
+			  }
+		  } catch (IOException e) {
+			  if (p!=null) p.destroy();
+			  e.printStackTrace();
+		  } catch (InterruptedException e) {
+			  if (p!=null) p.destroy();
+			  e.printStackTrace();
+		  }
+		  return result;
+	};
+	
 	@SuppressWarnings("deprecation")
 	private boolean checkLogSettings(SharedPreferences prefs, String key) {
 		boolean isChecked = false;
@@ -127,6 +201,7 @@ public class SMBExpolorerSettings extends PreferenceActivity {
     	}
     	return isChecked;
 	};
+	
 	@SuppressWarnings("deprecation")
 	private boolean checkMediaScannerSettings(SharedPreferences prefs, String key) {
 		boolean isChecked = false;
@@ -140,24 +215,11 @@ public class SMBExpolorerSettings extends PreferenceActivity {
     	}
     	return isChecked;
 	};
+	
 	@SuppressWarnings("deprecation")
 	private boolean checkSmbSettings(SharedPreferences prefs, String key) {
 		boolean isChecked = false;
-		if (key.equals(getString(R.string.settings_default_user))) {
-			isChecked=true;
-	    	findPreference(getString(R.string.settings_default_user).toString())
-				.setSummary("Current setting="+
-						prefs.getString(getString(R.string.settings_default_user), "0"));
-		} else if (key.equals(getString(R.string.settings_default_pass))) {
-			isChecked=true;
-	    	findPreference(getString(R.string.settings_default_pass).toString())
-				.setSummary("Current setting=--------");
-		} else if (key.equals(getString(R.string.settings_default_addr))) {
-			isChecked=true;
-	    	findPreference(getString(R.string.settings_default_addr).toString())
-				.setSummary("Current setting="+
-						prefs.getString(getString(R.string.settings_default_addr), "0"));
-    	} else if (key.equals(getString(R.string.settings_smb_perform_class))) {
+		if (key.equals(getString(R.string.settings_smb_perform_class))) {
 			isChecked=true;
         	if (prefs.getString(key, "").equals("0")) {
         		findPreference(key)
@@ -236,9 +298,9 @@ public class SMBExpolorerSettings extends PreferenceActivity {
         		findPreference(key).setSummary(prefs.getString(key, ""));
         	}
     	}
-
     	return isChecked;
 	};
+	
 	@SuppressWarnings("deprecation")
 	private boolean checkOtherSettings(SharedPreferences prefs, String key) {
 		boolean isChecked = true;
