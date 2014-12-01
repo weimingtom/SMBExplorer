@@ -130,7 +130,7 @@ public class FileIo implements Runnable {
 		mTimeZoneDiff=tz.getRawOffset();
 		
 		if (lmp!=null && lmp.startsWith("/")) {
-			if (isAppSpecificDirectory(cc, lmp)) {
+			if (isAppSpecificDirectoryExists(cc, lmp)) {
 				sendDebugLogMsg(1, "I", "Local file last modified time was reset by application specific directory");
 				mGp.useSetLastModifiedByAppSpecificDir=true;
 				mAppSpecificDirName=lmp+"/Android/data/"+mAppPackageName+"/files";
@@ -167,7 +167,7 @@ public class FileIo implements Runnable {
 		return result;
 	};
 
-	final public static boolean isAppSpecificDirectory(Context c, String lmp) {
+	final public static boolean isAppSpecificDirectoryExists(Context c, String lmp) {
 		boolean result=false;
 		File[] fl=ContextCompat.getExternalFilesDirs(c,null);
 		if (fl!=null) {//Check App specific dir first
@@ -380,7 +380,10 @@ public class FileIo implements Runnable {
 
 	static private void sendDebugLogMsg(int lvl, final String log_cat, final String log_msg) {
 
-		if (mGp.debugLevel>0) Log.v(DEBUG_TAG,log_msg);
+		if (mGp.debugLevel>0) {
+			String m_txt=log_cat+" "+"FileIO  "+" "+log_msg;
+			Log.v(DEBUG_TAG,m_txt);
+		}
 	};
 	
 	private static boolean createLocalDir(String newUrl) {
@@ -1230,7 +1233,9 @@ public class FileIo implements Runnable {
 		return t_name;
 	};
 	
+	@SuppressWarnings("unused")
 	private static void setLocalFileLastModifiedTime(File lf, long lmtime) {
+//		Log.v("","fp="+lf.getPath());
 		if (mGp.useSetLastModifiedByTouchCommand) {
 			String lmdt=DateUtil.convDateTimeTo_YearMonthDayHourMinSec(lmtime-mTimeZoneDiff);
 			String dt=lmdt.substring(0, 10).replace("/", "");
@@ -1240,7 +1245,8 @@ public class FileIo implements Runnable {
 //			Log.v("","dt="+lmdt+", cmd="+cmd+", lm="+lmtime+", tz="+mTimeZoneDiff);
 			executeSuCmd(cmd);
 		} else {
-			lf.setLastModified(lmtime);
+			boolean rc=lf.setLastModified(lmtime);
+//			Log.v("","rc="+rc);
 		}
 	};
 	
@@ -1381,9 +1387,7 @@ public class FileIo implements Runnable {
 	        bos.write( fileIoArea, 0, n );
 	        tot += n;
 	        if (tot<fileBytes) 
-	        	sendMsgToProgDlg(
-	        			String.format(title_header+" %s,  %s%% completed.",fn,
-	        					(tot*100)/fileBytes));
+	        	sendMsgToProgDlg(String.format(title_header+" %s,  %s%% completed.",fn, (tot*100)/fileBytes));
 	    }
 		bis.close();
 		bos.flush();
@@ -1399,9 +1403,7 @@ public class FileIo implements Runnable {
 	    
 	    if (mGp.settingsMslScan) scanMediaStoreLibraryFile(toUrl);
 	    
-	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+tot +
-	    		" bytes transfered in " + 
-	    		t+" mili seconds at " + calTransferRate(tot,t));
+	    sendLogMsg("I",fromUrl+" was copied to "+toUrl+", "+tot + " bytes transfered in " + t+" mili seconds at " + calTransferRate(tot,t));
 	    return true;
     }
     

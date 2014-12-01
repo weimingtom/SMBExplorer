@@ -15,7 +15,7 @@
     <application
         android:icon="@drawable/smbexplorer"
         android:label="@string/app_name" 
-        android:theme="@style/MainTheme"
+        android:theme="@style/Theme.AppCompat"
         android:name="GlobalParameters" 
         android:largeHeap="true">
         <activity
@@ -23,7 +23,6 @@
             android:name=".SMBExplorerMain"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="unspecified" 
-            android:theme="@style/Theme.AppCompat"
             android:launchMode="standard" android:alwaysRetainTaskState="true">
             <intent-filter >
                 <action android:name="android.intent.action.MAIN" />

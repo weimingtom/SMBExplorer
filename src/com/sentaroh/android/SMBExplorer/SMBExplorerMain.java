@@ -286,11 +286,16 @@ public class SMBExplorerMain extends ActionBarActivity {
 //				);
 		
 		ContextCompat.getExternalFilesDirs(mContext, null);
+		
+//		File[] fl= getExternalMediaDirs();
+//		if (fl!=null) {
+//			for(int i=0;i<fl.length;i++) Log.v("","n="+fl[i].getPath());
+//		}
 
 //		System.setProperty( "jcifs.netbios.retryTimeout", "200");
 //		Log.v("","esd="+LocalMountPoint.getExternalStorageDir());
 //		ArrayList<String>mpl=LocalMountPoint.buildLocalMountPointList();
-//		for (int i=0;i<mpl.size();i++) Log.v("","mp="+mpl.get(i)); 
+//		for (int i=0;i<mpl.size();i++) Log.v("","mp="+mpl.get(i));
 	};
 
 	@Override
@@ -764,35 +769,41 @@ public class SMBExplorerMain extends ActionBarActivity {
 		return mUiEnabled;
 	};
 
-	private void setUiEnabled(boolean p) {
-//		Log.v("","p="+p);
+	private void setUiEnabled(boolean enabled) {
+//		Log.v("","enabled="+enabled);
 //		Thread.dumpStack();
-		mUiEnabled=p;
+		if ((enabled && mUiEnabled) || (!enabled && !mUiEnabled)) return;  
+		mUiEnabled=enabled;
 		TabWidget tw=(TabWidget)findViewById(android.R.id.tabs);
 		Spinner sp_local=(Spinner)findViewById(R.id.explorer_filelist_local_tab_dir);
 		Spinner sp_remote=(Spinner)findViewById(R.id.explorer_filelist_remote_tab_dir);
 
-		if (p) {
+		if (enabled) {
 			tw.setEnabled(true);
 			sp_local.setEnabled(true);
 			sp_remote.setEnabled(true);
 			remoteFileListView.setEnabled(true);
 			localFileListView.setEnabled(true);
+			remoteFileListView.setVisibility(ListView.VISIBLE);
+			localFileListView.setVisibility(ListView.VISIBLE);
+			
 		} else {
 			tw.setEnabled(false);
 			sp_local.setEnabled(false);
 			sp_remote.setEnabled(false);
 			remoteFileListView.setEnabled(false);
 			localFileListView.setEnabled(false);
+			remoteFileListView.setVisibility(ListView.INVISIBLE);
+			localFileListView.setVisibility(ListView.INVISIBLE);
 		}
-		localFileListUpBtn.setClickable(p);
-		localFileListTopBtn.setClickable(p);
-		localFileListCreateBtn.setEnabled(p);
-		localFileListReloadBtn.setEnabled(p);
-		remoteFileListUpBtn.setClickable(p);
-		remoteFileListTopBtn.setClickable(p);
-		remoteFileListCreateBtn.setEnabled(p);
-		remoteFileListReloadBtn.setEnabled(p);
+		localFileListUpBtn.setClickable(enabled);
+		localFileListTopBtn.setClickable(enabled);
+		localFileListCreateBtn.setEnabled(enabled);
+		localFileListReloadBtn.setEnabled(enabled);
+		remoteFileListUpBtn.setClickable(enabled);
+		remoteFileListTopBtn.setClickable(enabled);
+		remoteFileListCreateBtn.setEnabled(enabled);
+		remoteFileListReloadBtn.setEnabled(enabled);
 
 		setPasteButtonEnabled();
 		
@@ -1560,62 +1571,61 @@ public class SMBExplorerMain extends ActionBarActivity {
 				for (int j = 0; j < parent.getChildCount(); j++)
 	                parent.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 				if (!isUiEnabled()) return;
-				try {
-					setUiEnabled(false);
-					FileListItem item = localFileListAdapter.getItem(position);
-					sendDebugLogMsg(1,"I","Local filelist item clicked :" + item.getName());
-					if (item.isDir()) {
-//						if (item.getSubDirItemCount()==0) return;
-						FileListCacheItem dhi_c=getFileListCache(item.getPath()+"/"+item.getName(), localFileListCache);
-						ArrayList<FileListItem> tfl=null;
-						if (dhi_c==null) {
-							tfl=createLocalFileList(false,item.getPath()+"/"+item.getName());
-						} else {
-							tfl=dhi_c.file_list;
-						}
-						if (tfl==null) return;
-						String t_dir=item.getPath()+"/"+item.getName();
-						localCurrFLI.pos_fv=localFileListView.getFirstVisiblePosition();
-						if (localFileListView.getChildAt(0)!=null)
-							localCurrFLI.pos_top=localFileListView.getChildAt(0).getTop();
-						localDir=t_dir.replace(localBase+"/", "");
-						localFileListAdapter.setDataList(tfl);
-						localFileListAdapter.notifyDataSetChanged();
-						for (int j = 0; j < localFileListView.getChildCount(); j++)
-							localFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
-						setFilelistCurrDir(localFileListDirSpinner,localBase, localDir);
-						setFileListPathName(localFileListPathBtn,localFileListCache,localBase,localDir);
-						setEmptyFolderView();
-						localFileListView.setSelection(0);
-						putDirHist(localBase, localDir, localDirHist);
-						
-						if (dhi_c==null) {
-							FileListCacheItem dhi=new FileListCacheItem();
-							dhi.profile_name=localBase;
-							dhi=new FileListCacheItem();
-							dhi=new FileListCacheItem();
-							dhi.base=localBase;
-							dhi.directory=item.getPath()+"/"+item.getName();
-							dhi.file_list=tfl;
-							dhi.directory_history.addAll(localDirHist);
-							putFileListCache(dhi,localFileListCache);
-							localCurrFLI=dhi;
-						} else {
-							localCurrFLI=dhi_c;
-						}
-						localFileListTopBtn.setEnabled(true);
-						localFileListUpBtn.setEnabled(true);
+				setUiEnabled(false);
+				FileListItem item = localFileListAdapter.getItem(position);
+				sendDebugLogMsg(1,"I","Local filelist item clicked :" + item.getName());
+				if (item.isDir()) {
+//					if (item.getSubDirItemCount()==0) return;
+					FileListCacheItem dhi_c=getFileListCache(item.getPath()+"/"+item.getName(), localFileListCache);
+					ArrayList<FileListItem> tfl=null;
+					if (dhi_c==null) {
+						tfl=createLocalFileList(false,item.getPath()+"/"+item.getName());
 					} else {
-						if (isFileListItemSelected(localFileListAdapter)) {
-							item.setChecked(!item.isChecked());
-							localFileListAdapter.notifyDataSetChanged();
-						} else {
-//				            view.setBackgroundColor(Color.DKGRAY);
-							startLocalFileViewerIntent(item);
-						}
+						tfl=dhi_c.file_list;
 					}
-				} finally {
+					if (tfl==null) return;
+					String t_dir=item.getPath()+"/"+item.getName();
+					localCurrFLI.pos_fv=localFileListView.getFirstVisiblePosition();
+					if (localFileListView.getChildAt(0)!=null)
+						localCurrFLI.pos_top=localFileListView.getChildAt(0).getTop();
+					localDir=t_dir.replace(localBase+"/", "");
+					localFileListAdapter.setDataList(tfl);
+					localFileListAdapter.notifyDataSetChanged();
+					for (int j = 0; j < localFileListView.getChildCount(); j++)
+						localFileListView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
+					setFilelistCurrDir(localFileListDirSpinner,localBase, localDir);
+					setFileListPathName(localFileListPathBtn,localFileListCache,localBase,localDir);
+					setEmptyFolderView();
+					localFileListView.setSelection(0);
+					putDirHist(localBase, localDir, localDirHist);
+					
+					if (dhi_c==null) {
+						FileListCacheItem dhi=new FileListCacheItem();
+						dhi.profile_name=localBase;
+						dhi=new FileListCacheItem();
+						dhi=new FileListCacheItem();
+						dhi.base=localBase;
+						dhi.directory=item.getPath()+"/"+item.getName();
+						dhi.file_list=tfl;
+						dhi.directory_history.addAll(localDirHist);
+						putFileListCache(dhi,localFileListCache);
+						localCurrFLI=dhi;
+					} else {
+						localCurrFLI=dhi_c;
+					}
+					localFileListTopBtn.setEnabled(true);
+					localFileListUpBtn.setEnabled(true);
 					setUiEnabled(true);
+				} else {
+					if (isFileListItemSelected(localFileListAdapter)) {
+						item.setChecked(!item.isChecked());
+						localFileListAdapter.notifyDataSetChanged();
+						setUiEnabled(true);
+					} else {
+						setUiEnabled(true);
+//			            view.setBackgroundColor(Color.DKGRAY);
+						startLocalFileViewerIntent(item);
+					}
 				}
 			}
 		});
@@ -2261,6 +2271,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 			ntfy.setListener(new NotifyEventListener() {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
+					Log.v("","positive");
 					try {
 						Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
 						intent.setDataAndType(
@@ -2276,7 +2287,9 @@ public class SMBExplorerMain extends ActionBarActivity {
 					}
 				}
 				@Override
-				public void negativeResponse(Context c,Object[] o) {}
+				public void negativeResponse(Context c,Object[] o) {
+					Log.v("","negative");
+				}
 			});
 			downloadRemoteFile(fla, item, remoteBase, ntfy );
 		} else {
@@ -2296,7 +2309,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 				mGp.SMBExplorerRootDir+"/SMBExplorer/download/",item.getName(),"",
 				smbUser,smbPass,false);
 		startFileioTask(fla,FILEIO_PARM_DOWLOAD_REMOTE_FILE,fileioLinkParm,
-				item.getName(),p_ntfy, null);
+				item.getName(),p_ntfy, mGp.SMBExplorerRootDir);
 	};
 	
 	private ThreadCtrl mTcFileIoTask=null;
@@ -2395,7 +2408,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 //						commonDlg.showCommonDialog(false,"W","File I/O task was cancelled.","",null);
 						showDialogMsg("W","File I/O task was cancelled.","");
 						sendLogMsg("W","File I/O task was cancelled.");
-						refreshFilelistView();
+//						refreshFilelistView();
 					} else {
 //						commonDlg.showCommonDialog(false,"E","File I/O task was failed."+"\n"+
 //										mTcFileIoTask.getThreadMessage(),"",null);
@@ -2454,6 +2467,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 			public void onClick(View v) {
 				hideLocalDialogView();
 				hideRemoteDialogView();
+				setUiEnabled(true);
 			}
 			
 		};
@@ -3426,10 +3440,11 @@ public class SMBExplorerMain extends ActionBarActivity {
 		th.start();
 	};
 	
+	private int dialogBackgroundColor=0xff111111;
 	private void showRemoteProgressView() {
 		setUiEnabled(false);
 		mRemoteProgressView.setVisibility(LinearLayout.VISIBLE);
-		mRemoteProgressView.setBackgroundColor(Color.BLACK);
+		mRemoteProgressView.setBackgroundColor(dialogBackgroundColor);
 		mRemoteProgressView.bringToFront();
 	};
 
@@ -3441,7 +3456,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 	private void showRemoteDialogView() {
 		setUiEnabled(false);
 		mRemoteDialogView.setVisibility(LinearLayout.VISIBLE);
-		mRemoteDialogView.setBackgroundColor(Color.BLACK);
+		mRemoteDialogView.setBackgroundColor(dialogBackgroundColor);
 		mRemoteDialogView.bringToFront();
 	};
 
@@ -3453,7 +3468,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 	private void showLocalDialogView() {
 		setUiEnabled(false);
 		mLocalDialogView.setVisibility(LinearLayout.VISIBLE);
-		mLocalDialogView.setBackgroundColor(Color.BLACK);
+		mLocalDialogView.setBackgroundColor(dialogBackgroundColor);
 		mLocalDialogView.bringToFront();
 	};
 
@@ -3465,7 +3480,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 	private void showLocalProgressView() {
 		setUiEnabled(false);
 		mLocalProgressView.setVisibility(LinearLayout.VISIBLE);
-		mLocalProgressView.setBackgroundColor(Color.BLACK);
+		mLocalProgressView.setBackgroundColor(dialogBackgroundColor);
 		mLocalProgressView.bringToFront();
 	};
 
