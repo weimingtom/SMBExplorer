@@ -163,7 +163,7 @@ public class FileIo implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Log.v("","result="+result+", lmp="+lmp);
+//		Log.v("","result="+result+", lmp="+lmp);
 		return result;
 	};
 
@@ -954,7 +954,7 @@ public class FileIo implements Runnable {
 
     private static boolean isSameMountPoint(String f_fp, String t_fp) {
     	boolean result=false;
-    	ArrayList<String> ml=LocalMountPoint.buildLocalMountPointList(mContext);
+    	ArrayList<String> ml=LocalMountPoint.getLocalMountPointList(mContext);
 //    	for (int i=0;i<ml.size();i++) Log.v("","ml="+ml.get(i));
     	if (LocalMountPoint.isExternal2MountPioint(f_fp) || 
     			LocalMountPoint.isExternal2MountPioint(t_fp)) {
@@ -1210,6 +1210,7 @@ public class FileIo implements Runnable {
 	    
     	setLocalFileLastModifiedTime(t_lf, iLf.lastModified());
     	
+//    	Log.v("","tmp_file="+tmp_file+", out="+toUrl);
 	    File oLf = new File(toUrl);
     	oLf.delete();
     	t_lf.renameTo(oLf);
@@ -1233,23 +1234,23 @@ public class FileIo implements Runnable {
 		return t_name;
 	};
 	
-	@SuppressWarnings("unused")
-	private static void setLocalFileLastModifiedTime(File lf, long lmtime) {
+	private static void setLocalFileLastModifiedTime(File olf, long lmtime) {
 //		Log.v("","fp="+lf.getPath());
 		if (mGp.useSetLastModifiedByTouchCommand) {
 			String lmdt=DateUtil.convDateTimeTo_YearMonthDayHourMinSec(lmtime-mTimeZoneDiff);
 			String dt=lmdt.substring(0, 10).replace("/", "");
 			String hm=lmdt.substring(11, 17).replace(":", "");
 			String ss=lmdt.substring(17, 19);
-			String cmd="/system/xbin/touch -c -t "+dt+hm+"."+ss+" \""+lf.getPath()+"\"";
+			String cmd="/system/xbin/touch -c -t "+dt+hm+"."+ss+" \""+olf.getPath()+"\"";
+			Log.v("","cmd="+cmd);
 //			Log.v("","dt="+lmdt+", cmd="+cmd+", lm="+lmtime+", tz="+mTimeZoneDiff);
 			executeSuCmd(cmd);
 		} else {
-			boolean rc=lf.setLastModified(lmtime);
-//			Log.v("","rc="+rc);
+			boolean rc=olf.setLastModified(lmtime);
+			Log.v("","rc="+rc);
 		}
 	};
-	
+
 	private static String executeSuCmd(String cmd) {
 		String result="";
 		if (mGp.useSetLastModifiedByTouchCommand) {

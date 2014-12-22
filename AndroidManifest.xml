@@ -36,21 +36,6 @@
             android:screenOrientation="unspecified">
         </activity>
 
-        <receiver 
-    	    android:name="com.sentaroh.android.SMBExplorer.Log.LogReceiver"
-    	    android:exported="false" android:process=":Log">
-			<intent-filter>
-			    <action android:name="android.intent.action.ACTION_SHUTDOWN" />
-			    <action android:name="android.intent.action.MEDIA_MOUNTED" />
-			    <action android:name="android.intent.action.MEDIA_EJECT" />
-				<action android:name="com.sentaroh.android.SMBExplorer.ACTION_LOG_SEND" />
-				<action android:name="com.sentaroh.android.SMBExplorer.ACTION_LOG_RESET" />
-				<action android:name="com.sentaroh.android.SMBExplorer.ACTION_LOG_DELETE" />
-				<action android:name="com.sentaroh.android.SMBExplorer.ACTION_LOG_ROTATE" />
-				<action android:name="com.sentaroh.android.SMBExplorer.ACTION_LOG_FLUSH" />
-			</intent-filter>
-		</receiver>
-        
     </application>
 
 </manifest>

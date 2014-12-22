@@ -151,6 +151,8 @@ public class SMBExplorerMain extends ActionBarActivity {
 			localFileListPasteBtn=null, localFileListCreateBtn=null,
 			localFileListReloadBtn=null;
 
+	private int dialogBackgroundColor=0xff111111;
+
 	private Button remoteFileListPathBtn=null;
 	private TextView remoteFileListEmptyView=null;
 	private Button remoteFileListUpBtn=null;
@@ -294,7 +296,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 
 //		System.setProperty( "jcifs.netbios.retryTimeout", "200");
 //		Log.v("","esd="+LocalMountPoint.getExternalStorageDir());
-//		ArrayList<String>mpl=LocalMountPoint.buildLocalMountPointList();
+//		ArrayList<String>mpl=LocalMountPoint.getLocalMountPointList();
 //		for (int i=0;i<mpl.size();i++) Log.v("","mp="+mpl.get(i));
 	};
 
@@ -612,6 +614,11 @@ public class SMBExplorerMain extends ActionBarActivity {
 		mLocalDialogCloseBtn=(Button)findViewById(R.id.explorer_filelist_local_dialog_close);
 		mRemoteDialogMsg=(TextView)findViewById(R.id.explorer_filelist_remote_dialog_msg);
 		mRemoteDialogCloseBtn=(Button)findViewById(R.id.explorer_filelist_remote_dialog_close);
+		
+		if (Build.VERSION.SDK_INT==10) dialogBackgroundColor=Color.BLACK;
+		else if (Build.VERSION.SDK_INT==19) dialogBackgroundColor=0xff181818; //4.4
+		else if (Build.VERSION.SDK_INT==18) dialogBackgroundColor=0xff101010; //4.3
+		else dialogBackgroundColor=0xff101010; //Other
 
 		setPasteButtonEnabled();
 	};
@@ -3440,7 +3447,6 @@ public class SMBExplorerMain extends ActionBarActivity {
 		th.start();
 	};
 	
-	private int dialogBackgroundColor=0xff111111;
 	private void showRemoteProgressView() {
 		setUiEnabled(false);
 		mRemoteProgressView.setVisibility(LinearLayout.VISIBLE);
@@ -3989,7 +3995,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 	
 	private List<ProfileListItem> createLocalProfileEntry() {
 		List<ProfileListItem> lcl = new ArrayList<ProfileListItem>();
-		ArrayList<String> ml=LocalMountPoint.buildLocalMountPointList(mContext);
+		ArrayList<String> ml=LocalMountPoint.getLocalMountPointList(mContext);
 //		ArrayList<String> cpath=new ArrayList<String>();
 //		try {
 //			for (String ffn : ml) {
