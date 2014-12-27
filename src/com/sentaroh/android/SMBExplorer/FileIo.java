@@ -1237,7 +1237,7 @@ public class FileIo implements Runnable {
 	private static void setLocalFileLastModifiedTime(File olf, long lmtime) {
 //		Log.v("","fp="+lf.getPath());
 		if (mGp.useSetLastModifiedByTouchCommand) {
-			String lmdt=DateUtil.convDateTimeTo_YearMonthDayHourMinSec(lmtime-mTimeZoneDiff);
+			String lmdt=StringUtil.convDateTimeTo_YearMonthDayHourMinSec(lmtime-mTimeZoneDiff);
 			String dt=lmdt.substring(0, 10).replace("/", "");
 			String hm=lmdt.substring(11, 17).replace(":", "");
 			String ss=lmdt.substring(17, 19);
