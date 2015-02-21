@@ -119,7 +119,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 
 	private GlobalParameters mGp=null;
 	
-	private boolean enableKill = false;
+	private boolean mIsApplicationTerminate = false;
 
 	private String remoteBase = "", localBase = "";
 	private String remoteDir = "", localDir = "";
@@ -195,34 +195,34 @@ public class SMBExplorerMain extends ActionBarActivity {
 	 
 	private CommonDialog commonDlg=null;
 	
-	@Override  
-	protected void onSaveInstanceState(Bundle outState) {  
-	  super.onSaveInstanceState(outState);  
-	  sendDebugLogMsg(1, "I", "onSaveInstanceState entered.");
-
-	  outState.putString("remoteBase", remoteBase);
-	  outState.putString("localBase", localBase);
-	  outState.putString("remoteDir", remoteDir);
-	  outState.putString("localDir", localDir);
-	  outState.putString("currentTabName", currentTabName);
-	  outState.putString("smbUser", smbUser);
-	  outState.putString("smbPass", smbPass);
-	};  
-	  
-	@Override  
-	protected void onRestoreInstanceState(Bundle savedInstanceState) {  
-	  super.onRestoreInstanceState(savedInstanceState);
-	  sendDebugLogMsg(1, "I", "onRestoreInstanceState entered.");
-	  remoteBase=savedInstanceState.getString("remoteBase");
-	  localBase=savedInstanceState.getString("localBase");
-	  remoteDir=savedInstanceState.getString("remoteDir");
-	  localDir=savedInstanceState.getString("localDir");
-	  currentTabName=savedInstanceState.getString("currentTabName");
-	  smbUser=savedInstanceState.getString("smbUser");
-	  smbPass=savedInstanceState.getString("smbPass");
-	  restartStatus=2;
-	};
-	
+//	@Override  
+//	public void onSaveInstanceState(Bundle outState) {  
+//	  super.onSaveInstanceState(outState);  
+//	  sendDebugLogMsg(1, "I", "onSaveInstanceState entered.");
+//
+//	  outState.putString("remoteBase", remoteBase);
+//	  outState.putString("localBase", localBase);
+//	  outState.putString("remoteDir", remoteDir);
+//	  outState.putString("localDir", localDir);
+//	  outState.putString("currentTabName", currentTabName);
+//	  outState.putString("smbUser", smbUser);
+//	  outState.putString("smbPass", smbPass);
+//	};  
+//	  
+//	@Override  
+//	public void onRestoreInstanceState(Bundle savedInstanceState) {  
+//	  super.onRestoreInstanceState(savedInstanceState);
+//	  sendDebugLogMsg(1, "I", "onRestoreInstanceState entered.");
+//	  remoteBase=savedInstanceState.getString("remoteBase");
+//	  localBase=savedInstanceState.getString("localBase");
+//	  remoteDir=savedInstanceState.getString("remoteDir");
+//	  localDir=savedInstanceState.getString("localDir");
+//	  currentTabName=savedInstanceState.getString("currentTabName");
+//	  smbUser=savedInstanceState.getString("smbUser");
+//	  smbPass=savedInstanceState.getString("smbPass");
+//	  restartStatus=2;
+//	};
+//	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -272,7 +272,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 		}
 
 
-		enableKill = false;
+		mIsApplicationTerminate = false;
 		
 		initJcifsOption();
 		
@@ -289,15 +289,41 @@ public class SMBExplorerMain extends ActionBarActivity {
 		
 		ContextCompat.getExternalFilesDirs(mContext, null);
 		
-//		File[] fl= getExternalMediaDirs();
+//		File[] fl= getExternalMediaDirs(); //API21
 //		if (fl!=null) {
-//			for(int i=0;i<fl.length;i++) Log.v("","n="+fl[i].getPath());
+//			for(int i=0;i<fl.length;i++) Log.v("","mn="+fl[i].getPath());
+//		}
+
+//		File[] ffl=ContextCompat.getExternalFilesDirs(mContext, null);
+//		if (ffl!=null) {
+//			for(int i=0;i<ffl.length;i++) Log.v("","fn="+ffl[i].getPath());
 //		}
 
 //		System.setProperty( "jcifs.netbios.retryTimeout", "200");
 //		Log.v("","esd="+LocalMountPoint.getExternalStorageDir());
 //		ArrayList<String>mpl=LocalMountPoint.getLocalMountPointList();
 //		for (int i=0;i<mpl.size();i++) Log.v("","mp="+mpl.get(i));
+		
+//		File lf=new File( "/storage/sdcard1/Android/data/com.sentaroh.android.SMBExplorer/files/test.txt");
+//		File nlf=new File("/storage/sdcard1/test.txt");
+//		try {
+//			Log.v("","create="+lf.createNewFile());
+//			Log.v("","rename="+lf.renameTo(nlf));
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+		
+//		ArrayList<LocalMountPointListItem>mpl=getLocalMountPointListWithLink(mContext);
+//		Log.v("","e="+LocalMountPoint.getExternalStorageDir());
+//		for(int i=0;i<mpl.size();i++) {
+//			Log.v("","n="+mpl.get(i).mount_point_name+", l="+mpl.get(i).link_name);
+//		}
+		
+		if (isTaskDataExisted()) {//Restore required
+			if (restoreTaskData()) restartStatus=2;
+			else restartStatus=0;
+		}
+
 	};
 
 	@Override
@@ -329,7 +355,6 @@ public class SMBExplorerMain extends ActionBarActivity {
 		} else if (restartStatus==2) {
 			profileAdapter = createProfileList(false,"");
 			profileListView.setAdapter(profileAdapter);
-			restoreTaskData();
 			setPasteItemList();
 			setEmptyFolderView();
 			if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) tabHost.setCurrentTab(1);
@@ -355,24 +380,24 @@ public class SMBExplorerMain extends ActionBarActivity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		sendDebugLogMsg(1, "I","onPause entered, enableKill="+enableKill+
+		sendDebugLogMsg(1, "I","onPause entered, enableKill="+mIsApplicationTerminate+
 				", getChangingConfigurations="+String.format("0x%08x", getChangingConfigurations()));
-		if (!enableKill) saveTaskData();
+		if (!mIsApplicationTerminate) saveTaskData();
 	};
 
 	@Override
 	protected void onStop() {
 		super.onStop();
-		sendDebugLogMsg(1, "I","onStop entered, enableKill="+enableKill);
+		sendDebugLogMsg(1, "I","onStop entered, enableKill="+mIsApplicationTerminate);
 	};
 	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		sendDebugLogMsg(1, "I","onDestroy entered, enableKill="+enableKill+
+		sendDebugLogMsg(1, "I","onDestroy entered, enableKill="+mIsApplicationTerminate+
 				", getChangingConfigurations="+String.format("0x%08x", getChangingConfigurations()));
 		remoteFileListCache=null;
-		if (enableKill) {
+		if (mIsApplicationTerminate) {
 			deleteTaskData();
 			terminateSuCmdProcess();
 			if (mGp.settingsExitClean) {
@@ -759,7 +784,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 	};
 	
 	private void terminateApplication() {
-			enableKill = true; // exit cleanly
+			mIsApplicationTerminate = true; // exit cleanly
 	//		moveTaskToBack(true);
 			finish();
 		}
@@ -785,21 +810,18 @@ public class SMBExplorerMain extends ActionBarActivity {
 		Spinner sp_local=(Spinner)findViewById(R.id.explorer_filelist_local_tab_dir);
 		Spinner sp_remote=(Spinner)findViewById(R.id.explorer_filelist_remote_tab_dir);
 
+		tw.setEnabled(enabled);
+		sp_local.setEnabled(enabled);
+		sp_remote.setEnabled(enabled);
+		localFileListPasteBtn.setEnabled(enabled);
+		remoteFileListPasteBtn.setEnabled(enabled);
+		remoteFileListView.setEnabled(enabled);
+		localFileListView.setEnabled(enabled);
 		if (enabled) {
-			tw.setEnabled(true);
-			sp_local.setEnabled(true);
-			sp_remote.setEnabled(true);
-			remoteFileListView.setEnabled(true);
-			localFileListView.setEnabled(true);
 			remoteFileListView.setVisibility(ListView.VISIBLE);
 			localFileListView.setVisibility(ListView.VISIBLE);
-			
+			setPasteButtonEnabled();
 		} else {
-			tw.setEnabled(false);
-			sp_local.setEnabled(false);
-			sp_remote.setEnabled(false);
-			remoteFileListView.setEnabled(false);
-			localFileListView.setEnabled(false);
 			remoteFileListView.setVisibility(ListView.INVISIBLE);
 			localFileListView.setVisibility(ListView.INVISIBLE);
 		}
@@ -812,7 +834,6 @@ public class SMBExplorerMain extends ActionBarActivity {
 		remoteFileListCreateBtn.setEnabled(enabled);
 		remoteFileListReloadBtn.setEnabled(enabled);
 
-		setPasteButtonEnabled();
 		
 		refreshOptionMenu();
 	};
@@ -2313,7 +2334,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 			String url, NotifyEvent p_ntfy) {
 		fileioLinkParm.clear();
 		buildFileioLinkParm(fileioLinkParm, item.getPath(),
-				mGp.SMBExplorerRootDir+"/SMBExplorer/download/",item.getName(),"",
+				mGp.SMBExplorerRootDir+"/SMBExplorer/download",item.getName(),"",
 				smbUser,smbPass,false);
 		startFileioTask(fla,FILEIO_PARM_DOWLOAD_REMOTE_FILE,fileioLinkParm,
 				item.getName(),p_ntfy, mGp.SMBExplorerRootDir);
@@ -4035,16 +4056,22 @@ public class SMBExplorerMain extends ActionBarActivity {
 				lf.createNewFile();
 				lcl.add(pli);
 				for (int i=0;i<ml.size();i++) {
-//					File tlf=new File(ml.get(i));
-//					Log.v("","name="+ml.get(i)+", cw="+tlf.canWrite());
-					pli=new ProfileListItem("L",ml.get(i), "A","", "", "", "","", false);
-					lf=new File(ml.get(i)+"/"+"SMBExplorer.work.tmp");
-					if (!lf.exists()) {
-						try {
-							lf.createNewFile();
-							lcl.add(pli);
-						} catch(IOException e) {
-//							e.printStackTrace();
+					if (!ml.get(i).equals("/mnt/mmb") && 
+							!ml.get(i).equals("/storage/uicc0") &&
+							!ml.get(i).equals("/storage/remote")
+							) {
+//						File tlf=new File(ml.get(i));
+//						Log.v("","name="+ml.get(i)+", cw="+tlf.canWrite());
+						pli=new ProfileListItem("L",ml.get(i), "A","", "", "", "","", false);
+						lf=new File(ml.get(i)+"/"+"SMBExplorer.work.tmp");
+						if (!lf.exists()) {
+							try {
+								lf.createNewFile();
+								lcl.add(pli);
+							} catch(IOException e) {
+								lcl.add(pli);
+//								e.printStackTrace();
+							}
 						}
 					}
 				}
@@ -4806,6 +4833,14 @@ public class SMBExplorerMain extends ActionBarActivity {
 	private void saveTaskData() {
 		ActivityDataHolder data = new ActivityDataHolder();
 
+		data.remoteBase=remoteBase;
+		data.localBase=localBase;
+		data.remoteDir=remoteDir;
+		data.localDir=localDir;
+		data.currentTabName=currentTabName;
+		data.smbUser=smbUser;
+		data.smbPass=smbPass;
+
 		data.remote_file_list_cache=remoteFileListCache;
 		data.remote_curr_file_list=remoteCurrFLI;
 		data.local_file_list_cache=localFileListCache;
@@ -4842,10 +4877,10 @@ public class SMBExplorerMain extends ActionBarActivity {
 	};
 	
 	private static final String SERIALIZABLE_FILE_NAME="Serial.dat";
-	private void restoreTaskData() {
+	private boolean restoreTaskData() {
+		boolean result=false;
 		try {
-		    File lf =
-		    	new File(getFilesDir()+"/"+SERIALIZABLE_FILE_NAME);
+		    File lf =new File(getFilesDir()+"/"+SERIALIZABLE_FILE_NAME);
 //		    FileInputStream fis = openFileInput(SMBSYNC_SERIALIZABLE_FILE_NAME);
 		    FileInputStream fis = new FileInputStream(lf); 
 		    ObjectInputStream ois = new ObjectInputStream(fis);
@@ -4853,6 +4888,14 @@ public class SMBExplorerMain extends ActionBarActivity {
 		    ois.close();
 		    lf.delete();
 
+			remoteBase=data.remoteBase;
+			localBase=data.localBase;
+			remoteDir=data.remoteDir;
+			localDir=data.localDir;
+			currentTabName=data.currentTabName;
+			smbUser=data.smbUser;
+			smbPass=data.smbPass;
+		    
 		    remoteFileListCache=data.remote_file_list_cache;
 		    remoteCurrFLI=data.remote_curr_file_list;
 		    localFileListCache=data.local_file_list_cache;
@@ -4887,11 +4930,13 @@ public class SMBExplorerMain extends ActionBarActivity {
 			mDialogMsgCat=data.dialog_msg_cat;
 			
 			restoreViewStatus(data.vsa);
+			result=true;
 			sendDebugLogMsg(1,"I", "Task data was restored");
 		} catch (Exception e) {
 			e.printStackTrace();
 		    sendDebugLogMsg(1,"E", "restoreTaskData error, "+e.toString());
 		}
+		return result;
 	};
 	
 	private boolean isTaskDataExisted() {
@@ -5163,6 +5208,14 @@ class ActivityDataHolder implements Externalizable  {
 	
 	public String dialog_msg_cat="";
 
+	public String remoteBase="";
+	public String localBase="";
+	public String remoteDir="";
+	public String localDir="";
+	public String currentTabName="";
+	public String smbUser="";
+	public String smbPass="";
+
 	public ActivityDataHolder() {};
 	
 	@SuppressWarnings("unchecked")
@@ -5194,6 +5247,15 @@ class ActivityDataHolder implements Externalizable  {
 		vsa=new ViewSaveArea();
 		vsa.readExternal(objin);
 		dialog_msg_cat=objin.readUTF();
+		
+		remoteBase=SerializeUtil.readUtf(objin);
+		localBase=SerializeUtil.readUtf(objin);
+		remoteDir=SerializeUtil.readUtf(objin);
+		localDir=SerializeUtil.readUtf(objin);
+		currentTabName=SerializeUtil.readUtf(objin);
+		smbUser=SerializeUtil.readUtf(objin);
+		smbPass=SerializeUtil.readUtf(objin);
+
 	}
 
 	@Override
@@ -5218,6 +5280,15 @@ class ActivityDataHolder implements Externalizable  {
 		objout.writeObject(local_curr_file_list);
 		vsa.writeExternal(objout);
 		objout.writeUTF(dialog_msg_cat);
+		
+		SerializeUtil.writeUtf(objout,remoteBase);
+		SerializeUtil.writeUtf(objout,localBase);
+		SerializeUtil.writeUtf(objout,remoteDir);
+		SerializeUtil.writeUtf(objout,localDir);
+		SerializeUtil.writeUtf(objout,currentTabName);
+		SerializeUtil.writeUtf(objout,smbUser);
+		SerializeUtil.writeUtf(objout,smbPass);
+
 	}
 };
 
