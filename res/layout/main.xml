@@ -4,7 +4,6 @@
     android:id="@android:id/tabhost"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:paddingTop="3dp"
     android:visibility="visible"
     tools:ignore="SpUsage" >
 
