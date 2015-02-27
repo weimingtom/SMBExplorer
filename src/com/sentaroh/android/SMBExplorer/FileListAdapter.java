@@ -16,7 +16,9 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
+import com.sentaroh.android.Utilities.MiscUtil;
 import com.sentaroh.android.Utilities.NotifyEvent;
+import com.sentaroh.android.Utilities.ThemeColorList;
 
 public class FileListAdapter extends BaseAdapter {
 	private Context mContext;
@@ -28,10 +30,13 @@ public class FileListAdapter extends BaseAdapter {
 			R.drawable.cc_folder,
 			R.drawable.cc_sheet,
 			R.drawable.cc_blank};
+	
+	private ThemeColorList mThemeColorList;
 
 	public FileListAdapter(Context context) {
 		mContext = context;
 		mDataItems=new ArrayList<FileListItem>();
+		mThemeColorList=MiscUtil.getThemeColorList(mContext);
 	};
 
 	public FileListAdapter(Context context,
@@ -40,6 +45,7 @@ public class FileListAdapter extends BaseAdapter {
 		this.mSingleSelectMode=singleSelectMode;
 		this.mShowLastModified=showLastModified;
 		mDataItems=new ArrayList<FileListItem>();
+		mThemeColorList=MiscUtil.getThemeColorList(mContext);
 	};
 	
 	@Override
@@ -134,7 +140,6 @@ public class FileListAdapter extends BaseAdapter {
 	}
 
 	private boolean enableListener=true;
-	private int text_color=-1;
 	
 	@Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -154,7 +159,6 @@ public class FileListAdapter extends BaseAdapter {
             	holder.tv_size=(TextView)v.findViewById(R.id.file_list_size);
             	holder.tv_moddate=(TextView)v.findViewById(R.id.file_list_date);
             	holder.tv_modtime=(TextView)v.findViewById(R.id.file_list_time);
-            	if (text_color==-1) text_color=holder.tv_name.getCurrentTextColor();
             	
             	v.setTag(holder); 
             } else {
@@ -229,10 +233,10 @@ public class FileListAdapter extends BaseAdapter {
     		            	holder.tv_modtime.setTextColor(Color.GRAY);
                    		}
                    	} else {
-                   		holder.tv_name.setTextColor(text_color);
-		            	holder.tv_size.setTextColor(text_color);
-		            	holder.tv_moddate.setTextColor(text_color);
-		            	holder.tv_modtime.setTextColor(text_color);
+                   		holder.tv_name.setTextColor(mThemeColorList.text_color_primary);
+		            	holder.tv_size.setTextColor(mThemeColorList.text_color_primary);
+		            	holder.tv_moddate.setTextColor(mThemeColorList.text_color_primary);
+		            	holder.tv_modtime.setTextColor(mThemeColorList.text_color_primary);
                    	}
             	}
                	final int p = position;

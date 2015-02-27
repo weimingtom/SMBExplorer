@@ -195,6 +195,8 @@ public class SMBExplorerMain extends ActionBarActivity {
 	 
 	private CommonDialog commonDlg=null;
 	
+	private ThemeColorList mThemeColorList;
+	
 //	@Override  
 //	public void onSaveInstanceState(Bundle outState) {  
 //	  super.onSaveInstanceState(outState);  
@@ -577,6 +579,8 @@ public class SMBExplorerMain extends ActionBarActivity {
 //	};
 
 	private void createTabAndView() {
+		mThemeColorList=MiscUtil.getThemeColorList(mActivity);
+
 		tabHost=(TabHost)findViewById(android.R.id.tabhost);
 		tabHost.setup();
 		
@@ -640,10 +644,16 @@ public class SMBExplorerMain extends ActionBarActivity {
 		mRemoteDialogMsg=(TextView)findViewById(R.id.explorer_filelist_remote_dialog_msg);
 		mRemoteDialogCloseBtn=(Button)findViewById(R.id.explorer_filelist_remote_dialog_close);
 		
-		if (Build.VERSION.SDK_INT==10) dialogBackgroundColor=Color.BLACK;
-		else if (Build.VERSION.SDK_INT==19) dialogBackgroundColor=0xff181818; //4.4
-		else if (Build.VERSION.SDK_INT==18) dialogBackgroundColor=0xff101010; //4.3
-		else dialogBackgroundColor=0xff101010; //Other
+		dialogBackgroundColor=mThemeColorList.window_color_background;
+//		if (mThemeColorList.theme_is_light) {
+//			dialogBackgroundColor=Color.LTGRAY;
+//			dialogBackgroundColor=mThemeColorList.window_color_backgroun;
+//		} else {
+//			if (Build.VERSION.SDK_INT==10) dialogBackgroundColor=Color.BLACK;
+//			else if (Build.VERSION.SDK_INT==19) dialogBackgroundColor=0xff181818; //4.4
+//			else if (Build.VERSION.SDK_INT==18) dialogBackgroundColor=0xff101010; //4.3
+//			else dialogBackgroundColor=0xff101010; //Other
+//		}
 
 		setPasteButtonEnabled();
 	};
@@ -807,12 +817,10 @@ public class SMBExplorerMain extends ActionBarActivity {
 		if ((enabled && mUiEnabled) || (!enabled && !mUiEnabled)) return;  
 		mUiEnabled=enabled;
 		TabWidget tw=(TabWidget)findViewById(android.R.id.tabs);
-		Spinner sp_local=(Spinner)findViewById(R.id.explorer_filelist_local_tab_dir);
-		Spinner sp_remote=(Spinner)findViewById(R.id.explorer_filelist_remote_tab_dir);
 
 		tw.setEnabled(enabled);
-		sp_local.setEnabled(enabled);
-		sp_remote.setEnabled(enabled);
+		localFileListDirSpinner.setEnabled(enabled);
+		remoteFileListDirSpinner.setEnabled(enabled);
 		localFileListPasteBtn.setEnabled(enabled);
 		remoteFileListPasteBtn.setEnabled(enabled);
 		remoteFileListView.setEnabled(enabled);
@@ -1073,22 +1081,21 @@ public class SMBExplorerMain extends ActionBarActivity {
 	
 	private boolean mIgnoreSpinnerSelection=false;
 	private void setLocalDirBtnListener() {
-        Spinner spinner = (Spinner) findViewById(R.id.explorer_filelist_local_tab_dir);
         CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(this, R.layout.custom_simple_spinner_item);
-        adapter.setTextColor(Color.BLACK);
+//        adapter.setTextColor(Color.BLACK);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setPrompt("ローカルの選択");
-        spinner.setAdapter(adapter);
+        localFileListDirSpinner.setPrompt("ローカルの選択");
+        localFileListDirSpinner.setAdapter(adapter);
 
         int a_no=0;
         List<ProfileListItem>pl=createLocalProfileEntry();
         for (int i=0;i<pl.size();i++) { 
 			adapter.add(pl.get(i).getName());
 			if (pl.get(i).getName().equals(localBase))
-		        spinner.setSelection(a_no);
+				localFileListDirSpinner.setSelection(a_no);
 			a_no++;
 		}
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        localFileListDirSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view,
                     int position, long id) {
@@ -1356,12 +1363,11 @@ public class SMBExplorerMain extends ActionBarActivity {
 	};
 	
 	private void setRemoteDirBtnListener() {
-        final Spinner spinner = (Spinner) findViewById(R.id.explorer_filelist_remote_tab_dir);
         final CustomSpinnerAdapter spAdapter = new CustomSpinnerAdapter(this, R.layout.custom_simple_spinner_item);
-        spAdapter.setTextColor(Color.BLACK);
+//        spAdapter.setTextColor(Color.BLACK);
         spAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setPrompt("リモートの選択");
-        spinner.setAdapter(spAdapter);
+        remoteFileListDirSpinner.setPrompt("リモートの選択");
+        remoteFileListDirSpinner.setAdapter(spAdapter);
 //        mIgnoreRemoteSelection=true;
 		if (remoteBase.equals("")) spAdapter.add("--- Not selected ---");
 		int a_no=0;
@@ -1371,10 +1377,10 @@ public class SMBExplorerMain extends ActionBarActivity {
 				spAdapter.add(profileAdapter.getItem(i).getName());
 				String surl=buildRemoteBase(profileAdapter.getItem(i));
 				if (surl.equals(remoteBase))
-			        spinner.setSelection(a_no);
+					remoteFileListDirSpinner.setSelection(a_no);
 				a_no++;
 			}
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+		remoteFileListDirSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view,
                     int position, long id) {
@@ -1554,10 +1560,9 @@ public class SMBExplorerMain extends ActionBarActivity {
 						tabHost.getTabWidget().getChildTabViewAt(2).setEnabled(true);
 						tabHost.setCurrentTabByTag(SMBEXPLORER_TAB_REMOTE);
 						setJcifsProperties(item.getUser(), item.getPass());
-						Spinner spinner = (Spinner) findViewById(R.id.explorer_filelist_remote_tab_dir);
-						for (int i=0;i<spinner.getCount();i++) {
-							if (spinner.getItemAtPosition(i).toString().equals(item.getName())) {
-								spinner.setSelection(i);
+						for (int i=0;i<remoteFileListDirSpinner.getCount();i++) {
+							if (remoteFileListDirSpinner.getItemAtPosition(i).toString().equals(item.getName())) {
+								remoteFileListDirSpinner.setSelection(i);
 								break;
 							}
 						}
@@ -2586,8 +2591,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 //							getString(R.string.msgs_remote_file_list_create_error),err,null);
 					showDialogMsg("E",
 							getString(R.string.msgs_remote_file_list_create_error),err);
-					Spinner spinner = (Spinner) findViewById(R.id.explorer_filelist_remote_tab_dir);
-					spinner.setSelection(0);
+					remoteFileListDirSpinner.setSelection(0);
 					remoteBase="";
 					if (remoteFileListAdapter!=null) {
 						remoteFileList.clear();
