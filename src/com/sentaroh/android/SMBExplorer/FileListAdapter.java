@@ -16,7 +16,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
-import com.sentaroh.android.Utilities.MiscUtil;
+import com.sentaroh.android.Utilities.ThemeUtil;
 import com.sentaroh.android.Utilities.NotifyEvent;
 import com.sentaroh.android.Utilities.ThemeColorList;
 
@@ -36,7 +36,7 @@ public class FileListAdapter extends BaseAdapter {
 	public FileListAdapter(Context context) {
 		mContext = context;
 		mDataItems=new ArrayList<FileListItem>();
-		mThemeColorList=MiscUtil.getThemeColorList(mContext);
+		mThemeColorList=ThemeUtil.getThemeColorList(mContext);
 	};
 
 	public FileListAdapter(Context context,
@@ -45,7 +45,7 @@ public class FileListAdapter extends BaseAdapter {
 		this.mSingleSelectMode=singleSelectMode;
 		this.mShowLastModified=showLastModified;
 		mDataItems=new ArrayList<FileListItem>();
-		mThemeColorList=MiscUtil.getThemeColorList(mContext);
+		mThemeColorList=ThemeUtil.getThemeColorList(mContext);
 	};
 	
 	@Override

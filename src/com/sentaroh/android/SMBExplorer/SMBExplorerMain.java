@@ -58,6 +58,7 @@ import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
@@ -578,11 +579,20 @@ public class SMBExplorerMain extends ActionBarActivity {
 //		}
 //	};
 
+	private TabWidget mTabWidget;
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void createTabAndView() {
-		mThemeColorList=MiscUtil.getThemeColorList(mActivity);
+		mThemeColorList=ThemeUtil.getThemeColorList(mActivity);
 
 		tabHost=(TabHost)findViewById(android.R.id.tabhost);
 		tabHost.setup();
+		
+		mTabWidget = (TabWidget) findViewById(android.R.id.tabs);
+		 
+		if (Build.VERSION.SDK_INT>=11) {
+		    mTabWidget.setStripEnabled(false);  
+		    mTabWidget.setShowDividers(LinearLayout.SHOW_DIVIDER_NONE);  
+		}
 		
 		View childview2 = new CustomTabContentView(this, "Profile");
 		TabHost.TabSpec tabSpec1=tabHost.newTabSpec("@P")
