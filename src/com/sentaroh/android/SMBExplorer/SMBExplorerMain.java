@@ -654,7 +654,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 		mRemoteDialogMsg=(TextView)findViewById(R.id.explorer_filelist_remote_dialog_msg);
 		mRemoteDialogCloseBtn=(Button)findViewById(R.id.explorer_filelist_remote_dialog_close);
 		
-		dialogBackgroundColor=mThemeColorList.window_color_background;
+		dialogBackgroundColor=mThemeColorList.window_background_color_content;
 //		if (mThemeColorList.theme_is_light) {
 //			dialogBackgroundColor=Color.LTGRAY;
 //			dialogBackgroundColor=mThemeColorList.window_color_backgroun;
@@ -4022,8 +4022,7 @@ public class SMBExplorerMain extends ActionBarActivity {
 				
 			}
 		});
-		commonDlg.showCommonDialog(true,"W",
-				String.format(getString(R.string.msgs_delete_confirm),item_name),"",ne);
+		commonDlg.showCommonDialog(true,"W",getString(R.string.msgs_delete_confirm),item_name,ne);
 
 
 	};
@@ -4744,9 +4743,8 @@ public class SMBExplorerMain extends ActionBarActivity {
 				if (tfl!=null) {
 					profileAdapter = tfl;
 					saveProfile(false,"","");
-					commonDlg.showCommonDialog(false,"I",
-							String.format(getString(R.string.msgs_select_import_dlg_success),
-									fpath),"",null);
+					commonDlg.showCommonDialog(false,"I",getString(R.string.msgs_select_import_dlg_success),
+									fpath, null);
     			}
 
 			}
@@ -4792,9 +4790,8 @@ public class SMBExplorerMain extends ActionBarActivity {
 				@Override
 				public void positiveResponse(Context c,Object[] o) {
 					saveProfile(true,profile_dir,profile_filename);
-					commonDlg.showCommonDialog(false,"I",
-							String.format(getString(R.string.msgs_select_export_dlg_success),
-									profile_dir+"/"+profile_filename),"",null);
+					commonDlg.showCommonDialog(false,"I",getString(R.string.msgs_select_export_dlg_success),
+									profile_dir+"/"+profile_filename, null);
 				}
 				
 				@Override
@@ -4806,9 +4803,8 @@ public class SMBExplorerMain extends ActionBarActivity {
 			return;
 		} else {
 			saveProfile(true,profile_dir,profile_filename);
-			commonDlg.showCommonDialog(false,"I",
-					String.format(getString(R.string.msgs_select_export_dlg_success),
-							profile_dir+"/"+profile_filename),"",null);
+			commonDlg.showCommonDialog(false,"I", getString(R.string.msgs_select_export_dlg_success),
+							profile_dir+"/"+profile_filename, null);
 		}
 	};
 

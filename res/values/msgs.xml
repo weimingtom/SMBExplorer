@@ -19,10 +19,10 @@
     <string name="msgs_terminate_confirm">Terminate application.</string>
     <string name="msgs_no_shared_resource">--- No shared resources ---</string>
     <string name="msgs_add_remote_profile_duplicate">Specified profile was already exists.</string>
-    <string name="msgs_delete_confirm">Do you want to remove the %s ?</string>    
+    <string name="msgs_delete_confirm">Do you want to remove the following file/dir ?</string>    
    	<string name="msgs_select_import_dlg_title">Select import profile</string>
-   	<string name="msgs_select_import_dlg_success">Import from %s was successful</string>
-  	<string name="msgs_select_export_dlg_success">Export to %s was successful</string>
+   	<string name="msgs_select_import_dlg_success">Import was successful</string>
+  	<string name="msgs_select_export_dlg_success">Export was successful</string>
    	<string name="msgs_select_export_dlg_title">Select export profile</string>
    	<string name="msgs_select_export_dlg_override">Overwrite the %s ?</string>
    	<string name="msgs_save_log_msg_file">Log messages saved to %s .</string>
