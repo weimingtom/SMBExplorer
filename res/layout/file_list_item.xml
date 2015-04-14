@@ -62,7 +62,6 @@
 
     <CheckBox
         android:id="@+id/file_list_checkbox"
-        style="@style/check_box_style"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_gravity="center_vertical"

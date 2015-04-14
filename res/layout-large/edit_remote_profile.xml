@@ -43,7 +43,6 @@
 			        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 			    <CheckBox
-			        style="@style/check_box_style"
 		            android:id="@+id/remote_profile_active"
 		            android:layout_width="0dp"
 		            android:layout_height="wrap_content"

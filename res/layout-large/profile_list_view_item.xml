@@ -36,7 +36,6 @@
         android:text="@string/profile_list_active_string"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     <CheckBox
-        style="@style/check_box_style"
         android:id="@+id/profile_list_cb1"
         android:layout_width="60dp"
         android:layout_height="60dp"

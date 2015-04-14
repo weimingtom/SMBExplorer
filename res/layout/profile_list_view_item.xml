@@ -39,7 +39,6 @@
 
     <CheckBox
         android:id="@+id/profile_list_cb1"
-        style="@style/check_box_style"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
