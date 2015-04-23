@@ -74,7 +74,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -114,7 +114,7 @@ import com.sentaroh.android.Utilities.Dialog.DialogBackKeyListener;
 import com.sentaroh.android.Utilities.Widget.CustomSpinnerAdapter;
 
 @SuppressLint({ "DefaultLocale", "SimpleDateFormat" })
-public class SMBExplorerMain extends ActionBarActivity {
+public class SMBExplorerMain extends AppCompatActivity {
 
 	private final static String DEBUG_TAG = "SMBExplorer";
 
