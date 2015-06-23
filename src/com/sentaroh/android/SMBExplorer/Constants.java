@@ -28,7 +28,7 @@ public class Constants {
 	public final static String APPLICATION_TAG="SMBExplorer";
 	public final static String PACKAGE_NAME="com.sentaroh.android.SMBExplorer";
 	public static final String DEFAULT_PREFS_FILENAME="default_preferences";
-
+	
 	final public static int FILEIO_PARM_LOCAL_CREATE = 1;
 	final public static int FILEIO_PARM_LOCAL_RENAME = 2;
 	final public static int FILEIO_PARM_LOCAL_DELETE = 3;

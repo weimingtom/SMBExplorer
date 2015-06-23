@@ -327,8 +327,29 @@ public class SMBExplorerMain extends AppCompatActivity {
 			else restartStatus=0;
 		}
 
+		initSafExternalSdcardTreeUri();
+
+		try {
+			File lf;
+			lf=new File( "/storage/sdcard0/default-capability.xml");
+			Log.v("","canonical="+lf.getCanonicalPath()+", abs="+lf.getAbsolutePath());
+			
+			lf=new File( "/sdcard/default-capability.xml");
+			Log.v("","canonical="+lf.getCanonicalPath()+", abs="+lf.getAbsolutePath());
+
+			lf=new File( "/storge/sdcard/default-capability.xml");
+			Log.v("","canonical="+lf.getCanonicalPath()+", abs="+lf.getAbsolutePath());
+
+			lf=new File( "/storge/emulated/legacy/default-capability.xml");
+			Log.v("","canonical="+lf.getCanonicalPath()+", abs="+lf.getAbsolutePath());
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	};
 
+	
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -860,9 +881,33 @@ public class SMBExplorerMain extends AppCompatActivity {
 		Intent intent = new Intent(this, SMBExpolorerSettings.class);
 		startActivityForResult(intent,0);
 	}
+
+	private final int REQUEST_CODE_STORAGE_ACCESS=40;
+	@SuppressLint("InlinedApi")
+	private void initSafExternalSdcardTreeUri() {
+		if (Build.VERSION.SDK_INT>=21) {
+			if (SafUtil.hasSafExternalSdcard(mContext) && !SafUtil.isValidSafExternalSdcardRootTreeUri(mContext)) {
+				Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+			    startActivityForResult(intent, REQUEST_CODE_STORAGE_ACCESS);
+			} 
+		}
+	};
+
 	
+	@SuppressLint("InlinedApi")
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		applySettingParms();
+		if (requestCode == REQUEST_CODE_STORAGE_ACCESS) {
+	        if (resultCode == Activity.RESULT_OK) {
+	        	if (SafUtil.isSafExternalSdcardTreeUri(mContext,data.getData())) {
+	        		SafUtil.saveSafExternalSdcardRootTreeUri(mContext, data.getData().toString());
+	        	} else {
+					Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+				    startActivityForResult(intent, REQUEST_CODE_STORAGE_ACCESS);
+	        	}
+	        }
+	    } else if (requestCode == 0) {
+	    	if (resultCode == Activity.RESULT_OK) applySettingParms();
+	    }
 	};
 	
 	private void refreshFilelistView() {
