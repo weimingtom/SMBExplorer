@@ -13,7 +13,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.support.v4.provider.DocumentFile;
+import android.util.Log;
 
 
 @SuppressLint("SdCardPath")
@@ -25,8 +25,9 @@ public class SafUtil {
 		swa.pkg_name=c.getPackageName();
 		swa.app_spec_dir="/android/data/"+swa.pkg_name;
 		String uri_string=getSafExternalSdcardRootTreeUri(c);
-		if (!uri_string.equals(""))
-			swa.rootDocumentFile=DocumentFile.fromTreeUri(c, Uri.parse(uri_string));
+		if (!uri_string.equals("")) {
+			swa.rootDocumentFile=DCFile.fromTreeUri(c, Uri.parse(uri_string));
+		}
 	}
 
 	public static String getSafExternalSdcardRootTreeUri(Context c) {
@@ -48,7 +49,7 @@ public class SafUtil {
 
 	public static boolean isSafExternalSdcardTreeUri(Context c, Uri tree_uri) {
 		boolean result=false;
-		DocumentFile document=DocumentFile.fromTreeUri(c, tree_uri);
+		DCFile document=DCFile.fromTreeUri(c, tree_uri);
 		if (document.getName().startsWith("sdcard1")) result=true;
 		return result;
 	};
@@ -71,7 +72,7 @@ public class SafUtil {
 		boolean result=true; 
 		if (uri_string.equals("")) result=false;
 		else {
-			DocumentFile docf=DocumentFile.fromTreeUri(c, Uri.parse(uri_string));
+			DCFile docf=DCFile.fromTreeUri(c, Uri.parse(uri_string));
 			if (docf.getName()==null) result=false;
 		}
 		return result;
@@ -105,9 +106,10 @@ public class SafUtil {
 		return result;
 	}
 
-	public static DocumentFile getSafDocumentFileByPath(Context c, SafWorkArea swa,  
+	public static DCFile getSafDCFileByPath(Context c, SafWorkArea swa,  
 			String target_path, boolean isDirectory) {
-    	DocumentFile document=swa.rootDocumentFile;
+//		Log.v("SafUtil","getSafDCFileByPath entered");
+    	DCFile document=swa.rootDocumentFile;
     	
     	String relativePath = null;
     	String baseFolder="";
@@ -116,12 +118,14 @@ public class SafUtil {
     	else return null;
     	
     	relativePath=target_path.replace(baseFolder, "");
-    	
+//    	Log.v("","relativePath="+relativePath);
         String[] parts = relativePath.split("\\/");
         for (int i = 0; i < parts.length; i++) {
 //        	Log.v("","parts="+parts[i]);
+//        	Log.v("SafUtil","getSafDCFileByPath search, name="+parts[i]);
         	if (!parts[i].equals("")) {
-                DocumentFile nextDocument = document.findFile(parts[i]);
+                DCFile nextDocument = document.findFile(parts[i]);
+//                DCFile nextDocument = findFile(document, parts[i]);
                 if (nextDocument == null) {
                     if ((i < parts.length - 1) || isDirectory) {
 //                    	Log.v("","dir created name="+parts[i]);
@@ -137,13 +141,36 @@ public class SafUtil {
 //    	c.getContentResolver().releasePersistableUriPermission(treeUri,
 //                Intent.FLAG_GRANT_READ_URI_PERMISSION |
 //                Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+//        Log.v("SafUtil","getSafDCFileByPath ended, result="+document);
         return document;
 	};
+	
+	private static DCFile findFile(DCFile df, String name) {
+//		Log.v("SafUtil","findFile entered, name="+name);
+		DCFile result=null;
+		
+		DCFile[]lf=df.listFiles();
+//		Log.v("SafUtil","findFile listFiles ended");
+		if (lf!=null) {
+			for(DCFile sdf:lf) {
+				if (sdf.canRead()) {
+					if (sdf.getName()!=null) {
+						if (sdf.getName().equals(name)) {
+							result=sdf;
+							break;
+						}
+					}
+				}
+			}
+		}
+//		Log.v("SafUtil","findFile ended, result="+result);
+		return result;
+	}
 }
 
 class SafWorkArea {
 //	private SharedPreferences prefs=null;
 	public String pkg_name="";
 	public String app_spec_dir="";
-	public DocumentFile rootDocumentFile=null;
+	public DCFile rootDocumentFile=null;
 }

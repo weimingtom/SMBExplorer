@@ -55,7 +55,6 @@ import android.os.PowerManager.WakeLock;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.provider.DocumentFile;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 import com.sentaroh.android.Utilities.*;
@@ -510,7 +509,7 @@ public class FileIo implements Runnable {
     private static boolean renameSafLocalFile(String oldUrl, String newUrl) {
     	boolean result=false;
     	boolean isDirectory=(new File(oldUrl)).isDirectory();
-    	DocumentFile document=SafUtil.getSafDocumentFileByPath(mContext, mSafWorkArea, oldUrl, isDirectory);
+    	DCFile document=SafUtil.getSafDCFileByPath(mContext, mSafWorkArea, oldUrl, isDirectory);
     	String[] new_name_array=newUrl.split("/");
         Log.v("","new="+new_name_array[new_name_array.length-1]);
         result=document.renameTo(new_name_array[new_name_array.length-1]);
@@ -556,7 +555,7 @@ public class FileIo implements Runnable {
         if (!fileioThreadCtrl.isEnabled()) return false;
     	if (Build.VERSION.SDK_INT>=21 && SafUtil.isSafExternalSdcardPath(mContext, mSafWorkArea, lf.getPath())) {
         	boolean isDirectory=lf.isDirectory();
-        	DocumentFile document=SafUtil.getSafDocumentFileByPath(mContext, mSafWorkArea, lf.getPath(), isDirectory);
+        	DCFile document=SafUtil.getSafDCFileByPath(mContext, mSafWorkArea, lf.getPath(), isDirectory);
             result=document.delete();
     	} else {
     	    result=lf.delete();
@@ -1286,11 +1285,10 @@ public class FileIo implements Runnable {
 	static private boolean copySafFileLocalToLocalByStream(File iLf, String fromUrl, String toUrl,
     		String title_header) 
 			throws IOException {
-    	
-	    DocumentFile oLf = SafUtil.getSafDocumentFileByPath(mContext, mSafWorkArea, toUrl, false);
+	    DCFile oLf = SafUtil.getSafDCFileByPath(mContext, mSafWorkArea, toUrl, false);
 	    boolean result=false;
 		String tmp_file=toUrl+".work";
-		DocumentFile t_df = SafUtil.getSafDocumentFileByPath(mContext, mSafWorkArea, tmp_file, false);
+		DCFile t_df = SafUtil.getSafDCFileByPath(mContext, mSafWorkArea, tmp_file, false);
 //		t_df.delete();
 //	    File t_lf=new File(tmp_file);
 //	    t_lf.delete();
@@ -1570,10 +1568,10 @@ public class FileIo implements Runnable {
     		String toUrl, String fromUrl, String title_header) 
     		throws IOException {
 		
-	    DocumentFile oLf = SafUtil.getSafDocumentFileByPath(mContext, mSafWorkArea, toUrl, false);
+	    DCFile oLf = SafUtil.getSafDCFileByPath(mContext, mSafWorkArea, toUrl, false);
 	    boolean result=false;
 		String tmp_file=toUrl+".work";
-		DocumentFile t_df = SafUtil.getSafDocumentFileByPath(mContext, mSafWorkArea, tmp_file, false);
+		DCFile t_df = SafUtil.getSafDCFileByPath(mContext, mSafWorkArea, tmp_file, false);
 		long t0 = System.currentTimeMillis();
 
 	    SmbFileInputStream bis = new SmbFileInputStream( hf );
@@ -1764,7 +1762,7 @@ public class FileIo implements Runnable {
 	
 	private static boolean makeSafLocalDirs(String target_path) {
 		boolean result=true;
-		SafUtil.getSafDocumentFileByPath(mContext, mSafWorkArea, target_path, true);
+		SafUtil.getSafDCFileByPath(mContext, mSafWorkArea, target_path, true);
         return result;
 	};
 

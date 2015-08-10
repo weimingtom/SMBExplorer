@@ -56,7 +56,6 @@ import java.util.List;
 
 import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -292,15 +291,21 @@ public class SMBExplorerMain extends AppCompatActivity {
 		
 		ContextCompat.getExternalFilesDirs(mContext, null);
 		
+		Log.v("","esd="+LocalMountPoint.getExternalStorageDir());
+		Log.v("","getFilesDir()="+getFilesDir());
+//		Log.v("","getDir()="+getDir());
+		
 //		File[] fl= getExternalMediaDirs(); //API21
 //		if (fl!=null) {
-//			for(int i=0;i<fl.length;i++) Log.v("","mn="+fl[i].getPath());
+//			for(int i=0;i<fl.length;i++) if (fl[i]!=null) Log.v("","mn="+fl[i].getPath());
 //		}
 
-//		File[] ffl=ContextCompat.getExternalFilesDirs(mContext, null);
-//		if (ffl!=null) {
-//			for(int i=0;i<ffl.length;i++) Log.v("","fn="+ffl[i].getPath());
-//		}
+		File[] fl= ContextCompat.getExternalFilesDirs(mContext, null);
+		if (fl!=null) {
+			for(int i=0;i<fl.length;i++) {
+				if (fl[i]!=null) Log.v("","fn="+fl[i].getPath());
+			}
+		}
 
 //		System.setProperty( "jcifs.netbios.retryTimeout", "200");
 //		Log.v("","esd="+LocalMountPoint.getExternalStorageDir());
@@ -500,13 +505,13 @@ public class SMBExplorerMain extends AppCompatActivity {
 		if (currentTabName.equals(SMBEXPLORER_TAB_LOCAL)) {
 			if (vsa.progressVisible!=LinearLayout.GONE) {
 				showLocalProgressView();
-				mGp.progressMsgView=mLocalProgressMsg;
-				mGp.progressCancelBtn=mLocalProgressCancel;
-				mGp.progressCancelBtn.setEnabled(true);
-				mGp.progressCancelBtn.setOnClickListener(mProgressOnClickListener);
-				mGp.progressCancelBtn.setText(vsa.progressCancelBtnText);
-				mGp.progressMsgView.setText(vsa.progressMsgText);
 			}
+			mGp.progressMsgView=mLocalProgressMsg;
+			mGp.progressCancelBtn=mLocalProgressCancel;
+			mGp.progressCancelBtn.setEnabled(true);
+			mGp.progressCancelBtn.setOnClickListener(mProgressOnClickListener);
+			mGp.progressCancelBtn.setText(vsa.progressCancelBtnText);
+			mGp.progressMsgView.setText(vsa.progressMsgText);
 			if (vsa.dialogVisible!=LinearLayout.GONE) {
 				showLocalDialogView();
 				showDialogMsg(mDialogMsgCat,vsa.dialogMsgText,"");
@@ -526,6 +531,7 @@ public class SMBExplorerMain extends AppCompatActivity {
 				showDialogMsg(mDialogMsgCat,vsa.dialogMsgText,"");
 			}
 		}
+		mGp.progressCancelBtn.setOnClickListener(mProgressOnClickListener);
 		profileListView = (ListView) findViewById(R.id.explorer_profile_tab_listview);
 
 		profileListView.setAdapter(profileAdapter);
@@ -890,6 +896,11 @@ public class SMBExplorerMain extends AppCompatActivity {
 				Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
 			    startActivityForResult(intent, REQUEST_CODE_STORAGE_ACCESS);
 			} 
+			SafWorkArea mSafWorkArea=new SafWorkArea();
+			SafUtil.initWorkArea(this, mSafWorkArea);
+
+			DCFile document=mSafWorkArea.rootDocumentFile;
+			Log.v("","doc="+document.findFile("LocalBackup"));
 		}
 	};
 
@@ -4074,7 +4085,7 @@ public class SMBExplorerMain extends AppCompatActivity {
 	
 	private List<ProfileListItem> createLocalProfileEntry() {
 		List<ProfileListItem> lcl = new ArrayList<ProfileListItem>();
-		ArrayList<String> ml=LocalMountPoint.getLocalMountPointList(mContext);
+		ArrayList<String> ml=LocalMountPoint.getLocalMountPointListApi23(mContext);
 //		ArrayList<String> cpath=new ArrayList<String>();
 //		try {
 //			for (String ffn : ml) {
@@ -4107,34 +4118,34 @@ public class SMBExplorerMain extends AppCompatActivity {
 
 
 		if (ml.size()>0) {
+			String pml=LocalMountPoint.getExternalStorageDir();
+			ProfileListItem pli=new ProfileListItem("L",pml, "A","", "", "", "","", false);
+			File lf=new File(pml+"/"+"SMBExplorer.work.tmp");
 			try {
-				String pml=LocalMountPoint.getExternalStorageDir();
-				ProfileListItem pli=new ProfileListItem("L",pml, "A","", "", "", "","", false);
-				File lf=new File(pml+"/"+"SMBExplorer.work.tmp");
 				lf.createNewFile();
-				lcl.add(pli);
-				for (int i=0;i<ml.size();i++) {
-					if (!ml.get(i).equals("/mnt/mmb") && 
-							!ml.get(i).equals("/storage/uicc0") &&
-							!ml.get(i).equals("/storage/remote")
-							) {
-//						File tlf=new File(ml.get(i));
-//						Log.v("","name="+ml.get(i)+", cw="+tlf.canWrite());
-						pli=new ProfileListItem("L",ml.get(i), "A","", "", "", "","", false);
-						lf=new File(ml.get(i)+"/"+"SMBExplorer.work.tmp");
-						if (!lf.exists()) {
-							try {
-								lf.createNewFile();
-								lcl.add(pli);
-							} catch(IOException e) {
-								lcl.add(pli);
-//								e.printStackTrace();
-							}
+			} catch(IOException e) {
+				//
+			}
+			lcl.add(pli);
+			for (int i=0;i<ml.size();i++) {
+				if (!ml.get(i).equals("/mnt/mmb") && 
+						!ml.get(i).equals("/storage/uicc0") &&
+						!ml.get(i).equals("/storage/remote")
+						) {
+					File tlf=new File(ml.get(i));
+					Log.v("","name="+ml.get(i)+", cw="+tlf.canWrite());
+					pli=new ProfileListItem("L",ml.get(i), "A","", "", "", "","", false);
+					lf=new File(ml.get(i)+"/"+"SMBExplorer.work.tmp");
+					if (!lf.exists()) {
+						try {
+							lf.createNewFile();
+							lcl.add(pli);
+						} catch(IOException e) {
+							lcl.add(pli);
+//							e.printStackTrace();
 						}
 					}
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
 		}
 		if (lcl.size()>0) {
