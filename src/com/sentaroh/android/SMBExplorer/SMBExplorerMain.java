@@ -896,11 +896,11 @@ public class SMBExplorerMain extends AppCompatActivity {
 				Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
 			    startActivityForResult(intent, REQUEST_CODE_STORAGE_ACCESS);
 			} 
-			SafWorkArea mSafWorkArea=new SafWorkArea();
-			SafUtil.initWorkArea(this, mSafWorkArea);
+			SafCommonArea mSafCA=new SafCommonArea();
+			SafUtil.initWorkArea(this, mSafCA);
 
-			DCFile document=mSafWorkArea.rootDocumentFile;
-			Log.v("","doc="+document.findFile("LocalBackup"));
+//			SafFile document=mSafCA.rootDocumentFile;
+//			Log.v("","doc="+document.findFile("LocalBackup"));
 		}
 	};
 
