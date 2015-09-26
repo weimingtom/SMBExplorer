@@ -909,7 +909,7 @@ public class SMBExplorerMain extends AppCompatActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == REQUEST_CODE_STORAGE_ACCESS) {
 	        if (resultCode == Activity.RESULT_OK) {
-	        	if (SafUtil.isSafExternalSdcardTreeUri(mContext,data.getData())) {
+	        	if (SafUtil.isSafExternalSdcardRootTreeUri(mContext,data.getData())) {
 	        		SafUtil.saveSafExternalSdcardRootTreeUri(mContext, data.getData().toString());
 	        	} else {
 					Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
