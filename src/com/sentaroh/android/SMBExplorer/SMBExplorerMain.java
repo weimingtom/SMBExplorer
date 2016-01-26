@@ -4085,7 +4085,7 @@ public class SMBExplorerMain extends AppCompatActivity {
 	
 	private List<ProfileListItem> createLocalProfileEntry() {
 		List<ProfileListItem> lcl = new ArrayList<ProfileListItem>();
-		ArrayList<String> ml=LocalMountPoint.getLocalMountPointListApi23(mContext);
+		ArrayList<String> ml=LocalMountPoint.getLocalMountPointList(mContext);
 //		ArrayList<String> cpath=new ArrayList<String>();
 //		try {
 //			for (String ffn : ml) {
@@ -4662,19 +4662,19 @@ public class SMBExplorerMain extends AppCompatActivity {
 
 	private boolean isIpAddrSmbHost(String address, String scan_port) {
 		boolean smbhost=false;
-		boolean reachable=NetworkUtil.ping(address);
-		if (reachable) {
-			if (scan_port.equals("")) {
-				if (!NetworkUtil.isIpAddressAndPortConnected(address,139,3000)) {
-					smbhost=NetworkUtil.isIpAddressAndPortConnected(address,445,3000);
-				} else smbhost=true;
-			} else {
-				smbhost=NetworkUtil.isIpAddressAndPortConnected(address,
-						Integer.parseInt(scan_port),3000);
-			}
+//		boolean reachable=NetworkUtil.ping(address);
+//		if (reachable) {
+//		}
+		if (scan_port.equals("")) {
+			if (!NetworkUtil.isIpAddressAndPortConnected(address,139,3000)) {
+				smbhost=NetworkUtil.isIpAddressAndPortConnected(address,445,3000);
+			} else smbhost=true;
+		} else {
+			smbhost=NetworkUtil.isIpAddressAndPortConnected(address,
+					Integer.parseInt(scan_port),3000);
 		}
 		sendDebugLogMsg(2,"I","isIpAddrSmbHost Address="+address+
-				", port="+scan_port+", reachable="+reachable+", smbhost="+smbhost);
+				", port="+scan_port+", smbhost="+smbhost);
 		return smbhost;
 	};
 
