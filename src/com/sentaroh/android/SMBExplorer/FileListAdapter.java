@@ -3,15 +3,18 @@ package com.sentaroh.android.SMBExplorer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -74,6 +77,17 @@ public class FileListAdapter extends BaseAdapter {
 
 	public boolean isSelected(int pos) {
 		boolean result=mDataItems.get(pos).isChecked();
+		return result;
+	};
+	
+	public boolean isItemSelected() {
+		boolean result=false;
+		for(FileListItem fli:mDataItems) {
+			if (fli.isChecked()) {
+				result=true;
+				break;
+			}
+		}
 		return result;
 	};
 	
@@ -159,6 +173,7 @@ public class FileListAdapter extends BaseAdapter {
             	holder.tv_size=(TextView)v.findViewById(R.id.file_list_size);
             	holder.tv_moddate=(TextView)v.findViewById(R.id.file_list_date);
             	holder.tv_modtime=(TextView)v.findViewById(R.id.file_list_time);
+            	holder.tv_select=(LinearLayout)v.findViewById(R.id.file_list_select_view);
             	
             	v.setTag(holder); 
             } else {
@@ -242,6 +257,13 @@ public class FileListAdapter extends BaseAdapter {
                	final int p = position;
              // 必ずsetChecked前にリスナを登録
              //	(convertView != null の場合は既に別行用のリスナが登録されている！)
+               	holder.tv_select.setOnClickListener(new OnClickListener(){
+					@Override
+					public void onClick(View v) {
+						if (mSingleSelectMode) holder.rb_rb1.setChecked(true); 
+		           		else holder.cb_cb1.setChecked(!mDataItems.get(p).isChecked());
+					}
+               	});
            		holder.cb_cb1.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 					public void onCheckedChanged(CompoundButton buttonView,
 							boolean isChecked) {
@@ -290,6 +312,7 @@ public class FileListAdapter extends BaseAdapter {
     
 	static class ViewHolder {
 		 TextView tv_name, tv_moddate, tv_modtime, tv_size;
+		 LinearLayout tv_select;
 		 ImageView iv_image1;
 		 CheckBox cb_cb1;
 		 RadioButton rb_rb1;

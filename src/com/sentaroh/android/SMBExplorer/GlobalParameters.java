@@ -123,8 +123,14 @@ public class GlobalParameters extends Application{
 					prefs.getString(getString(R.string.settings_smb_tcp_nodelay),"false");
 			jcifs_option_iobuff=
 					prefs.getString(getString(R.string.settings_io_buffers), "8");
-
 		}
+//		jcifs_option_rcv_buf_size="60416";//"60416";
+//		jcifs_option_snd_buf_size="60416";
+//		jcifs_option_listSize="";
+//		jcifs_option_maxBuffers="100";
+//		jcifs_option_tcp_nodelay="true";
+//		jcifs_option_iobuff="64";
+
 	};
 
 }

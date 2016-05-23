@@ -39,43 +39,50 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/file_list_select_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="5dp"
-        android:orientation="vertical" >
-
-        <TextView
-            android:id="@+id/file_list_date"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-        <TextView
-            android:id="@+id/file_list_time"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textAppearance="?android:attr/textAppearanceMedium"/>
-    </LinearLayout>
-
-    <CheckBox
-        android:id="@+id/file_list_checkbox"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_gravity="center_vertical"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:text="" />
-
-    <RadioButton
-        android:id="@+id/file_list_radiobtn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_gravity="center_horizontal|center_vertical"
-        android:layout_marginLeft="5dp"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:text="" />
+        android:orientation="horizontal" >
+	    <LinearLayout
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginRight="5dp"
+	        android:orientation="vertical" >
+	
+	        <TextView
+	            android:id="@+id/file_list_date"
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content"
+	            android:text=""
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	
+	        <TextView
+	            android:id="@+id/file_list_time"
+	            android:layout_width="fill_parent"
+	            android:layout_height="wrap_content"
+	            android:text=""
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	    </LinearLayout>
+	
+	    <CheckBox
+	        android:id="@+id/file_list_checkbox"
+	        android:layout_width="40dp"
+	        android:layout_height="40dp"
+	        android:layout_gravity="center_vertical"
+	        android:focusable="false"
+	        android:focusableInTouchMode="false"
+	        android:text="" />
+	
+	    <RadioButton
+	        android:id="@+id/file_list_radiobtn"
+	        android:layout_width="40dp"
+	        android:layout_height="40dp"
+	        android:layout_gravity="center_horizontal|center_vertical"
+	        android:layout_marginLeft="5dp"
+	        android:focusable="false"
+	        android:focusableInTouchMode="false"
+	        android:text="" />
+        
+	</LinearLayout>        
     
 </LinearLayout>

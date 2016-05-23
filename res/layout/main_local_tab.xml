@@ -169,6 +169,5 @@
         
     </LinearLayout>
 
-    <include layout="@layout/main_copy_cut_view"/>
     
 </LinearLayout>

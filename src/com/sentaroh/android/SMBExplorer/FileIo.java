@@ -23,6 +23,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -57,6 +58,7 @@ import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
+
 import com.sentaroh.android.Utilities.*;
 
 import static com.sentaroh.android.SMBExplorer.Constants.*;
@@ -111,7 +113,7 @@ public class FileIo implements Runnable {
 		mContext=cc;
 		
 		mSafCA=new SafCommonArea();
-		SafUtil.initWorkArea(cc, mSafCA);
+		SafUtil.initWorkArea(cc, mSafCA, mGp.debugLevel>0);
 		mediaScanner = new MediaScannerConnection(mContext,
 				new MediaScannerConnectionClient() {
 			@Override
@@ -404,7 +406,7 @@ public class FileIo implements Runnable {
     		
     		if (sf.exists()) return false;
     		
-        	if (Build.VERSION.SDK_INT>=21 && SafUtil.isSafExternalSdcardPath(mContext, mSafCA, newUrl)) result=makeSafLocalDirs(newUrl); 
+        	if (Build.VERSION.SDK_INT>=21 && SafUtil.isSafExternalSdcardPath(mSafCA, newUrl)) result=makeSafLocalDirs(newUrl); 
         	else result=sf.mkdir();
     		if (!result) {
     			sendLogMsg("E","Create error");
@@ -481,7 +483,7 @@ public class FileIo implements Runnable {
     	
     	sendDebugLogMsg(1,"I","Rename local item="+oldUrl);
 
-    	if (Build.VERSION.SDK_INT>=21 &&SafUtil.isSafExternalSdcardPath(mContext, mSafCA, oldUrl)) result=renameSafLocalFile(oldUrl, newUrl);
+    	if (Build.VERSION.SDK_INT>=21 &&SafUtil.isSafExternalSdcardPath(mSafCA, oldUrl)) result=renameSafLocalFile(oldUrl, newUrl);
     	else {
         	try {
         		sf = new File( oldUrl );
@@ -509,7 +511,7 @@ public class FileIo implements Runnable {
     private static boolean renameSafLocalFile(String oldUrl, String newUrl) {
     	boolean result=false;
     	boolean isDirectory=(new File(oldUrl)).isDirectory();
-    	SafFile document=SafUtil.getSafDocumentFileByPath(mContext, mSafCA, oldUrl, isDirectory);
+    	SafFile document=SafUtil.getSafDocumentFileByPath(mSafCA, oldUrl, isDirectory);
     	String[] new_name_array=newUrl.split("/");
         Log.v("","new="+new_name_array[new_name_array.length-1]);
         result=document.renameTo(new_name_array[new_name_array.length-1]);
@@ -553,9 +555,10 @@ public class FileIo implements Runnable {
         }
 	    // 削除  
         if (!fileioThreadCtrl.isEnabled()) return false;
-    	if (Build.VERSION.SDK_INT>=21 && SafUtil.isSafExternalSdcardPath(mContext, mSafCA, lf.getPath())) {
+        Log.v("","saf file="+SafUtil.isSafExternalSdcardPath(mSafCA, lf.getPath()));
+    	if (Build.VERSION.SDK_INT>=21 && SafUtil.isSafExternalSdcardPath(mSafCA, lf.getPath())) {
         	boolean isDirectory=lf.isDirectory();
-        	SafFile document=SafUtil.getSafDocumentFileByPath(mContext, mSafCA, lf.getPath(), isDirectory);
+        	SafFile document=SafUtil.getSafDocumentFileByPath(mSafCA, lf.getPath(), isDirectory);
             result=document.delete();
     	} else {
     	    result=lf.delete();
@@ -966,7 +969,7 @@ public class FileIo implements Runnable {
 			if (!fileioThreadCtrl.isEnabled()) return false;
 			makeLocalDirs(toUrl);
 			
-			if (isSameMountPoint(fromUrl,toUrl) && !SafUtil.isSafExternalSdcardPath(mContext, mSafCA, fromUrl)) { // renameでMoveする
+			if (isSameMountPoint(fromUrl,toUrl) && !SafUtil.isSafExternalSdcardPath(mSafCA, fromUrl)) { // renameでMoveする
 				oLf=new File(toUrl);
 				oLf.delete();
 				result=iLf.renameTo(oLf);
@@ -1211,7 +1214,7 @@ public class FileIo implements Runnable {
 			throws IOException {
 //    	return copyFileLocalToLocalByChannel(iLf, fromUrl, toUrl, title_header);
     	boolean result=false;
-    	if (SafUtil.isSafExternalSdcardPath(mContext, mSafCA, toUrl)) result=copySafFileLocalToLocalByStream(iLf, fromUrl, toUrl, title_header);
+    	if (SafUtil.isSafExternalSdcardPath(mSafCA, toUrl)) result=copySafFileLocalToLocalByStream(iLf, fromUrl, toUrl, title_header);
     	else result=copyFileLocalToLocalByStream(iLf, fromUrl, toUrl, title_header);
     	return result;
     };
@@ -1226,10 +1229,11 @@ public class FileIo implements Runnable {
 	    File t_lf=new File(tmp_file);
 	    t_lf.delete();
 		long t0 = System.currentTimeMillis();
+	    FileOutputStream fout = new FileOutputStream(t_lf);
 	    FileInputStream bis = new FileInputStream( iLf );
-	    FileOutputStream bos = new FileOutputStream(t_lf);
-//	    BufferedInputStream bis=new BufferedInputStream(fin,SMB_BUFF_SIZE);
-//	    BufferedOutputStream bos=new BufferedOutputStream(fout,SMB_BUFF_SIZE);
+//	    FileOutputStream bos = new FileOutputStream(t_lf);
+//	    BufferedInputStream bis=new BufferedInputStream(fin,SMB_BUFF_SIZE*16);
+	    BufferedOutputStream bos=new BufferedOutputStream(fout,SMB_BUFF_SIZE*16);
 	    int n=0;
 	    long tot = 0;
 	    long fileBytes=iLf.length();
@@ -1285,18 +1289,18 @@ public class FileIo implements Runnable {
 	static private boolean copySafFileLocalToLocalByStream(File iLf, String fromUrl, String toUrl,
     		String title_header) 
 			throws IOException {
-	    SafFile oLf = SafUtil.getSafDocumentFileByPath(mContext, mSafCA, toUrl, false);
+	    SafFile oLf = SafUtil.getSafDocumentFileByPath(mSafCA, toUrl, false);
 	    boolean result=false;
 		String tmp_file=toUrl+".work";
-		SafFile t_df = SafUtil.getSafDocumentFileByPath(mContext, mSafCA, tmp_file, false);
+		SafFile t_df = SafUtil.getSafDocumentFileByPath(mSafCA, tmp_file, false);
 //		t_df.delete();
 //	    File t_lf=new File(tmp_file);
 //	    t_lf.delete();
 		long t0 = System.currentTimeMillis();
 	    FileInputStream bis = new FileInputStream( iLf );
-		OutputStream bos = mContext.getContentResolver().openOutputStream(t_df.getUri());
+		OutputStream fout = mContext.getContentResolver().openOutputStream(t_df.getUri());
 //	    BufferedInputStream bis=new BufferedInputStream(fin,SMB_BUFF_SIZE);
-//	    BufferedOutputStream bos=new BufferedOutputStream(fout,SMB_BUFF_SIZE);
+	    BufferedOutputStream bos=new BufferedOutputStream(fout,SMB_BUFF_SIZE*32);
 	    int n=0;
 	    long tot = 0;
 	    long fileBytes=iLf.length();
@@ -1363,7 +1367,7 @@ public class FileIo implements Runnable {
 				t_name=mAppSpecificDirName+"/temp.work";
 			}
 		}
-//		Log.v("","t_name="+t_name);
+		Log.v("","t_name="+t_name);
 		return t_name;
 	};
 	
@@ -1497,7 +1501,7 @@ public class FileIo implements Runnable {
 			throws IOException {
 //    	return copyFileLocalToLocalByChannel(iLf, fromUrl, toUrl, title_header);
     	boolean result=false;
-    	if (SafUtil.isSafExternalSdcardPath(mContext, mSafCA, toUrl)) result=copySafFileRemoteToLocalByStream(hf, lf, toUrl, fromUrl, title_header);
+    	if (SafUtil.isSafExternalSdcardPath(mSafCA, toUrl)) result=copySafFileRemoteToLocalByStream(hf, lf, toUrl, fromUrl, title_header);
     	else result=copyFileRemoteToLocalByStream(hf, lf, toUrl, fromUrl, title_header);
     	return result;
     }
@@ -1513,9 +1517,9 @@ public class FileIo implements Runnable {
 
 		long t0 = System.currentTimeMillis();
 	    SmbFileInputStream bis = new SmbFileInputStream( hf );
-	    FileOutputStream bos = new FileOutputStream(t_lf);
+	    FileOutputStream out = new FileOutputStream(t_lf);
 //	    BufferedInputStream bis=new BufferedInputStream(in,SMB_BUFF_SIZE);
-//	    BufferedOutputStream bos=new BufferedOutputStream(out,SMB_BUFF_SIZE);
+	    BufferedOutputStream bos=new BufferedOutputStream(out,SMB_BUFF_SIZE*32);
 	    int n;
 		long tot = 0;
 	    long fileBytes=hf.length();
@@ -1530,7 +1534,7 @@ public class FileIo implements Runnable {
 			    t_lf.delete();
 	    		return false;
 	    	}
-	        bos.write( fileIoArea, 0, n );
+	        bos.write( fileIoArea, 0, n ); 
 	        tot += n;
 	        if (tot<fileBytes) 
 	        	sendMsgToProgDlg(String.format(title_header+" %s,  %s%% completed.",fn, (tot*100)/fileBytes));
@@ -1568,14 +1572,15 @@ public class FileIo implements Runnable {
     		String toUrl, String fromUrl, String title_header) 
     		throws IOException {
 		
-	    SafFile oLf = SafUtil.getSafDocumentFileByPath(mContext, mSafCA, toUrl, false);
+	    SafFile oLf = SafUtil.getSafDocumentFileByPath(mSafCA, toUrl, false);
 	    boolean result=false;
 		String tmp_file=toUrl+".work";
-		SafFile t_df = SafUtil.getSafDocumentFileByPath(mContext, mSafCA, tmp_file, false);
+		SafFile t_df = SafUtil.getSafDocumentFileByPath(mSafCA, tmp_file, false);
 		long t0 = System.currentTimeMillis();
 
 	    SmbFileInputStream bis = new SmbFileInputStream( hf );
-	    OutputStream bos = mContext.getContentResolver().openOutputStream(t_df.getUri());
+	    OutputStream fout = mContext.getContentResolver().openOutputStream(t_df.getUri());
+	    BufferedOutputStream bos=new BufferedOutputStream(fout,SMB_BUFF_SIZE*32);
 	    int n;
 		long tot = 0;
 	    long fileBytes=hf.length();
@@ -1750,7 +1755,7 @@ public class FileIo implements Runnable {
 		else target_dir=targetPath.substring(0,targetPath.lastIndexOf("/"));
 		File lf = new File(target_dir);
 		if (!lf.exists()) {
-			if (Build.VERSION.SDK_INT>=21 && SafUtil.isSafExternalSdcardPath(mContext, mSafCA, targetPath)) {
+			if (Build.VERSION.SDK_INT>=21 && SafUtil.isSafExternalSdcardPath(mSafCA, targetPath)) {
 				result=makeSafLocalDirs(targetPath);
 			} else {
 				lf.mkdirs();
@@ -1762,7 +1767,7 @@ public class FileIo implements Runnable {
 	
 	private static boolean makeSafLocalDirs(String target_path) {
 		boolean result=true;
-		SafUtil.getSafDocumentFileByPath(mContext, mSafCA, target_path, true);
+		SafUtil.getSafDocumentFileByPath(mSafCA, target_path, true);
         return result;
 	};
 
